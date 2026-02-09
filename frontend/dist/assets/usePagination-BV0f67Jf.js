@@ -1,0 +1,1 @@
+import{r as g,q as f}from"./index-CJ_PivE-.js";function v(P,c=1,m=15,a){const e=g(c),r=g(m),u=g(0),t=(a==null?void 0:a.pageParam)??"page",l=(a==null?void 0:a.perPageParam)??"limit";return f([e,r],()=>{P({[t]:e.value,[l]:r.value})}),{page:e,perPageCount:r,total:u}}export{v as u};

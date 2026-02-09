@@ -1,0 +1,1 @@
+import{d as s,c as o,H as d,i as c,aa as l,a0 as n,o as t}from"./index-CJ_PivE-.js";const m=s({__name:"Card",props:{class:{}},setup(a){const r=a;return(e,p)=>(t(),o("div",{"data-slot":"card",class:d(c(l)("bg-card text-card-foreground flex flex-col gap-6 rounded-3xl border border-border py-6 shadow-lg shadow-gray-200/40",r.class))},[n(e.$slots,"default")],2))}});export{m as _};

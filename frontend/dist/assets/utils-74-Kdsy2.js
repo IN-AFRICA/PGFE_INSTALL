@@ -1,0 +1,1 @@
+const o=t=>{if(typeof t=="string"&&/^\d{4}-\d{2}-\d{2}$/.test(t))return`${t} 00:00:00`;const e=t instanceof Date?t:new Date(t),n=a=>String(a).padStart(2,"0");return`${e.getFullYear()}-${n(e.getMonth()+1)}-${n(e.getDate())} ${n(e.getHours())}:${n(e.getMinutes())}:${n(e.getSeconds())}`};export{o as t};

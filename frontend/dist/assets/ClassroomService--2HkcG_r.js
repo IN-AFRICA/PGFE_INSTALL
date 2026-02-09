@@ -1,0 +1,1 @@
+import{ac as t,ad as a,ae as s}from"./index-CJ_PivE-.js";const e=`${a}/classrooms`;var o;const n=(o=s())==null?void 0:o.token,r={Accept:"application/json","Content-Type":"application/json",Authorization:`Bearer ${n}`},i={getAllClassroom(){return t.get(e,{headers:r})}};export{i as C};

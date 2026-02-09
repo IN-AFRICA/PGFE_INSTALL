@@ -1,0 +1,1 @@
+import{d as a,p as o,c,H as i,o as l}from"./index-CJ_PivE-.js";const m=a({__name:"IconifySpinner",props:{size:{default:"md"}},setup(e){const s=e,n=o(()=>({sm:"text-base",md:"text-lg",lg:"text-xl",xl:"text-2xl"})[s.size]);return(t,p)=>(l(),c("span",{class:i(["iconify animate-spin hugeicons--loading-03",n.value])},null,2))}});export{m as _};

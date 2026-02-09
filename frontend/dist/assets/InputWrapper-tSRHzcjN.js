@@ -1,0 +1,1 @@
+import{_ as o}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as r,o as s,a0 as c}from"./index-CJ_PivE-.js";const t={},a={class:"flex flex-col space-y-1.5 w-full"};function n(e,l){return s(),r("div",a,[c(e.$slots,"default")])}const p=o(t,[["render",n]]);export{p as I};

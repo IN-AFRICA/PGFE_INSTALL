@@ -1,0 +1,69 @@
+<header
+    id="appHeader"
+    x-data="{
+        menuToggle: false,
+        textColor: '',
+        isDark: document.documentElement.classList.contains('dark'),
+        init() {
+            this.updateBg();
+            this.updateColor();
+            const observer = new MutationObserver(() => {
+                this.updateBg();
+                this.updateColor();
+            });
+            observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        },
+        updateBg() {
+            this.isDark = document.documentElement.classList.contains('dark');
+            const liteBg = '{{ config('settings.navbar_bg_lite') }}';
+            const darkBg = '{{ config('settings.navbar_bg_dark') }}';
+            this.$el.style.backgroundColor = this.isDark ? darkBg : liteBg;
+        },
+        updateColor() {
+            this.isDark = document.documentElement.classList.contains('dark');
+            this.textColor = this.isDark
+                ? '{{ config('settings.navbar_text_dark') }}'
+                : '{{ config('settings.navbar_text_lite') }}';
+        }
+    }"
+    x-init="init()"
+    class="sticky top-0 flex w-full border-gray-200 lg:border-b dark:border-gray-800 transition-all duration-300 z-9"
+>
+    <div class="flex grow items-center justify-between lg:flex-row lg:px-6">
+        <div
+            class="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-2 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 dark:border-gray-800">
+            <button
+                :class="sidebarToggle ? 'lg:bg-transparent dark:lg:bg-transparent bg-gray-100 dark:bg-gray-800' : ''"
+                class="z-99999 flex h-10 w-10 items-center justify-center rounded-md border-gray-200 text-gray-700 lg:h-11 lg:w-11 dark:border-gray-800 dark:text-gray-300 transition-all duration-300"
+                id="sidebar-toggle-button"
+                @click.stop="sidebarToggle = !sidebarToggle; localStorage.setItem('sidebarToggle', sidebarToggle);">
+                <iconify-icon
+                    :icon="sidebarToggle ? 'mdi:menu-close' : 'mdi:menu-open'"
+                    width="26" height="26" class="hidden md:inline-block"></iconify-icon>
+                <iconify-icon
+                    :icon="sidebarToggle ? 'feather:menu' : 'feather:menu'"
+                    width="26" height="26" class="md:hidden"></iconify-icon>
+            </button>
+        </div>
+
+        <div class="flex gap-2 lg:justify-end items-center">
+            {{-- Badge rôle --}}
+            @php
+                $user = Auth::user();
+                $roleBadge = null;
+                $badgeClasses = '';
+                if($user){
+                    if($user->hasRole('super-admin')){ $roleBadge = 'Super Admin'; $badgeClasses = 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white'; }
+                    elseif($user->hasRole('admin')){ $roleBadge = 'Admin'; $badgeClasses = 'bg-blue-600 text-white'; }
+                }
+            @endphp
+            @if($roleBadge)
+                <span class="hidden md:inline-flex items-center text-xs font-medium px-3 py-1 rounded-full shadow-sm {{ $badgeClasses }}">
+                    <iconify-icon icon="mdi:shield-account" class="mr-1" width="14" height="14"></iconify-icon>
+                    {{ $roleBadge }}
+                </span>
+            @endif
+            @include('backend.layouts.partials.header.right-menu')
+        </div>
+    </div>
+</header>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+      /* Force les bordures fines et noires partout */
+      table,
+      th,
+      td {
+        border: 1px solid #000;
+      }
+
+      /* Style pour le bouton supprimer */
+      .delete-btn {
+        visibility: hidden;
+      }
+
+      tr:hover .delete-btn {
+        visibility: visible;
+      }
+    </style>
+    <title>Bulletin Scolaire</title>
+  </head>
+  <body>
+    <div
+      class="w-full min-h-screen bg-yellow-500 flex flex-col justify-start items-center p-4 gap-4"
+    >
+      <table class="border-collapse bg-white text-[10px] text-center shadow-lg">
+        <thead class="font-bold text-white">
+          <tr>
+            <th class="p-1 min-w-10 bg-green-500 align-middle" rowspan="3">BRANCHES</th>
+            <th class="p-1 bg-red-500" colspan="4">PREMIER SEMESTRE</th>
+            <th class="p-1 bg-red-500" colspan="4">DEUXIEME SEMESTRE</th>
+            <th class="p-1 w-11 bg-red-800 align-middle" rowspan="3">TG</th>
+            <th class="p-4 bg-black align-middle" rowspan="3"></th>
+            <th class="p-1 bg-cyan-800" colspan="2">Trav Journal</th>
+          </tr>
+          <tr>
+            <th class="p-1 bg-red-800" colspan="2">Trav Journal</th>
+            <th class="p-1 w-10 bg-red-800 align-middle" rowspan="2">Exam</th>
+            <th class="p-1 w-11 bg-red-800 align-middle" rowspan="2">TOT</th>
+            <th class="p-1 bg-red-800" colspan="2">Trav Journal</th>
+            <th class="p-1 w-10 bg-red-800 align-middle" rowspan="2">Exam</th>
+            <th class="p-1 w-11 bg-red-800 align-middle" rowspan="2">TOT</th>
+            <th class="p-1 w-10 bg-cyan-800 align-middle" rowspan="2">%</th>
+            <th class="p-1 w-11 bg-cyan-800 align-middle" rowspan="2">Sig.</th>
+          </tr>
+          <tr class="bg-red-800 text-white">
+            <th>1ère P</th>
+            <th>2ème P</th>
+            <th>3ème P</th>
+            <th>4ème P</th>
+          </tr>
+        </thead>
+
+        <tbody id="bulletin-body" class="text-black"></tbody>
+      </table>
+
+      <div class="flex gap-2">
+        <button
+          onclick="addMathCourse()"
+          class="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700"
+        >
+          + Ajouter Cours (Base 40 pts)
+        </button>
+        <button
+          onclick="addSportCourse()"
+          class="px-4 py-2 bg-green-600 text-white rounded cursor-pointer hover:bg-green-700"
+        >
+          + Ajouter Cours (Base 20 pts)
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // =========================================================
+      // 1. DONNÉES : GROUPÉES PAR MAXIMA
+      // =========================================================
+      // Chaque élément du tableau est un GROUPE qui partage le même MAXIMA.
+      const bulletinData = [
+        {
+          // GROUPE A : Les grosses branches (Maths, Français...)
+          // Maxima: 10 + 10 + 20 = 40 par semestre. TG = 80.
+          maximaConfig: { p1: 10, p2: 10, e1: 20, p3: 10, p4: 10, e2: 20 },
+          courses: [
+            { name: 'Mathématiques', notes: { p1: 8, p2: 7, e1: 15, p3: 9, p4: 8, e2: 18 } },
+            { name: 'Français', notes: { p1: 6, p2: 8, e1: 12, p3: 7, p4: 9, e2: 14 } },
+          ],
+        },
+        {
+          // GROUPE B : Les petites branches (Ed. Physique...)
+          // Maxima: 5 + 5 + 10 = 20 par semestre. TG = 40.
+          maximaConfig: { p1: 5, p2: 5, e1: 10, p3: 5, p4: 5, e2: 10 },
+          courses: [{ name: 'Ed. Physique', notes: { p1: 5, p2: 5, e1: 9, p3: 4, p4: 5, e2: 8 } }],
+        },
+      ]
+
+      // =========================================================
+      // 2. FONCTION DE CALCUL (TES FORMULES)
+      // =========================================================
+      function calculateTotals(data) {
+        // Conversion en nombre entier (ou 0 si vide) pour éviter les erreurs NaN
+        const p1 = Number(data.p1) || 0
+        const p2 = Number(data.p2) || 0
+        const e1 = Number(data.e1) || 0
+
+        const p3 = Number(data.p3) || 0
+        const p4 = Number(data.p4) || 0
+        const e2 = Number(data.e2) || 0
+
+        // Formules demandées
+        const semTOT1 = p1 + p2 + e1
+        const semTOT2 = p3 + p4 + e2
+        const TG = semTOT1 + semTOT2
+
+        return { semTOT1, semTOT2, TG }
+      }
+
+      // =========================================================
+      // 3. GÉNÉRATION DU TABLEAU
+      // =========================================================
+      function renderTable() {
+        const tbody = document.getElementById('bulletin-body')
+        tbody.innerHTML = '' // Reset
+
+        bulletinData.forEach((group, groupIndex) => {
+          // --- A. CALCUL LIGNE MAXIMA ---
+          const max = group.maximaConfig
+          const maxTot = calculateTotals(max)
+
+          // Création HTML Ligne Maxima
+          const trMax = document.createElement('tr')
+          trMax.className = 'bg-gray-200 font-bold border-t-2 border-black'
+          trMax.innerHTML = `
+                    <td class="text-left px-2">MAXIMA</td>
+                    <td>${max.p1}</td> <td>${max.p2}</td> <td>${max.e1}</td> <td>${maxTot.semTOT1}</td>
+                    <td>${max.p3}</td> <td>${max.p4}</td> <td>${max.e2}</td> <td>${maxTot.semTOT2}</td>
+                    <td>${maxTot.TG}</td>
+                    <td class="bg-black"></td>
+                    <td class="bg-black" colspan="2"></td>
+                `
+          tbody.appendChild(trMax)
+
+          // --- B. BOUCLE SUR LES COURS DU GROUPE ---
+          group.courses.forEach((course, courseIndex) => {
+            const notes = calculateTotals(course.notes)
+
+            // Calcul Pourcentage : (Note élève / Note Maxima) * 100
+            let pourcentage = '0%'
+            if (maxTot.TG > 0) {
+              const val = (notes.TG / maxTot.TG) * 100
+              pourcentage = val.toFixed(1) + '%'
+            }
+
+            const trCourse = document.createElement('tr')
+            trCourse.className = 'hover:bg-yellow-50 transition-colors'
+            trCourse.innerHTML = `
+                        <td class="font-bold text-left px-2 relative group">
+                            ${course.name}
+                            <button onclick="deleteCourse(${groupIndex}, ${courseIndex})" 
+                                class="delete-btn absolute right-1 top-0.5 text-red-500 font-bold px-1 cursor-pointer">
+                                &times;
+                            </button>
+                        </td>
+                        
+                        <td>${course.notes.p1}</td> <td>${course.notes.p2}</td> <td>${course.notes.e1}</td> 
+                        <td class="font-semibold bg-gray-50">${notes.semTOT1}</td>
+                        
+                        <td>${course.notes.p3}</td> <td>${course.notes.p4}</td> <td>${course.notes.e2}</td> 
+                        <td class="font-semibold bg-gray-50">${notes.semTOT2}</td>
+                        
+                        <td class="bg-yellow-100 font-bold">${notes.TG}</td>
+                        
+                        <td class="bg-black"></td>
+                        
+                        <td class="font-bold text-blue-800">${pourcentage}</td>
+                        <td></td>
+                    `
+            tbody.appendChild(trCourse)
+          })
+        })
+      }
+
+      // =========================================================
+      // 4. GESTION (AJOUT / SUPPRESSION)
+      // =========================================================
+
+      function deleteCourse(groupIndex, courseIndex) {
+        // Supprimer le cours du tableau
+        bulletinData[groupIndex].courses.splice(courseIndex, 1)
+
+        // Si le groupe est vide (plus de cours pour ce Maxima), on supprime le groupe entier
+        if (bulletinData[groupIndex].courses.length === 0) {
+          bulletinData.splice(groupIndex, 1)
+        }
+        renderTable()
+      }
+
+      function addMathCourse() {
+        // Ajoute au Groupe 0 (Maxima 40)
+        if (bulletinData[0]) {
+          bulletinData[0].courses.push({
+            name: 'Nouveau Cours ' + Math.floor(Math.random() * 100),
+            notes: { p1: 5, p2: 5, e1: 10, p3: 5, p4: 5, e2: 10 },
+          })
+          renderTable()
+        }
+      }
+
+      function addSportCourse() {
+        // Ajoute au Groupe 1 (Maxima 20)
+        // Si le groupe n'existe pas (s'il a été supprimé), on devrait le recréer (logique simplifiée ici)
+        if (bulletinData.length > 1) {
+          bulletinData[1].courses.push({
+            name: 'Gymnastique',
+            notes: { p1: 4, p2: 5, e1: 8, p3: 5, p4: 4, e2: 9 },
+          })
+          renderTable()
+        }
+      }
+
+      // Lancer au démarrage
+      renderTable()
+    </script>
+  </body>
+</html>

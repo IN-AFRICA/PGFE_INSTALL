@@ -1,0 +1,1 @@
+import{d as r,x as s,i as t,a_ as l,a4 as n,w as i,a0 as p,o as g}from"./index-CJ_PivE-.js";const c=r({__name:"DialogTrigger",props:{asChild:{type:Boolean},as:{}},setup(a){const e=a;return(o,d)=>(g(),s(t(l),n({"data-slot":"dialog-trigger"},e),{default:i(()=>[p(o.$slots,"default")]),_:3},16))}});export{c as _};

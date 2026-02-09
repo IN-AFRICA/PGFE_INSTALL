@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as t,o as c}from"./index-CJ_PivE-.js";const s={},n={class:"text-destructive text-sm inline"};function o(r,_){return c(),t("span",n,"*")}const m=e(s,[["render",o]]);export{m as S};

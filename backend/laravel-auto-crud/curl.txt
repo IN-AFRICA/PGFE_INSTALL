@@ -1,0 +1,58 @@
+=====================Mois=====================
+curl --location 'http://localhost:8000/api/mois' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request POST \
+--data '[]'
+
+curl --location 'http://localhost:8000/api/mois/:id' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request PATCH \
+--data '[]'
+
+curl --location 'http://localhost:8000/api/mois/:id' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request DELETE
+
+curl --location 'http://localhost:8000/api/mois' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request GET
+
+curl --location 'http://localhost:8000/api/mois/:id' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request GET
+
+=====================Mois=====================
+=====================PersonSalaire=====================
+curl --location 'http://localhost:8000/api/person_salaires' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request POST \
+--data '[]'
+
+curl --location 'http://localhost:8000/api/person_salaires/:id' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request PATCH \
+--data '[]'
+
+curl --location 'http://localhost:8000/api/person_salaires/:id' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request DELETE
+
+curl --location 'http://localhost:8000/api/person_salaires' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request GET
+
+curl --location 'http://localhost:8000/api/person_salaires/:id' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--request GET
+
+=====================PersonSalaire=====================
