@@ -1,9 +1,7 @@
 name: Créer une Release publique avec ZIP
 
 on:
-  # Permet de déclencher le workflow manuellement depuis l'onglet "Actions"
   workflow_dispatch:
-    # Optionnel : ajouter un champ pour choisir la branche
     inputs:
       branch:
         description: 'Branche à packager'
@@ -14,31 +12,33 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      # 1. Récupérer le code de la branche choisie
       - name: Récupérer le code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      # 2. Créer un fichier ZIP (vous pouvez personnaliser le nom)
       - name: Créer l'archive ZIP
         run: |
-          # Crée un nom de fichier avec la date et le nom de branche
           ZIP_NAME="mon-projet-${{ github.event.inputs.branch }}-$(date +'%Y%m%d').zip"
           zip -r "$ZIP_NAME" ./
+        # On garde la commande date ici, car c'est bien une commande shell
 
-      # 3. Créer une Release et y attacher le ZIP
+      - name: Générer un nom de tag valide
+        id: tag-version
+        run: |
+          # Crée un nom de tag simple et unique (ex: snapshot-main-20260210-1425)
+          TIMESTAMP=$(date +'%Y%m%d-%H%M')
+          echo "TAG_NAME=snapshot-${{ github.event.inputs.branch }}-$TIMESTAMP" >> $GITHUB_OUTPUT
+
       - name: Publier la Release
         uses: softprops/action-gh-release@v1
         with:
-          # Nom du tag pour cette version (utilise la date/heure pour être unique)
-          tag_name: "snapshot-${{ github.event.inputs.branch }}-$(date +'%Y%m%d-%H%M')"
+          # On utilise le tag généré à l'étape précédente
+          tag_name: ${{ steps.tag-version.outputs.TAG_NAME }}
           name: "Build snapshot de la branche ${{ github.event.inputs.branch }}"
           body: "Archive ZIP automatiquement générée. Contient le code de la branche **${{ github.event.inputs.branch }}**."
-          # Chemin vers le fichier ZIP à attacher
           files: |
             *.zip
-          # Ceci marque la release comme "pré-release", utile pour des snapshots
           prerelease: true
           generate_release_notes: false
         env:
