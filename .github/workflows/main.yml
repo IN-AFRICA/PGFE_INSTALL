@@ -1,5 +1,4 @@
 name: Créer une Release publique avec ZIP
-
 on:
   workflow_dispatch:
     inputs:
@@ -7,38 +6,45 @@ on:
         description: 'Branche à packager'
         required: true
         default: 'main'
-
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Important pour créer une release
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
-
-      - name: Créer l'archive ZIP
+      - name: Créer l'archive ZIP propre
         run: |
-          ZIP_NAME="mon-projet-${{ github.event.inputs.branch }}-$(date +'%Y%m%d').zip"
-          zip -r "$ZIP_NAME" ./
-        # On garde la commande date ici, car c'est bien une commande shell
-
+          # Nom du fichier zip
+          ZIP_NAME="pgfe-${{ github.event.inputs.branch }}-$(date +'%Y%m%d').zip"
+          
+          # Exclusion intelligente : on exclut le dossier .git et le fichier zip lui-même si jamais il est créé dans la racine
+          # Utilisation de -x pour exclure
+          zip -r "$ZIP_NAME" . -x "*.git*" -x "$ZIP_NAME"
+          
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
       - name: Générer un nom de tag valide
         id: tag-version
         run: |
-          # Crée un nom de tag simple et unique (ex: snapshot-main-20260210-1425)
           TIMESTAMP=$(date +'%Y%m%d-%H%M')
           echo "TAG_NAME=snapshot-${{ github.event.inputs.branch }}-$TIMESTAMP" >> $GITHUB_OUTPUT
-
       - name: Publier la Release
         uses: softprops/action-gh-release@v1
         with:
-          # On utilise le tag généré à l'étape précédente
           tag_name: ${{ steps.tag-version.outputs.TAG_NAME }}
-          name: "Build snapshot de la branche ${{ github.event.inputs.branch }}"
-          body: "Archive ZIP automatiquement générée. Contient le code de la branche **${{ github.event.inputs.branch }}**."
+          name: "Snapshot ${{ github.event.inputs.branch }} (${{ github.env.ZIP_NAME }})"
+          body: |
+            Archive ZIP générée automatiquement depuis la branche **${{ github.event.inputs.branch }}**.
+            
+            **Contenu :**
+            - Code source complet sans historique git.
+            
+            *(Généré le $(date))*
           files: |
-            *.zip
+            ${{ env.ZIP_NAME }}
           prerelease: true
           generate_release_notes: false
         env:
