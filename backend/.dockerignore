@@ -1,0 +1,56 @@
+# Node dependencies  
+node_modules
+npm-debug.log*
+
+# Composer
+/vendor
+
+# Laravel specific
+/storage/*/*
+!/storage/app/.gitkeep
+!/storage/framework/.gitkeep
+!/storage/logs/.gitkeep
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+docs
+
+# Tests
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Build artifacts
+public/hot
+public/storage
+public/build
+
+# Logs
+*.log
