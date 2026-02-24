@@ -9,6 +9,7 @@ use App\Models\AcademicPersonal;
 use App\Models\Classroom;
 use App\Models\School;
 use App\Models\Student;
+use App\Services\Sync\SyncService;
 use Illuminate\Http\Request;
 
 final class AdminController extends Controller
@@ -145,10 +146,11 @@ final class AdminController extends Controller
             ->withCount(['students', 'personals'])
             ->get()
             ->map(function($school) {
+                // sync_logs stocke une date globale last_sync_at par table.
+                // On utilise la plus ANCIENNE date (min) pour détecter qu'au moins
+                // une table est en retard de synchronisation.
                 $lastSync = \Illuminate\Support\Facades\DB::table('sync_logs')
-                    ->where('school_id', $school->id)
-                    ->latest('last_sync')
-                    ->first();
+                    ->min('last_sync_at');
 
                 return [
                     'id' => $school->id,
@@ -156,8 +158,8 @@ final class AdminController extends Controller
                     'city' => $school->city,
                     'students_count' => $school->students_count,
                     'personals_count' => $school->personals_count,
-                    'last_sync' => $lastSync ? $lastSync->last_sync : null,
-                    'status' => $this->calculateSyncStatus($lastSync ? $lastSync->last_sync : null)
+                    'last_sync' => $lastSync ?: null,
+                    'status' => $this->calculateSyncStatus($lastSync ?: null)
                 ];
             });
 
@@ -166,10 +168,49 @@ final class AdminController extends Controller
 
     private function calculateSyncStatus(?string $lastSync): string
     {
-        if (!$lastSync) return 'never';
+        // Si aucune synchronisation n'a encore eu lieu, on considère l'état comme critique
+        if (! $lastSync) {
+            return 'danger';
+        }
+
         $diff = now()->diffInHours(\Illuminate\Support\Carbon::parse($lastSync));
-        if ($diff < 24) return 'ok';
-        if ($diff < 72) return 'warning';
+
+        if ($diff < 24) {
+            return 'ok';
+        }
+
+        if ($diff < 72) {
+            return 'warning';
+        }
+
         return 'danger';
+    }
+
+    /**
+     * Déclenche une synchronisation manuelle depuis le dashboard super admin.
+     */
+    public function triggerSync(Request $request, SyncService $syncService)
+    {
+        try {
+            $table = $request->input('table');
+
+            if ($table) {
+                $syncService->syncTable($table);
+            } else {
+                $syncService->syncAll();
+            }
+
+            return redirect()
+                ->back()
+                ->with('status', 'Synchronisation lancée avec succès.');
+        } catch (\Throwable $e) {
+            \Log::error('Admin triggerSync failed: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', "Échec du déclenchement de la synchronisation.");
+        }
     }
 }

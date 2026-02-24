@@ -10,6 +10,7 @@ import { infraRoutes } from '@/router/infra.ts'
 import { stockRoutes } from '@/router/stock.ts'
 // import { useAuthStore } from '@/stores/auth' // Keeping original comment for context if needed, but adding real import
 import { useAuthStore } from '@/stores/auth'
+import { locationRoutes } from './location.ts'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -24,6 +25,7 @@ const routes: RouteRecordRaw[] = [
   ...moduleComptaRoutes,
   ...infraRoutes,
   ...stockRoutes,
+  ...locationRoutes,
 ]
 
 const router = createRouter({

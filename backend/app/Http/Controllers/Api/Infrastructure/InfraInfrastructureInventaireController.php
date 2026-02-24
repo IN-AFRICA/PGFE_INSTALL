@@ -16,7 +16,7 @@ final class InfraInfrastructureInventaireController extends Controller
     public function index(): \Illuminate\Http\JsonResponse
     {
         try {
-            $inventaires = InfraInfrastructureInventaire::latest()->get();
+            $inventaires = InfraInfrastructureInventaire::with('infrastructure')->latest()->get();
 
             return response()->json([
                 'data' => InfraInfrastructureInventaireResource::collection($inventaires),
@@ -35,7 +35,22 @@ final class InfraInfrastructureInventaireController extends Controller
     public function store(InfraInfrastructureInventaireRequest $request): \Illuminate\Http\JsonResponse
     {
         try {
-            $inventaire = InfraInfrastructureInventaire::create($request->validated());
+            $user = $request->user();
+
+            if (! $user || ! $user->school_id) {
+                return response()->json([
+                    'error' => "Aucune école active n'a été trouvée pour cet utilisateur.",
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $data = $request->validated();
+
+            // Forcer le contexte établissement / auteur comme pour les autres ressources infra
+            $data['school_id'] = $user->school_id;
+            $data['author_id'] = $user->id;
+
+            $inventaire = InfraInfrastructureInventaire::create($data);
+            $inventaire->load('infrastructure');
 
             return response()->json([
                 'data' => new InfraInfrastructureInventaireResource($inventaire),
@@ -54,6 +69,11 @@ final class InfraInfrastructureInventaireController extends Controller
     public function show(InfraInfrastructureInventaire $infraInfrastructureInventaire): \Illuminate\Http\JsonResponse
     {
         try {
+            $infraInfrastructureInventaire->load([
+                'infrastructure.categorie',
+                'infrastructure.bailleur',
+                'infrastructure.etats',
+            ]);
             return response()->json([
                 'data' => new InfraInfrastructureInventaireResource($infraInfrastructureInventaire),
                 'success' => true,
@@ -72,6 +92,8 @@ final class InfraInfrastructureInventaireController extends Controller
     {
         try {
             $infraInfrastructureInventaire->update($request->validated());
+
+            $infraInfrastructureInventaire->load('infrastructure');
 
             return response()->json([
                 'data' => new InfraInfrastructureInventaireResource($infraInfrastructureInventaire),

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\InfraInfrastructure;
 use App\Models\InfraEquipement;
 use App\Models\InfraInfrastructureInventaire;
+use App\Models\InfraInventaire;
 use App\Models\InfraEtat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,7 @@ final class InfraDashboardWebController extends Controller
         // Statistiques globales
         $totalInfrastructures = InfraInfrastructure::count();
         $totalEquipements = InfraEquipement::count();
-        $totalInventaires = InfraInfrastructureInventaire::count();
+        $totalInventaires = InfraInfrastructureInventaire::count() + InfraInventaire::count();
         $totalSignalements = InfraEtat::count();
 
         // Répartition des infrastructures par statut (basé sur le dernier inventaire)
@@ -27,8 +28,14 @@ final class InfraDashboardWebController extends Controller
             ->groupBy('status')
             ->get();
 
-        // Derniers inventaires
+        // Derniers inventaires d'infrastructure
         $recentInventaires = InfraInfrastructureInventaire::with(['infrastructure'])
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Derniers inventaires d'équipement
+        $recentEquipementInventaires = InfraInventaire::with(['equipement'])
             ->latest()
             ->limit(5)
             ->get();
@@ -46,6 +53,7 @@ final class InfraDashboardWebController extends Controller
             'totalSignalements',
             'infrastructuresStatus',
             'recentInventaires',
+            'recentEquipementInventaires',
             'recentEtats'
         ));
     }

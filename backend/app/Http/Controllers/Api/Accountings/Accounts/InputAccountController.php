@@ -29,7 +29,7 @@ final class InputAccountController extends Controller
                 }),
             ],
             // Champs optionnels pour déclencher l’écriture Journal
-            'output_account_id' => 'nullable|exists:outputaccount,id',
+            'output_account_id' => 'nullable|exists:OutputAccount,id',
             'account_id' => 'required_with:output_account_id|exists:accounts,id',
         ]);
 

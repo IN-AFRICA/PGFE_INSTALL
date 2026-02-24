@@ -6,6 +6,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Students\StudentController;
 use App\Http\Controllers\Api\Students\StudentDashboardController;
 use App\Http\Controllers\Api\Students\StudentRegistrationController;
+use App\Http\Controllers\Api\Students\StudentTransferController;
 use App\Http\Controllers\Api\Repechage\ImportRepechageController;
 use App\Http\Controllers\Api\ValidationAureat\ImportController;
 use App\Http\Controllers\Api\ValidationAureat\ListValidationAureatController;
@@ -45,6 +46,10 @@ Route::middleware('auth:sanctum')
             Route::get('registrations/export-pdf', [StudentRegistrationController::class, 'exportPdf']);
             Route::get('registrations/list', [StudentRegistrationController::class, 'list']);
             Route::put('registrations/{registration}', [StudentRegistrationController::class, 'update']);
+
+        // Parcours & transferts d'élèves
+        Route::get('{student}/transfers', [StudentTransferController::class, 'index'])->name('transfers.index');
+        Route::post('{student}/transfers', [StudentTransferController::class, 'store'])->name('transfers.store');
 
         // (Route dashboard étudiant supprimée)
         // Route POST pour inscrire un étudiant existant

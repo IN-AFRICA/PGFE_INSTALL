@@ -221,6 +221,7 @@ final class GeneralDeliberationController extends Controller
         $firstName = $student->firstname ?? '';
 
         $data = [
+            'school_id' => $registration?->school_id,
             'last_name' => $lastName !== '' ? $lastName : 'Inconnu',
             'middle_name' => null,
             'first_name' => $firstName !== '' ? $firstName : 'Inconnu',
@@ -236,11 +237,11 @@ final class GeneralDeliberationController extends Controller
         ];
 
         $uniqueKey = [
+            'school_id' => $data['school_id'],
             'class' => $data['class'],
             'year' => $data['year'],
+            'registration_number' => $data['registration_number'],
         ];
-
-        $uniqueKey['registration_number'] = $data['registration_number'];
 
         ValidationAureat::updateOrCreate($uniqueKey, $data);
     }

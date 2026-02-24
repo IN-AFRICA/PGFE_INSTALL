@@ -20,8 +20,8 @@ class InfraEquipementWebController extends Controller
             'code' => 'nullable|string|max:50',
             'date_acquisition' => 'nullable|date',
             'montant_acquisition' => 'nullable|numeric',
-            'categorie_id' => 'required|exists:infra_categories,id',
-            'bailleur_id' => 'nullable|exists:infra_bailleurs,id',
+            'infra_categorie_id' => 'required|exists:infra_categories,id',
+            'infra_bailleur_id' => 'nullable|exists:infra_bailleurs,id',
             'emplacement' => 'nullable|string|max:255',
         ]);
 
@@ -51,8 +51,8 @@ class InfraEquipementWebController extends Controller
             'code' => 'nullable|string|max:50',
             'date_acquisition' => 'nullable|date',
             'montant_acquisition' => 'nullable|numeric',
-            'categorie_id' => 'required|exists:infra_categories,id',
-            'bailleur_id' => 'nullable|exists:infra_bailleurs,id',
+            'infra_categorie_id' => 'required|exists:infra_categories,id',
+            'infra_bailleur_id' => 'nullable|exists:infra_bailleurs,id',
             'emplacement' => 'nullable|string|max:255',
         ]);
 

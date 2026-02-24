@@ -32,10 +32,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     require __DIR__.'/api/rental.php';
     require __DIR__.'/api/conduite.php';
     require __DIR__.'/api/schedules.php';
-    require __DIR__.'/api/sync.php';
+    require __DIR__.'/api/planning.php';
+    require __DIR__.'/api/activities.php';
 });
 
 Route::middleware('auth:sanctum')->prefix('v1')->name('api.v1.')->group(function () {
+    // Endpoints nécessitant une authentification par token (Sanctum)
+    require __DIR__.'/api/sync.php';
+
     Route::get('bulletins/print/class/{classroom}', [BulletinPrintController::class, 'printByClass']);
     Route::get('bulletins/print/student/{student}', [BulletinPrintController::class, 'printByStudent']);
 });

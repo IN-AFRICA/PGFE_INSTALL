@@ -25,7 +25,7 @@ final class PersonnelWebController extends Controller
             }
         }
 
-        $personnels = $query->paginate(20, ['id', 'name', 'firstname', 'lastname', 'school_id'])
+        $personnels = $query->paginate(20, ['id', 'name', 'pre_name', 'post_name', 'school_id'])
             ->appends($request->query());
         $schools = \App\Models\School::orderBy('name')->get(['id', 'name']);
 
@@ -49,8 +49,8 @@ final class PersonnelWebController extends Controller
     public function update(Request $request, AcademicPersonal $academic_personal)
     {
         $data = $request->validate([
-            'firstname' => ['nullable', 'string', 'max:255'],
-            'lastname' => ['nullable', 'string', 'max:255'],
+            'pre_name' => ['nullable', 'string', 'max:255'],
+            'post_name' => ['nullable', 'string', 'max:255'],
             'name' => ['nullable', 'string', 'max:255'],
             'school_id' => ['nullable', 'exists:schools,id'],
         ]);

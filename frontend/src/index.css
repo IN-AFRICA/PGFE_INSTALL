@@ -153,11 +153,23 @@
   }
 }
 
+@keyframes pulse-light {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(79, 70, 229, 0.7);
+  }
+}
+
 @layer components {
   .menubottom {
     @apply max-md:fixed max-md:bottom-0 max-md:inset-x-0 max-md:z-[150];
   }
   .raduis-inner {
     border-radius: calc(var(--card-radius) - var(--card-padding));
+  }
+  .sync-active {
+    animation: pulse-light 2s infinite;
   }
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BoxPanelWrapper from '@/components/atoms/BoxPanelWrapper.vue'
 import DashPageHeader from '@/components/templates/DashPageHeader.vue'
 import DashLayout from '@/components/templates/DashLayout.vue'
@@ -16,13 +17,23 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import ExportDropdown from '@/components/ExportDropdown.vue'
-import TabPagination from '@/components/blocks/TabPagination.vue'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import IconifySpinner from '@/components/ui/spinner/IconifySpinner.vue'
 import { showCustomToast } from '@/utils/widgets/custom_toast'
 import { useGetApi } from '@/composables/useGetApi'
+import { useDeleteApi } from '@/composables/useDeleteApi'
 import { API_ROUTES } from '@/utils/constants/api_route'
-import { usePagination } from '@/composables/usePagination'
+import { useAuthStore } from '@/stores/auth'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog'
 
 const breadcrumbItems = {
   items: [
@@ -34,12 +45,57 @@ const breadcrumbItems = {
 }
 
 const activeTagName = 'registre infrastructures'
+const router = useRouter()
+const authStore = useAuthStore()
 
-// Utilisation de GET_CLASSROOMS comme source pour les infrastructures (Salles)
-// TODO: Si un endpoint spécifique 'infrastructures' (bâtiments globaux) existe, le remplacer ici.
-const { data: rawData, loading, fetchData, meta } = useGetApi(API_ROUTES.GET_CLASSROOMS)
-const { page, perPageCount } = usePagination(fetchData, 1, 15)
-const total = computed(() => meta?.value?.total || 0)
+// API Logic
+const { data: rawData, loading, fetchData } = useGetApi(API_ROUTES.GET_INFRA_INFRASTRUCTURES)
+const { deleteItem, deleting, success: deleteSuccess } = useDeleteApi()
+
+// Load reference data for mapping
+const categories = ref<Array<{ id: number; name: string }>>([])
+const bailleurs = ref<Array<{ id: number; name: string }>>([])
+
+const loadReferenceData = async () => {
+  try {
+    const [catResponse, bailResponse] = await Promise.all([
+      fetch('https://pgfe-back.inafrica.tech/api/v1/infrastructures/categories', {
+        headers: {
+          Authorization: `Bearer ${authStore.token}`,
+          Accept: 'application/json',
+        },
+      }),
+      fetch('https://pgfe-back.inafrica.tech/api/v1/infrastructures/bailleurs', {
+        headers: {
+          Authorization: `Bearer ${authStore.token}`,
+          Accept: 'application/json',
+        },
+      }),
+    ])
+
+    if (catResponse.ok) {
+      const result = await catResponse.json()
+      categories.value = result.data || []
+    }
+
+    if (bailResponse.ok) {
+      const result = await bailResponse.json()
+      bailleurs.value = result.data || []
+    }
+  } catch (error) {
+    console.error('Erreur chargement références:', error)
+  }
+}
+
+const getCategoryName = (id: string | number) => {
+  const cat = categories.value.find(c => c.id === Number(id))
+  return cat?.name || '-'
+}
+
+const getBailleurName = (id: string | number) => {
+  const bail = bailleurs.value.find(b => b.id === Number(id))
+  return bail?.name || '-'
+}
 
 const data = computed(() => {
   if (!rawData.value) return []
@@ -48,14 +104,35 @@ const data = computed(() => {
 })
 
 const query = ref('')
-
-// Filtrage local simple si l'API ne gère pas la recherche globale
 const filteredData = computed(() => {
   if (!query.value) return data.value
-  const s = query.value.toLowerCase()
-  return data.value.filter((item: any) => 
-    item.name?.toLowerCase().includes(s)
+  const lowerQuery = query.value.toLowerCase()
+  return data.value.filter((i: any) =>
+    i.name?.toLowerCase().includes(lowerQuery) ||
+    i.emplacement?.toLowerCase().includes(lowerQuery) ||
+    i.categorie?.name?.toLowerCase().includes(lowerQuery)
   )
+})
+
+const navigateToAdd = () => {
+  router.push('/infra/operations/infrastructures/nouveau')
+}
+
+const navigateToEdit = (id: number) => {
+  router.push(`/infra/operations/infrastructures/${id}/modifier`)
+}
+
+const handleDelete = async (id: number) => {
+  await deleteItem(API_ROUTES.DELETE_INFRA_INFRASTRUCTURE(id))
+  if (deleteSuccess.value) {
+    showCustomToast({ message: 'Infrastructure supprimée', type: 'success' })
+    fetchData()
+  }
+}
+
+onMounted(async () => {
+  await loadReferenceData()
+  fetchData()
 })
 
 const handleExport = (format: string) => {
@@ -64,19 +141,6 @@ const handleExport = (format: string) => {
     type: 'success',
   })
 }
-
-onMounted(() => {
-  fetchData({ page: page.value, limit: perPageCount.value })
-})
-
-const onPerPageUpdate = (val: number) => {
-  page.value = 1
-  perPageCount.value = val
-}
-
-const getRowIndex = (index: number) => {
-  return (Number(page.value) - 1) * Number(perPageCount.value) + index + 1
-}
 </script>
 
 <template>
@@ -84,6 +148,7 @@ const getRowIndex = (index: number) => {
     <div class="pb-6 mx-auto w-full max-w-7xl h-full flex flex-col">
       <DashPageHeader
         title="Registre Infrastructures"
+        description="Gestion du registre des bâtiments et locaux"
         :tags="tagInfraNavOperations"
         :active-tag-name="activeTagName"
       />
@@ -126,10 +191,9 @@ const getRowIndex = (index: number) => {
           </div>
 
           <div class="flex flex-wrap items-center sm:justify-end gap-2.5 flex-1">
-            <!-- Bouton Ajouter désactivé ou redirigeant vers création de classe si disponible -->
-            <Button size="md" class="rounded-md max-sm:flex-1 sm:w-max">
+            <Button size="md" class="rounded-md max-sm:flex-1 sm:w-max" @click="navigateToAdd">
                 <span class="flex iconify hugeicons--plus-sign"></span>
-                <span class="hidden sm:flex">Ajouter</span>
+                <span class="hidden sm:flex ml-1">Ajouter</span>
             </Button>
             <ExportDropdown :loading="false" @export="handleExport" />
           </div>
@@ -142,36 +206,71 @@ const getRowIndex = (index: number) => {
           <IconifySpinner class="text-2xl" />
           <span>Chargement...</span>
         </div>
-        
+
         <div
           v-else-if="filteredData && filteredData.length"
-          class="mt-4 rounded-md overflow-hidden flex flex-1 bg-white"
+          class="mt-4 rounded-md overflow-hidden flex flex-1 bg-white border"
         >
-           <Table class="rounded-md bg-white">
+           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead class="w-[20px]"><Checkbox class="bg-white scale-70" /></TableHead>
-                <TableHead>N°</TableHead>
+                <TableHead class="w-[50px]"><Checkbox /></TableHead>
                 <TableHead>Nom</TableHead>
-                <TableHead>Type</TableHead>
+                <TableHead>Catégorie</TableHead>
+                <TableHead>Bailleur</TableHead>
+                <TableHead>Date Construction</TableHead>
+                <TableHead>Montant</TableHead>
                 <TableHead>Emplacement</TableHead>
                 <TableHead class="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-                <TableRow v-for="(item, index) in filteredData" :key="item.id">
-                 <TableCell class="w-[40px]"><Checkbox class="bg-white scale-70" /></TableCell>
-                 <TableCell>{{ getRowIndex(index as number) }}</TableCell>
-                 <TableCell class="font-medium">{{ item.name }}</TableCell>
-                 <TableCell>{{ item.type || 'Salle de classe' }}</TableCell>
-                 <TableCell>{{ item.location || '-' }}</TableCell>
-                 <TableCell class="text-right">
-                    <div class="flex items-center justify-end gap-2">
-                       <Button size="icon" variant="ghost" class="size-8 text-gray-500">
+                <TableRow v-for="item in filteredData" :key="item.id">
+                  <TableCell><Checkbox /></TableCell>
+                  <TableCell class="font-medium">{{ item.name }}</TableCell>
+                  <TableCell>{{ getCategoryName(item.infra_categorie_id) }}</TableCell>
+                  <TableCell>{{ getBailleurName(item.infra_bailleur_id) }}</TableCell>
+                  <TableCell>{{ item.date_construction ? new Date(item.date_construction).toLocaleDateString('fr-FR') : '-' }}</TableCell>
+                  <TableCell>{{ item.montant_construction ? item.montant_construction + ' $' : '-' }}</TableCell>
+                  <TableCell>{{ item.emplacement || '-' }}</TableCell>
+                  <TableCell class="text-right">
+                    <div class="flex justify-end gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          class="size-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                          @click="navigateToEdit(item.id)"
+                        >
                           <span class="iconify hugeicons--edit-01"></span>
-                       </Button>
+                        </Button>
+                         <Dialog>
+                          <DialogTrigger as-child>
+                             <Button
+                              size="icon"
+                              variant="ghost"
+                              class="size-8 text-gray-500 hover:text-red-600 hover:bg-red-50"
+                            >
+                              <span class="iconify hugeicons--delete-02"></span>
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Supprimer l'infrastructure ?</DialogTitle>
+                              <DialogDescription>
+                                Cette action est irréversible.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                               <DialogClose as-child><Button variant="outline">Annuler</Button></DialogClose>
+                               <Button variant="destructive" @click="handleDelete(item.id)" :disabled="deleting">
+                                  <IconifySpinner v-if="deleting" class="mr-2" />
+                                  <span>Supprimer</span>
+                               </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                     </div>
-                 </TableCell>
+                  </TableCell>
                 </TableRow>
             </TableBody>
            </Table>
@@ -179,19 +278,11 @@ const getRowIndex = (index: number) => {
 
         <div
           v-else
-          class="flex flex-col items-center justify-center h-full py-10 bg-white rounded-md text-gray-500"
+          class="flex flex-col items-center justify-center h-full py-10 bg-white rounded-md text-gray-500 border mt-4"
         >
           <span class="iconify hugeicons--package-open text-4xl mb-2"></span>
-          <span>Aucune donnée trouvée pour le moment.</span>
+          <span>Aucune infrastructure trouvée.</span>
         </div>
-
-         <TabPagination
-          v-if="filteredData && filteredData.length"
-          v-model="page"
-          :perPage="perPageCount"
-          :totalItems="total"
-          @update:perPage="onPerPageUpdate"
-        />
 
       </BoxPanelWrapper>
     </div>

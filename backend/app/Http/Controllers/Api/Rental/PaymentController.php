@@ -3,14 +3,17 @@ namespace App\Http\Controllers\Api\Rental;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PaymentRequest;
-use App\Models\Payment;
+use App\Models\RentalPayment;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Payment::where('school_id', $request->user()->school_id);
+        $user = $request->user();
+
+        $query = RentalPayment::query()
+            ->where('school_id', $user->school_id);
 
         if ($contractId = $request->query('rental_contract_id')) {
             $query->where('rental_contract_id', $contractId);
@@ -41,27 +44,27 @@ class PaymentController extends Controller
 
     public function store(PaymentRequest $request)
     {
-        $payment = Payment::create($request->validated());
+        $payment = RentalPayment::create($request->validated());
+
         return response()->json(['data' => $payment], 201);
     }
 
-    public function show(Payment $payment)
+    public function show(RentalPayment $payment)
     {
-        $this->authorize('view', $payment);
         return response()->json(['data' => $payment]);
     }
 
-    public function update(PaymentRequest $request, Payment $payment)
+    public function update(PaymentRequest $request, RentalPayment $payment)
     {
-        $this->authorize('update', $payment);
         $payment->update($request->validated());
+
         return response()->json(['data' => $payment]);
     }
 
-    public function destroy(Payment $payment)
+    public function destroy(RentalPayment $payment)
     {
-        $this->authorize('delete', $payment);
         $payment->delete();
+
         return response()->json(['message' => 'Payment deleted']);
     }
 }

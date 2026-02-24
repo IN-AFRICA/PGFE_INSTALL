@@ -13,18 +13,23 @@ export const tagInfraNavOperations = [
 
 export const tagInfraNavPrealables = [
   {
+    name: 'types-etats',
+    text: 'Types & États',
+    href: '/infra/prealables',
+  },
+  {
+    name: 'cat-bailleurs',
+    text: 'Catégories & Bailleurs',
+    href: '/infra/prealables/cat-bailleurs',
+  },
+  {
     name: 'inventaires',
     text: 'Inventaire Équipements',
-    href: '/infra/prealables',
+    href: '/infra/prealables/inventaires',
   },
   {
     name: 'inventaire-infrastructures',
     text: 'Inventaire Infrastructures',
     href: '/infra/prealables/infrastructures',
-  },
-  {
-    name: 'types-etats',
-    text: 'Types & États',
-    href: '/infra/types-etats',
   },
 ]

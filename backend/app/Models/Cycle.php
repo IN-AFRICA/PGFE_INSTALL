@@ -30,6 +30,11 @@ final class Cycle extends Model
         return $this->belongsTo(Filiaire::class, 'filiaire_id');
     }
 
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class, 'school_id');
+    }
+
     public function academicLevels(): HasMany
     {
         return $this->hasMany(AcademicLevel::class, 'cycle_id');

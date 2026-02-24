@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://pgfe-back.inafrica.tech/public/api"
+      "url": "https://pgfe-back.inafrica.tech/api"
     }
   ],
   "paths": {
@@ -5434,7 +5434,7 @@
         }
       }
     },
-    "/v1/v1/rental/clients": {
+    "/v1/rental/clients": {
       "get": {
         "operationId": "v1.clients.index",
         "tags": [
@@ -5446,15 +5446,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
+                  "type": "object"
                 }
               }
             }
@@ -5507,7 +5499,7 @@
         }
       }
     },
-    "/v1/v1/rental/clients/{client}": {
+    "/v1/rental/clients/{client}": {
       "get": {
         "operationId": "v1.clients.show",
         "tags": [
@@ -9107,11 +9099,20 @@
         }
       }
     },
-    "/v1/v1/rental/equipments": {
+    "/v1/rental/equipments": {
       "get": {
         "operationId": "v1.equipments.index",
         "tags": [
           "Equipment"
+        ],
+        "parameters": [
+          {
+            "name": "is_available",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -9119,15 +9120,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
+                  "type": "object"
                 }
               }
             }
@@ -9180,7 +9173,7 @@
         }
       }
     },
-    "/v1/v1/rental/equipments/{equipment}": {
+    "/v1/rental/equipments/{equipment}": {
       "get": {
         "operationId": "v1.equipments.show",
         "tags": [
@@ -13679,6 +13672,660 @@
         }
       }
     },
+    "/v1/infrastructures/bailleurs": {
+      "get": {
+        "operationId": "v1.infra.bailleurs.index",
+        "tags": [
+          "InfraBailleur"
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.infra.bailleurs.store",
+        "tags": [
+          "InfraBailleur"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfraBailleurRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`InfraBailleurResource`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/InfraBailleurResource"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/bailleurs/{bailleur}": {
+      "get": {
+        "operationId": "v1.infra.bailleurs.show",
+        "tags": [
+          "InfraBailleur"
+        ],
+        "parameters": [
+          {
+            "name": "bailleur",
+            "in": "path",
+            "required": true,
+            "description": "The bailleur ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/InfraBailleurResource"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Détails du bailleur d'infrastructure récupérés avec succès"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "v1.infra.bailleurs.update",
+        "tags": [
+          "InfraBailleur"
+        ],
+        "parameters": [
+          {
+            "name": "bailleur",
+            "in": "path",
+            "required": true,
+            "description": "The bailleur ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfraBailleurRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/InfraBailleurResource"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Bailleur d'infrastructure mis à jour avec succès"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "Une erreur est survenue."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.infra.bailleurs.destroy",
+        "tags": [
+          "InfraBailleur"
+        ],
+        "parameters": [
+          {
+            "name": "bailleur",
+            "in": "path",
+            "required": true,
+            "description": "The bailleur ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Bailleur supprimé avec succès"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "Une erreur est survenue."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/categories": {
+      "get": {
+        "operationId": "v1.infra.categories.index",
+        "tags": [
+          "InfraCategorie"
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.infra.categories.store",
+        "tags": [
+          "InfraCategorie"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfraCategorieRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`InfraCategorieResource`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/InfraCategorieResource"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/categories/{category}": {
+      "get": {
+        "operationId": "v1.infra.categories.show",
+        "tags": [
+          "InfraCategorie"
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`InfraCategorieResource`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/InfraCategorieResource"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "v1.infra.categories.update",
+        "tags": [
+          "InfraCategorie"
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfraCategorieRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`InfraCategorieResource`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/InfraCategorieResource"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.infra.categories.destroy",
+        "tags": [
+          "InfraCategorie"
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Deleted successfully"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "There is an error."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/dashboard": {
+      "get": {
+        "operationId": "infraDashboard.index",
+        "tags": [
+          "InfraDashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total_infrastructures": {
+                          "type": "string"
+                        },
+                        "total_equipements": {
+                          "type": "string"
+                        },
+                        "total_inventaires": {
+                          "type": "string"
+                        },
+                        "total_signalements": {
+                          "type": "string"
+                        },
+                        "status_distribution": {
+                          "type": "string"
+                        },
+                        "latest_inventaires": {
+                          "type": "string"
+                        },
+                        "latest_etats": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "total_infrastructures",
+                        "total_equipements",
+                        "total_inventaires",
+                        "total_signalements",
+                        "status_distribution",
+                        "latest_inventaires",
+                        "latest_etats"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Erreur lors de la récupération des statistiques."
+                      ]
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/infrastructures/equipments": {
       "get": {
         "operationId": "v1.infra.equipments.index",
@@ -13925,6 +14572,436 @@
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/infrastructures": {
+      "get": {
+        "operationId": "v1.infra.infrastructures.index",
+        "tags": [
+          "InfraInfrastructure"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Liste des infrastructures"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "Une erreur est survenue."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.infra.infrastructures.store",
+        "tags": [
+          "InfraInfrastructure"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfraInfrastructureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Infrastructure créée avec succès"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/infrastructures/{id}": {
+      "get": {
+        "operationId": "v1.infra.infrastructures.show",
+        "tags": [
+          "InfraInfrastructure"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Infrastructure récupérée avec succès"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Aucune infrastructure trouvée avec cet ID"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "There is an error."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "v1.infra.infrastructures.update",
+        "tags": [
+          "InfraInfrastructure"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfraInfrastructureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Infrastructure mise à jour avec succès"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Aucune infrastructure trouvée avec cet ID"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.infra.infrastructures.destroy",
+        "tags": [
+          "InfraInfrastructure"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Deleted successfully"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Aucune infrastructure trouvée avec cet ID"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "There is an error."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -17407,7 +18484,7 @@
         }
       }
     },
-    "/v1/v1/rental/payments": {
+    "/v1/rental/payments": {
       "get": {
         "operationId": "v1.payments.index",
         "tags": [
@@ -17419,15 +18496,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
+                  "type": "object"
                 }
               }
             }
@@ -17480,7 +18549,7 @@
         }
       }
     },
-    "/v1/v1/rental/payments/{payment}": {
+    "/v1/rental/payments/{payment}": {
       "get": {
         "operationId": "v1.payments.show",
         "tags": [
@@ -17506,7 +18575,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/Payment"
+                      "$ref": "#/components/schemas/RentalPayment"
                     }
                   },
                   "required": [
@@ -17518,9 +18587,6 @@
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
-          },
-          "403": {
-            "$ref": "#/components/responses/AuthorizationException"
           },
           "404": {
             "$ref": "#/components/responses/ModelNotFoundException"
@@ -17562,7 +18628,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/Payment"
+                      "$ref": "#/components/schemas/RentalPayment"
                     }
                   },
                   "required": [
@@ -17574,9 +18640,6 @@
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
-          },
-          "403": {
-            "$ref": "#/components/responses/AuthorizationException"
           },
           "404": {
             "$ref": "#/components/responses/ModelNotFoundException"
@@ -17626,9 +18689,6 @@
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
-          },
-          "403": {
-            "$ref": "#/components/responses/AuthorizationException"
           },
           "404": {
             "$ref": "#/components/responses/ModelNotFoundException"
@@ -21436,6 +22496,232 @@
         }
       }
     },
+    "/v1/planning/files": {
+      "get": {
+        "operationId": "v1.planning.files.index",
+        "tags": [
+          "PlanningFile"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Liste des fichiers de planification."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.planning.files.store",
+        "tags": [
+          "PlanningFile"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file_path": {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  "classroom_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "file_path",
+                  "classroom_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Fichier de planification créé avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning/files/{planningFile}": {
+      "delete": {
+        "operationId": "v1.planning.files.destroy",
+        "tags": [
+          "PlanningFile"
+        ],
+        "parameters": [
+          {
+            "name": "planningFile",
+            "in": "path",
+            "required": true,
+            "description": "The planning file ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Fichier supprimé avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/presence/presences/export": {
       "get": {
         "operationId": "v1.presence.presences.export",
@@ -22665,7 +23951,7 @@
         }
       }
     },
-    "/v1/v1/rental/projects": {
+    "/v1/rental/projects": {
       "get": {
         "operationId": "v1.projects.index",
         "tags": [
@@ -22677,15 +23963,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
+                  "type": "object"
                 }
               }
             }
@@ -22738,7 +24016,7 @@
         }
       }
     },
-    "/v1/v1/rental/projects/{project}": {
+    "/v1/rental/projects/{project}": {
       "get": {
         "operationId": "v1.projects.show",
         "tags": [
@@ -23183,7 +24461,7 @@
         }
       }
     },
-    "/v1/v1/rental/contracts": {
+    "/v1/rental/contracts": {
       "get": {
         "operationId": "v1.contracts.index",
         "tags": [
@@ -23195,15 +24473,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
+                  "type": "object"
                 }
               }
             }
@@ -23256,7 +24526,7 @@
         }
       }
     },
-    "/v1/v1/rental/contracts/{contract}": {
+    "/v1/rental/contracts/{contract}": {
       "get": {
         "operationId": "v1.contracts.show",
         "tags": [
@@ -23412,7 +24682,7 @@
         }
       }
     },
-    "/v1/v1/rental/contract-equipments": {
+    "/v1/rental/contract-equipments": {
       "get": {
         "operationId": "v1.contract-equipments.index",
         "tags": [
@@ -23485,7 +24755,7 @@
         }
       }
     },
-    "/v1/v1/rental/contract-equipments/{contractEquipment}": {
+    "/v1/rental/contract-equipments/{contractEquipment}": {
       "get": {
         "operationId": "v1.contract-equipments.show",
         "tags": [
@@ -23619,6 +24889,261 @@
                       "type": "string",
                       "enum": [
                         "Item deleted"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "$ref": "#/components/responses/AuthorizationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      }
+    },
+    "/v1/rental/sessions": {
+      "get": {
+        "operationId": "v1.sessions.index",
+        "tags": [
+          "RentalSession"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.sessions.store",
+        "tags": [
+          "RentalSession"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "equipment_id": {
+                    "type": "integer"
+                  },
+                  "client_id": {
+                    "type": "integer"
+                  },
+                  "status": {
+                    "type": "string",
+                    "maxLength": 50
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "equipment_id",
+                  "client_id",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/v1/rental/sessions/{session}": {
+      "get": {
+        "operationId": "v1.sessions.show",
+        "tags": [
+          "RentalSession"
+        ],
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "description": "The session ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "$ref": "#/components/responses/AuthorizationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "v1.sessions.update",
+        "tags": [
+          "RentalSession"
+        ],
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "description": "The session ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "maxLength": 50
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/RentalSession"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "$ref": "#/components/responses/AuthorizationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.sessions.destroy",
+        "tags": [
+          "RentalSession"
+        ],
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "description": "The session ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Session deleted"
                       ]
                     }
                   },
@@ -24439,6 +25964,430 @@
         }
       }
     },
+    "/v1/activities/school": {
+      "get": {
+        "operationId": "v1.activities.school.index",
+        "tags": [
+          "SchoolActivity"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Liste des activités scolaires."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.activities.school.store",
+        "tags": [
+          "SchoolActivity"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "place": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 255
+                  },
+                  "quantity": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "start_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "end_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "label"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Activité scolaire créée avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/activities/school/{school}": {
+      "get": {
+        "operationId": "v1.activities.school.show",
+        "tags": [
+          "SchoolActivity"
+        ],
+        "parameters": [
+          {
+            "name": "school",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Détail de l'activité scolaire."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "v1.activities.school.update",
+        "tags": [
+          "SchoolActivity"
+        ],
+        "parameters": [
+          {
+            "name": "school",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "place": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 255
+                  },
+                  "quantity": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "start_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "end_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Activité scolaire mise à jour avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.activities.school.destroy",
+        "tags": [
+          "SchoolActivity"
+        ],
+        "parameters": [
+          {
+            "name": "school",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Activité scolaire supprimée avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/school/years": {
       "get": {
         "operationId": "schoolYear.index",
@@ -24727,6 +26676,418 @@
           },
           "404": {
             "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      }
+    },
+    "/v1/planning/schoolworks": {
+      "get": {
+        "operationId": "v1.planning.schoolworks.index",
+        "tags": [
+          "SchoolworkPlanning"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Liste des planifications de travaux scolaires."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.planning.schoolworks.store",
+        "tags": [
+          "SchoolworkPlanning"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "classroom_id": {
+                    "type": "integer"
+                  },
+                  "course_id": {
+                    "type": "integer"
+                  },
+                  "file_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "start_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "end_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "label",
+                  "classroom_id",
+                  "course_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Planification créée avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning/schoolworks/{schoolwork}": {
+      "get": {
+        "operationId": "v1.planning.schoolworks.show",
+        "tags": [
+          "SchoolworkPlanning"
+        ],
+        "parameters": [
+          {
+            "name": "schoolwork",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Détail de la planification."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "v1.planning.schoolworks.update",
+        "tags": [
+          "SchoolworkPlanning"
+        ],
+        "parameters": [
+          {
+            "name": "schoolwork",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "classroom_id": {
+                    "type": "integer"
+                  },
+                  "course_id": {
+                    "type": "integer"
+                  },
+                  "file_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "start_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "end_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Planification mise à jour avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.planning.schoolworks.destroy",
+        "tags": [
+          "SchoolworkPlanning"
+        ],
+        "parameters": [
+          {
+            "name": "schoolwork",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Planification supprimée avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -27757,6 +30118,233 @@
         }
       }
     },
+    "/v1/activities/student-activities": {
+      "get": {
+        "operationId": "v1.activities.student-activities.index",
+        "tags": [
+          "StudentActivity"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Liste des inscriptions des élèves aux activités."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.activities.student-activities.store",
+        "tags": [
+          "StudentActivity"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "school_activity_id": {
+                    "type": "integer"
+                  },
+                  "classroom_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "school_activity_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Participation enregistrée avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/activities/student-activities/{studentActivity}": {
+      "delete": {
+        "operationId": "v1.activities.student-activities.destroy",
+        "tags": [
+          "StudentActivity"
+        ],
+        "parameters": [
+          {
+            "name": "studentActivity",
+            "in": "path",
+            "required": true,
+            "description": "The student activity ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Participation supprimée avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/students/dashboard": {
       "get": {
         "operationId": "studentDashboard.index",
@@ -28807,6 +31395,205 @@
         }
       }
     },
+    "/v1/students/{student}/transfers": {
+      "get": {
+        "operationId": "v1.students.transfers.index",
+        "summary": "Liste le parcours (transferts) d'un élève.\nAccepte soit l'ID numérique, soit le UUID de l'élève",
+        "tags": [
+          "StudentTransfer"
+        ],
+        "parameters": [
+          {
+            "name": "student",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "student": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "student",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Cet élève n'existe pas."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.students.transfers.store",
+        "summary": "Crée un transfert d'école pour un élève et met à jour son school_id.\nAccepte soit l'ID numérique, soit le UUID de l'élève",
+        "tags": [
+          "StudentTransfer"
+        ],
+        "parameters": [
+          {
+            "name": "student",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to_school_id": {
+                    "type": "integer"
+                  },
+                  "from_classroom_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "to_classroom_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "school_year_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "transfer_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "reason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "to_school_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Transfert effectué avec succès."
+                      ]
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Cet élève n'existe pas."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
     "/v1/accounting/sub-account-plans/export": {
       "get": {
         "operationId": "v1.accounting.sub-account-plans.export",
@@ -29477,8 +32264,7 @@
                   }
                 },
                 "required": [
-                  "table",
-                  "data"
+                  "table"
                 ]
               }
             }
@@ -29516,25 +32302,50 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "Table non valide ou non supportée pour la synchronisation multitenant."
+                          ]
+                        }
+                      },
+                      "required": [
+                        "success",
+                        "message"
+                      ]
                     },
-                    "message": {
-                      "type": "string",
-                      "enum": [
-                        "Table non valide ou non supportée pour la synchronisation multitenant."
+                    {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "Aucun school_id associé à l'utilisateur pour la synchronisation multitenant."
+                          ]
+                        }
+                      },
+                      "required": [
+                        "success",
+                        "message"
                       ]
                     }
-                  },
-                  "required": [
-                    "success",
-                    "message"
                   ]
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
@@ -30388,6 +33199,241 @@
           }
         }
       }
+    },
+    "/v1/planning/deposits": {
+      "get": {
+        "operationId": "v1.planning.deposits.index",
+        "tags": [
+          "WorkDeposit"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Liste des dépôts de travaux."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.planning.deposits.store",
+        "tags": [
+          "WorkDeposit"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "schoolwork_planning_id": {
+                    "type": "integer"
+                  },
+                  "file_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "classroom_id": {
+                    "type": "integer"
+                  },
+                  "student_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "schoolwork_planning_id",
+                  "classroom_id",
+                  "student_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Dépôt de travail enregistré avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning/deposits/{workDeposit}": {
+      "delete": {
+        "operationId": "v1.planning.deposits.destroy",
+        "tags": [
+          "WorkDeposit"
+        ],
+        "parameters": [
+          {
+            "name": "workDeposit",
+            "in": "path",
+            "required": true,
+            "description": "The work deposit ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Dépôt supprimé avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -30586,6 +33632,12 @@
           "uuid": {
             "type": "string"
           },
+          "school_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "cycle_id": {
             "type": [
               "integer",
@@ -30619,6 +33671,7 @@
         "required": [
           "id",
           "uuid",
+          "school_id",
           "cycle_id",
           "name",
           "created_at",
@@ -30825,6 +33878,9 @@
           "id": {
             "type": "integer"
           },
+          "uuid": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -30856,10 +33912,18 @@
           },
           "school_id": {
             "type": "integer"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
           "id",
+          "uuid",
           "name",
           "code",
           "class_comptability_id",
@@ -30867,7 +33931,8 @@
           "user_id",
           "created_at",
           "updated_at",
-          "school_id"
+          "school_id",
+          "deleted_at"
         ],
         "title": "AccountPlan"
       },
@@ -31148,6 +34213,18 @@
           "uuid": {
             "type": "string"
           },
+          "school_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "filiaire_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "academic_level_id": {
             "type": [
               "integer",
@@ -31193,6 +34270,8 @@
         "required": [
           "id",
           "uuid",
+          "school_id",
+          "filiaire_id",
           "academic_level_id",
           "name",
           "indicator",
@@ -31239,11 +34318,29 @@
           "id": {
             "type": "integer"
           },
+          "tenant_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "name": {
             "type": "string"
           },
           "phone": {
             "type": "string"
+          },
+          "phone_number": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "email": {
             "type": [
@@ -31280,8 +34377,11 @@
         },
         "required": [
           "id",
+          "tenant_code",
+          "uuid",
           "name",
           "phone",
+          "phone_number",
           "email",
           "address",
           "school_id",
@@ -31294,6 +34394,13 @@
       "ClientRequest": {
         "type": "object",
         "properties": {
+          "tenant_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
           "name": {
             "type": "string",
             "maxLength": 255
@@ -31911,6 +35018,12 @@
           "uuid": {
             "type": "string"
           },
+          "school_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "filiaire_id": {
             "type": [
               "integer",
@@ -31944,6 +35057,7 @@
         "required": [
           "id",
           "uuid",
+          "school_id",
           "filiaire_id",
           "name",
           "created_at",
@@ -32186,13 +35300,122 @@
         "title": "DocumentRequest"
       },
       "Equipment": {
-        "type": "array",
-        "items": {
-          "type": "string"
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "equipment_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serial_number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mark_model": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tech_specification": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "price_value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "comments": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "daily_price": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "is_available": {
+            "type": "integer"
+          },
+          "school_id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
         },
-        "minItems": 0,
-        "maxItems": 0,
-        "additionalItems": false,
+        "required": [
+          "id",
+          "equipment_code",
+          "label",
+          "serial_number",
+          "mark_model",
+          "tech_specification",
+          "price_value",
+          "uuid",
+          "name",
+          "description",
+          "comments",
+          "quantity",
+          "daily_price",
+          "status",
+          "is_available",
+          "school_id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
         "title": "Equipment"
       },
       "EquipmentRequest": {
@@ -32203,6 +35426,32 @@
             "maxLength": 255
           },
           "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serial_number": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "mark_model": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "tech_specification": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "comments": {
             "type": [
               "string",
               "null"
@@ -32221,6 +35470,12 @@
             "enum": [
               "active",
               "inactive"
+            ]
+          },
+          "is_available": {
+            "type": [
+              "boolean",
+              "null"
             ]
           }
         },
@@ -32406,6 +35661,9 @@
           "id": {
             "type": "integer"
           },
+          "uuid": {
+            "type": "string"
+          },
           "school_year_id": {
             "type": "integer"
           },
@@ -32440,10 +35698,18 @@
               "integer",
               "null"
             ]
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
           "id",
+          "uuid",
           "school_year_id",
           "student_id",
           "classroom_id",
@@ -32451,7 +35717,8 @@
           "note",
           "created_at",
           "updated_at",
-          "deliberation_id"
+          "deliberation_id",
+          "deleted_at"
         ],
         "title": "FicheCotation"
       },
@@ -32984,6 +36251,138 @@
         ],
         "title": "IndisciplineCaseRequest"
       },
+      "InfraBailleurRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "school_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "academic_personal_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "InfraBailleurRequest"
+      },
+      "InfraBailleurResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "school_id": {
+            "type": "integer"
+          },
+          "academic_personal_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "uuid",
+          "name",
+          "description",
+          "school_id",
+          "academic_personal_id"
+        ],
+        "title": "InfraBailleurResource"
+      },
+      "InfraCategorieRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "InfraCategorieRequest"
+      },
+      "InfraCategorieResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "school_id": {
+            "type": "integer"
+          },
+          "author_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "school_id",
+          "author_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "InfraCategorieResource"
+      },
       "InfraInfrastructureInventaireRequest": {
         "type": "object",
         "properties": {
@@ -33084,6 +36483,9 @@
           "author_id": {
             "type": "integer"
           },
+          "infrastructure": {
+            "$ref": "#/components/schemas/InfraInfrastructureResource"
+          },
           "created_at": {
             "type": "string"
           },
@@ -33107,11 +36509,85 @@
         ],
         "title": "InfraInfrastructureInventaireResource"
       },
+      "InfraInfrastructureRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "date_construction": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "montant_construction": {
+            "type": "integer"
+          },
+          "emplacement": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "infra_categorie_id": {
+            "type": "integer"
+          },
+          "infra_bailleur_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "date_construction",
+          "montant_construction",
+          "emplacement",
+          "infra_categorie_id",
+          "infra_bailleur_id"
+        ],
+        "title": "InfraInfrastructureRequest"
+      },
+      "InfraInfrastructureResource": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "date_construction": {
+            "type": "string"
+          },
+          "montant_construction": {
+            "type": "integer"
+          },
+          "emplacement": {
+            "type": "string"
+          },
+          "infra_categorie_id": {
+            "type": "integer"
+          },
+          "infra_bailleur_id": {
+            "type": "integer"
+          },
+          "school_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "date_construction",
+          "montant_construction",
+          "emplacement",
+          "infra_categorie_id",
+          "infra_bailleur_id",
+          "school_id"
+        ],
+        "title": "InfraInfrastructureResource"
+      },
       "InputAccount": {
         "type": "object",
         "properties": {
           "id": {
             "type": "integer"
+          },
+          "uuid": {
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -33153,10 +36629,18 @@
               "integer",
               "null"
             ]
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
           "id",
+          "uuid",
           "name",
           "amount",
           "justification",
@@ -33166,7 +36650,8 @@
           "user_id",
           "created_at",
           "updated_at",
-          "school_year_id"
+          "school_year_id",
+          "deleted_at"
         ],
         "title": "InputAccount"
       },
@@ -33175,6 +36660,9 @@
         "properties": {
           "id": {
             "type": "integer"
+          },
+          "uuid": {
+            "type": "string"
           },
           "date": {
             "type": "string"
@@ -33222,10 +36710,18 @@
               "null"
             ],
             "format": "date-time"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
           "id",
+          "uuid",
           "date",
           "description",
           "montant",
@@ -33237,7 +36733,8 @@
           "abandoned",
           "linked_journal_id",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "deleted_at"
         ],
         "title": "Journal"
       },
@@ -33268,6 +36765,9 @@
         "properties": {
           "id": {
             "type": "integer"
+          },
+          "uuid": {
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -33309,10 +36809,18 @@
               "integer",
               "null"
             ]
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
           "id",
+          "uuid",
           "name",
           "amount",
           "justification",
@@ -33322,7 +36830,8 @@
           "user_id",
           "created_at",
           "updated_at",
-          "school_year_id"
+          "school_year_id",
+          "deleted_at"
         ],
         "title": "OutputAccount"
       },
@@ -33369,6 +36878,12 @@
           "id": {
             "type": "integer"
           },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "name": {
             "type": "string"
           },
@@ -33403,71 +36918,12 @@
               "null"
             ],
             "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "firstname",
-          "lastname",
-          "genre",
-          "phone_number",
-          "identity_card",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "Parents"
-      },
-      "Payment": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
           },
-          "uuid": {
-            "type": "string"
-          },
-          "fee_id": {
-            "type": "integer"
-          },
-          "payment_method_id": {
-            "type": "integer"
-          },
-          "currency_id": {
-            "type": "integer"
-          },
-          "amount": {
-            "type": "number"
-          },
-          "remaining_amount": {
-            "type": "number"
-          },
-          "reference": {
-            "type": "string"
-          },
-          "details": {
+          "school_id": {
             "type": [
-              "string",
+              "integer",
               "null"
             ]
-          },
-          "paid_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string"
-          },
-          "confirmed_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "refunded_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
           },
           "deleted_at": {
             "type": [
@@ -33475,94 +36931,23 @@
               "null"
             ],
             "format": "date-time"
-          },
-          "created_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "student_id": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "classroom_id": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "school_year_id": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "account_id": {
-            "type": "integer"
-          },
-          "rental_contract_id": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "rental_payment_type": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "rental_amount": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "rental_due_date": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "id",
           "uuid",
-          "fee_id",
-          "payment_method_id",
-          "currency_id",
-          "amount",
-          "remaining_amount",
-          "reference",
-          "details",
-          "paid_at",
-          "status",
-          "confirmed_at",
-          "refunded_at",
-          "deleted_at",
+          "name",
+          "firstname",
+          "lastname",
+          "genre",
+          "phone_number",
+          "identity_card",
           "created_at",
           "updated_at",
-          "student_id",
-          "classroom_id",
-          "school_year_id",
-          "account_id",
-          "rental_contract_id",
-          "rental_payment_type",
-          "rental_amount",
-          "rental_due_date"
+          "school_id",
+          "deleted_at"
         ],
-        "title": "Payment"
+        "title": "Parents"
       },
       "PaymentMethod": {
         "type": "object",
@@ -34421,6 +37806,18 @@
           "id": {
             "type": "integer"
           },
+          "project_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "name": {
             "type": "string"
           },
@@ -34462,6 +37859,8 @@
         },
         "required": [
           "id",
+          "project_code",
+          "uuid",
           "name",
           "description",
           "start_date",
@@ -34611,6 +38010,48 @@
           "id": {
             "type": "integer"
           },
+          "contract_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "loan_term": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "interest_rate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "period_genre": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "loan_start_date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "client_id": {
             "type": "integer"
           },
@@ -34645,10 +38086,23 @@
               "null"
             ],
             "format": "date-time"
+          },
+          "project_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
           "id",
+          "contract_code",
+          "amount",
+          "loan_term",
+          "interest_rate",
+          "period_genre",
+          "loan_start_date",
+          "uuid",
           "client_id",
           "start_date",
           "end_date",
@@ -34657,7 +38111,8 @@
           "school_id",
           "user_id",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "project_id"
         ],
         "title": "RentalContract"
       },
@@ -34666,6 +38121,18 @@
         "properties": {
           "id": {
             "type": "integer"
+          },
+          "contract_equipment_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "rental_contract_id": {
             "type": "integer"
@@ -34678,6 +38145,9 @@
           },
           "price": {
             "type": "string"
+          },
+          "is_hand_over": {
+            "type": "integer"
           },
           "school_id": {
             "type": "integer"
@@ -34702,10 +38172,13 @@
         },
         "required": [
           "id",
+          "contract_equipment_code",
+          "uuid",
           "rental_contract_id",
           "equipment_id",
           "quantity",
           "price",
+          "is_hand_over",
           "school_id",
           "user_id",
           "created_at",
@@ -34716,6 +38189,13 @@
       "RentalContractEquipmentRequest": {
         "type": "object",
         "properties": {
+          "contract_equipment_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
           "rental_contract_id": {
             "type": "integer"
           },
@@ -34729,6 +38209,12 @@
           "price": {
             "type": "number",
             "minimum": 0
+          },
+          "is_hand_over": {
+            "type": [
+              "boolean",
+              "null"
+            ]
           }
         },
         "required": [
@@ -34742,11 +38228,25 @@
       "RentalContractRequest": {
         "type": "object",
         "properties": {
+          "contract_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
           "client_id": {
             "type": "integer"
           },
           "start_date": {
             "type": "string",
+            "format": "date-time"
+          },
+          "loan_start_date": {
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "end_date": {
@@ -34760,11 +38260,37 @@
             ],
             "minimum": 0
           },
+          "loan_term": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "interest_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "period_genre": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "status": {
             "type": "string",
             "enum": [
               "active",
               "inactive"
+            ]
+          },
+          "project_id": {
+            "type": [
+              "integer",
+              "null"
             ]
           }
         },
@@ -34775,6 +38301,132 @@
           "status"
         ],
         "title": "RentalContractRequest"
+      },
+      "RentalPayment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "uuid": {
+            "type": "string"
+          },
+          "school_id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "rental_contract_id": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "payment_method": {
+            "type": "string"
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "uuid",
+          "school_id",
+          "user_id",
+          "rental_contract_id",
+          "amount",
+          "payment_method",
+          "paid_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RentalPayment"
+      },
+      "RentalSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "uuid": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "session_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "equipment_id": {
+            "type": "integer"
+          },
+          "client_id": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "school_id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "uuid",
+          "session_code",
+          "equipment_id",
+          "client_id",
+          "status",
+          "description",
+          "school_id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RentalSession"
       },
       "School": {
         "type": "object",
@@ -36031,6 +39683,9 @@
           "id": {
             "type": "integer"
           },
+          "uuid": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -36053,15 +39708,24 @@
               "null"
             ],
             "format": "date-time"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
           "id",
+          "uuid",
           "name",
           "code",
           "account_plan_id",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "deleted_at"
         ],
         "title": "SubAccountPlan"
       },
@@ -36398,6 +40062,13 @@
               "integer",
               "null"
             ]
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         },
         "required": [
@@ -36408,7 +40079,8 @@
           "created_at",
           "updated_at",
           "last_login_at",
-          "school_id"
+          "school_id",
+          "deleted_at"
         ],
         "title": "User"
       },

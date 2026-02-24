@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockExit extends Model
 {
+    use \App\Models\Concerns\HasUuid;
+
     protected $fillable = [
         'article_id', 'quantity', 'exit_date', 'reason', 'school_id', 'user_id',
     ];

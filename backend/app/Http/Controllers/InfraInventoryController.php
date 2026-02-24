@@ -63,6 +63,21 @@ class InfraInventoryController extends Controller
         $user = $request->user();
 
         $inventory = \App\Models\InfraInventory::where('school_id', $user->school_id)
+            ->with([
+                // Équipements rattachés à l'inventaire + leurs détails
+                'items.equipment',
+                'items.equipment.categorie',
+                'items.equipment.bailleur',
+                'items.school',
+                'items.user',
+
+                // États réels rattachés à l'inventaire + leurs détails
+                'realStates.state',
+                'realStates.state.school',
+                'realStates.state.user',
+                'realStates.school',
+                'realStates.user',
+            ])
             ->findOrFail($id);
 
         return response()->json($inventory);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DashLayout from '@/components/templates/DashLayout.vue'
 import DashPageHeader from '@/components/templates/DashPageHeader.vue'
 import BoxPanelWrapper from '@/components/atoms/BoxPanelWrapper.vue'
@@ -43,6 +43,7 @@ import { API_ROUTES } from '@/utils/constants/api_route'
 import IconifySpinner from '@/components/ui/spinner/IconifySpinner.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const breadcrumbItems = {
   items: [
@@ -56,7 +57,7 @@ const activeTagName = 'inventaires'
 
 // === API Integration for Inventories ===
 const { data: rawInventories, loading, fetchData } = useGetApi(API_ROUTES.GET_INFRA_INVENTORIES)
-const { postData, loading: creating, success: createSuccess, error: createError } = usePostApi()
+const { postData, loading: creating, success: createSuccess } = usePostApi()
 const { deleteItem, deleting, success: deleteSuccess } = useDeleteApi()
 
 // For adding equipments/states to inventory
@@ -150,43 +151,31 @@ const openAddDetailsModal = (inventory: any) => {
 }
 
 const handleAddDetails = async () => {
-  if (!detailsFormData.value.inventoryId) return
-
-  let hasError = false
-
-  if (detailsFormData.value.equipmentId) {
-    const equipPayload = {
-      equipment_id: parseInt(detailsFormData.value.equipmentId),
-      quantity: detailsFormData.value.quantity,
+    if (!detailsFormData.value.inventoryId) return
+    
+    if (!detailsFormData.value.equipmentId) {
+        showCustomToast({ message: 'Veuillez sélectionner un équipement', type: 'error' })
+        return
     }
-    await postData(
-      API_ROUTES.CREATE_INVENTORY_EQUIPMENT(detailsFormData.value.inventoryId),
-      equipPayload
-    )
-    if (createError.value) hasError = true
-  }
 
-  if (detailsFormData.value.stateId && !hasError) {
-    const statePayload = {
-      state_id: parseInt(detailsFormData.value.stateId),
-      note: detailsFormData.value.detailsNote || null,
+    // Build payload according to API spec for equipment inventory
+    const payload = {
+        items: [
+            {
+                equipment_id: parseInt(detailsFormData.value.equipmentId),
+                quantity: detailsFormData.value.quantity
+            }
+        ]
     }
-    await postData(
-      API_ROUTES.CREATE_INVENTORY_REAL_STATE(detailsFormData.value.inventoryId),
-      statePayload
-    )
-    if (createError.value) hasError = true
-  }
 
-  if (!hasError) {
-    showCustomToast({ message: 'Éléments ajoutés à l\'inventaire', type: 'success' })
-    showDetailsDialog.value = false
-  } else {
-    showCustomToast({
-      message: createError.value || "Erreur lors de l'ajout des éléments",
-      type: 'error',
-    })
-  }
+    const url = API_ROUTES.CREATE_INVENTORY_ITEM(detailsFormData.value.inventoryId)
+    await postData(url, payload)
+    
+    if (createSuccess.value) {
+        showCustomToast({ message: 'Équipement ajouté à l\'inventaire', type: 'success' })
+        showDetailsDialog.value = false
+        fetchData()
+    }
 }
 
 const handleDelete = async (id: number) => {
@@ -197,8 +186,8 @@ const handleDelete = async (id: number) => {
   }
 }
 
-const getRowIndex = (index: number) => {
-  return index + 1
+const viewDetails = (id: number) => {
+  router.push(`/infra/prealables/inventaires/${id}`)
 }
 </script>
 
@@ -257,13 +246,22 @@ const getRowIndex = (index: number) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="(item, index) in filteredInventories" :key="item.id">
+              <TableRow v-for="item in filteredInventories" :key="item.id">
                 <TableCell><Checkbox /></TableCell>
-                <TableCell>{{ getRowIndex(index as number) }}</TableCell>
+                <TableCell>{{ item.id }}</TableCell>
                 <TableCell>{{ item.inventory_date }}</TableCell>
                 <TableCell>{{ item.note || '-' }}</TableCell>
                 <TableCell class="text-right">
                   <div class="flex justify-end gap-2">
+                     <Button
+                        size="icon"
+                        variant="ghost"
+                        class="size-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                        title="Voir détails"
+                        @click="viewDetails(item.id)"
+                      >
+                        <span class="iconify hugeicons--view"></span>
+                      </Button>
                      <Button
                         size="icon"
                         variant="ghost"

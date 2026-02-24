@@ -8,11 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 
 final class InfraCategorie extends Model
 {
+    use \App\Models\Concerns\AutoAssignsSchoolContext;
+    use \App\Models\Concerns\ScopeBySchool;
+    use \App\Models\Concerns\HasUuid;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+
     protected $fillable = [
         'name',
         'description',
         'school_id',
-        'author_id',
+        'academic_personal_id',
     ];
 
     public function school()
@@ -22,6 +28,6 @@ final class InfraCategorie extends Model
 
     public function author()
     {
-        return $this->belongsTo(AcademicPersonal::class);
+        return $this->belongsTo(AcademicPersonal::class, 'academic_personal_id');
     }
 }

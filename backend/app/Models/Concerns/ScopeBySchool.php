@@ -80,6 +80,21 @@ trait ScopeBySchool
                 return;
             }
 
+            // 6) Journal comptable : via InputAccount / OutputAccount / AccountPlan
+            if ($model instanceof \App\Models\Journal) {
+                $builder->where(function (Builder $q) use ($schoolId): void {
+                    $q->whereHas('inputAccount', function (Builder $q2) use ($schoolId): void {
+                        $q2->where('school_id', $schoolId);
+                    })->orWhereHas('outputAccount', function (Builder $q2) use ($schoolId): void {
+                        $q2->where('school_id', $schoolId);
+                    })->orWhereHas('accountPlan', function (Builder $q2) use ($schoolId): void {
+                        $q2->where('school_id', $schoolId);
+                    });
+                });
+
+                return;
+            }
+
             // Sinon: pas de filtrage appliqué (modèle non relié à une école)
         });
     }

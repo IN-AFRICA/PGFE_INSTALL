@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class InfraInventoryRealState extends Model
 {
+    use \App\Models\Concerns\HasUuid;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+    use \App\Models\Concerns\ScopeBySchool;
     protected $fillable = [
         'inventory_id', 'state_id', 'note', 'school_id', 'user_id',
     ];

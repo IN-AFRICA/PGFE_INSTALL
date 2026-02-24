@@ -22,6 +22,7 @@ final class InfraInfrastructureInventaireResource extends JsonResource
             'observations' => $this->observations,
             'school_id' => $this->school_id,
             'author_id' => $this->author_id,
+            'infrastructure' => new InfraInfrastructureResource($this->whenLoaded('infrastructure')),
             'created_at' => optional($this->created_at)->toDateTimeString(),
             'updated_at' => optional($this->updated_at)->toDateTimeString(),
         ];

@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\AutoAssignsSchoolContext;
+use App\Models\Concerns\ScopeBySchool;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Credit extends Model
 {
+    use AutoAssignsSchoolContext;
     use HasFactory;
+    use ScopeBySchool;
+    use SoftDeletes;
+    use \App\Models\Concerns\HasUuid;
 
     protected $table = 'credits';
 

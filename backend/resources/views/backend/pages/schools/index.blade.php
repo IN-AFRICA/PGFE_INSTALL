@@ -1,4 +1,4 @@
-<x-layouts.backend-layout :breadcrumbs="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Écoles', 'url' => '#']]">
+<x-layouts.modules-layout><x-backend.pages.settings.layout> 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Écoles', 'url' => '#']]">
     <div class="space-y-6">
         <!-- Modern Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
@@ -150,4 +150,4 @@
             @endif
         </div>
     </div>
-</x-layouts.backend-layout>
+</x-backend.pages.settings.layout></x-layouts.modules-layout>

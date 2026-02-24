@@ -34,6 +34,11 @@ final class AcademicLevel extends Model
         return $this->belongsTo(Cycle::class, 'cycle_id');
     }
 
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class, 'school_id');
+    }
+
     public function classrooms(): HasMany
     {
         return $this->hasMany(Classroom::class, 'academic_level_id');

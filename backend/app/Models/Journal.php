@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\ScopeBySchool;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Journal extends Model
 {
+    use ScopeBySchool;
+    use SoftDeletes;
+    use \App\Models\Concerns\HasUuid;
     protected $fillable = [
         'date', 'description', 'montant',
         'input_account_id', 'output_account_id',

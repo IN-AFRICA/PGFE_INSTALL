@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\HasUuid;
 
 final class FicheCotation extends Model
 {
+    use HasUuid;
+    use SoftDeletes;
     protected $fillable = [
         'school_year_id',
         'student_id',

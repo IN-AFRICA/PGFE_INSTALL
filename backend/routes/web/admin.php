@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\SchoolWebController;
 use App\Http\Controllers\Admin\ClassroomWebController;
 use App\Http\Controllers\Admin\StudentWebController;
+use App\Http\Controllers\Admin\StudentTransferWebController;
 use App\Http\Controllers\Admin\PersonnelWebController;
 use App\Http\Controllers\Admin\Accounting\AccountingDashboardController;
 use App\Http\Controllers\Admin\CountryWebController;
@@ -17,6 +18,13 @@ use App\Http\Controllers\Admin\AcademicLevelWebController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\RoleWebController;
 use App\Http\Controllers\Admin\RegistrationWebController;
+use App\Http\Controllers\Admin\PlanningWebController;
+use App\Http\Controllers\Admin\SchoolActivityWebController;
+use App\Http\Controllers\Admin\PresenceWebController;
+use App\Http\Controllers\Admin\FicheCotationWebController;
+use App\Http\Controllers\Admin\DeliberationWebController;
+use App\Http\Controllers\Admin\StudentExitWebController;
+use App\Http\Controllers\Admin\VisitWebController;
 
 // Routes web pour la partie administration (protégées par rôle super-admin)
 
@@ -30,6 +38,7 @@ Route::middleware(['web', 'auth', 'role:super-admin'])
         // Monitoring et Recherche Globale
         Route::get('/search', [AdminController::class, 'globalSearch'])->name('search');
         Route::get('/sync/monitoring', [AdminController::class, 'syncMonitoring'])->name('sync.monitoring');
+        Route::post('/sync/run', [AdminController::class, 'triggerSync'])->name('sync.run');
         Route::get('/export-roles-pdf', [\App\Http\Controllers\Admin\RoleExportController::class, 'exportPdf'])->name('export-roles-pdf');
 
         // Gestion des écoles
@@ -51,6 +60,17 @@ Route::middleware(['web', 'auth', 'role:super-admin'])
             ->only(['index', 'edit', 'update', 'destroy'])
             ->names('students');
 
+        // Parcours & transferts d'élèves (super admin)
+        Route::get('students/{student}/transfers', [StudentTransferWebController::class, 'index'])->name('students.transfers.index');
+        Route::post('students/{student}/transfers', [StudentTransferWebController::class, 'store'])->name('students.transfers.store');
+
+        // Présences, fiches de cotation, délibérations, sorties, visites (vues web)
+        Route::get('presences', [PresenceWebController::class, 'index'])->name('presences.index');
+        Route::get('fiche-cotations', [FicheCotationWebController::class, 'index'])->name('fiche-cotations.index');
+        Route::get('deliberations', [DeliberationWebController::class, 'index'])->name('deliberations.index');
+        Route::get('student-exits', [StudentExitWebController::class, 'index'])->name('student-exits.index');
+        Route::get('visits', [VisitWebController::class, 'index'])->name('visits.index');
+
         // Gestion des personnels académiques (liste + édition / suppression)
         Route::resource('personnels', PersonnelWebController::class)
             ->only(['index', 'edit', 'update', 'destroy'])
@@ -62,6 +82,14 @@ Route::middleware(['web', 'auth', 'role:super-admin'])
 
         // Niveaux académiques
         Route::resource('academic-levels', AcademicLevelWebController::class)->names('academic-levels');
+
+        // Planification des travaux & activités scolaires
+        Route::resource('planning', PlanningWebController::class)
+            ->only(['index', 'create', 'store'])
+            ->names('planning');
+        Route::resource('activities', SchoolActivityWebController::class)
+            ->only(['index', 'create', 'store'])
+            ->names('activities');
 
         // Utilisateurs et inscriptions
         Route::resource('users', UsersController::class)->names('users');

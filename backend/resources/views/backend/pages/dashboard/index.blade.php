@@ -1,7 +1,4 @@
-<x-layouts.backend-layout :breadcrumbs="[
-    ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
-    $selected_school_id ? ['label' => $schools->firstWhere('id', $selected_school_id)?->name, 'url' => '#'] : null
-]">
+<x-layouts.modules-layout>
     <!-- Welcome Section -->
     <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-10 shadow-2xl shadow-indigo-500/20 mb-10">
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
@@ -36,6 +33,97 @@
         <!-- Abstract Shapes -->
         <div class="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl"></div>
         <div class="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-indigo-400/20 blur-3xl"></div>
+    </div>
+
+    <!-- Sélection des modules principaux (vue type "portail" comme sur le frontend) -->
+    <div class="mb-12">
+        <div class="flex flex-col items-center mb-8">
+            <p class="text-[11px] font-black text-gray-400 tracking-[0.3em] uppercase mb-2">Sélectionnez le module</p>
+            <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">Choisissez un espace de gestion</h2>
+        </div>
+
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <!-- Ressources Humaines -->
+            <a href="{{ route('admin.personnels.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 p-4">
+                    <iconify-icon icon="lucide:users" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Ressources</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Humaines</p>
+            </a>
+
+            <!-- Insertion Professionnelle -->
+            <a href="{{ route('admin.activities.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 p-4">
+                    <iconify-icon icon="lucide:briefcase" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Insertion</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Professionnelle</p>
+            </a>
+
+            <!-- Infrastructures & Équipements -->
+            <a href="{{ route('admin.infra.dashboard', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300 p-4">
+                    <iconify-icon icon="lucide:building-2" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Infrastructures</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Équipements</p>
+            </a>
+
+            <!-- Gestion Élèves -->
+            <a href="{{ route('admin.students.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 p-4">
+                    <iconify-icon icon="lucide:graduation-cap" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Gestion</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Élèves</p>
+            </a>
+
+            <!-- Gestion Stock -->
+            <a href="{{ route('admin.stock-articles.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 p-4">
+                    <iconify-icon icon="lucide:boxes" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Gestion</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Stock</p>
+            </a>
+
+            <!-- Comptabilité simplifiée -->
+            <a href="{{ route('admin.accounting.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-lime-50 dark:bg-lime-900/30 text-lime-600 dark:text-lime-300 p-4">
+                    <iconify-icon icon="lucide:banknote" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Comptabilité</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Simplifiée</p>
+            </a>
+
+            <!-- Administration -->
+            <a href="{{ route('admin.users.index') }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-300 p-4">
+                    <iconify-icon icon="lucide:settings" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Administration</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Utilisateurs & rôles</p>
+            </a>
+
+            <!-- Synchroniser -->
+            <a href="{{ route('admin.sync.monitoring') }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-300 p-4">
+                    <iconify-icon icon="lucide:refresh-cw" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Synchroniser</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Terminaux & écoles</p>
+            </a>
+
+            <!-- Horaire (planification) -->
+            <a href="{{ route('admin.planning.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="mb-4 rounded-2xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 p-4">
+                    <iconify-icon icon="lucide:calendar-clock" width="32"></iconify-icon>
+                </div>
+                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Horaire</p>
+                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Planification des cours</p>
+            </a>
+        </div>
     </div>
 
     @if(auth()->user()?->hasRole('super-admin'))
@@ -179,5 +267,5 @@
         @endif
     </div>
 
-</x-layouts.backend-layout>
+</x-layouts.modules-layout>
 

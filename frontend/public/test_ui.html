@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Synchronisation Orbitale Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      z-index: 40;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .animating {
+      pointer-events: none;
+    }
+
+    /* Animation de pulsation douce pour la carte centrale */
+    @keyframes pulse-light {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 40px rgba(79, 70, 229, 0.7);
+      }
+    }
+
+    .sync-active {
+      animation: pulse-light 2s infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex items-center justify-center overflow-x-hidden py-12 font-sans">
+
+  <div class="w-full max-w-6xl px-6">
+    <div id="grid" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="users" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Utilisateurs</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="box" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Produits</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="shopping-cart" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Commandes</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="settings" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Paramètres</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="mail" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Messages</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="bar-chart" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Stats</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="shield" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Sécurité</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="database" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Base</h3>
+      </div>
+      <div class="card group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10">
+        <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        <h3 class="font-medium text-slate-700">Rapports</h3>
+      </div>
+
+      <div id="syncCard" class="group bg-white rounded-2xl shadow-sm p-8 text-center transition-all duration-500 hover:shadow-xl cursor-pointer relative z-10 flex flex-col items-center justify-center min-h-[160px]">
+        <div id="syncContent">
+          <i data-lucide="refresh-cw" id="syncIcon" class="w-12 h-12 mx-auto mb-4 text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          <h3 class="font-medium text-slate-700">Synchroniser</h3>
+        </div>
+        <div id="progressInfo" class="hidden text-center">
+          <span id="percent" class="text-3xl font-bold text-indigo-600 block">0%</span>
+          <span id="timeLeft" class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Calcul...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay flex items-center justify-center">
+    <div id="orbitContainer" class="absolute inset-0 flex items-center justify-center pointer-events-none"></div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    const syncBtn = document.getElementById("syncCard");
+    const syncIcon = document.getElementById("syncIcon");
+    const syncContent = document.getElementById("syncContent");
+    const progressInfo = document.getElementById("progressInfo");
+    const percentEl = document.getElementById("percent");
+    const timeEl = document.getElementById("timeLeft");
+    const overlay = document.getElementById("overlay");
+    const orbitContainer = document.getElementById("orbitContainer");
+    let isAnimating = false;
+    syncBtn.onclick = () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      document.body.classList.add("animating");
+      const allCards = Array.from(document.querySelectorAll(".card"));
+      const duration = 8000; // 8 secondes pour bien voir l'orbite
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      // 1. DÉPLACEMENT DE LA CARTE SYNC
+      const sRect = syncBtn.getBoundingClientRect();
+      const sTx = centerX - (sRect.left + sRect.width / 2);
+      const sTy = centerY - (sRect.top + sRect.height / 2);
+      syncBtn.style.zIndex = "100";
+      syncBtn.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+      syncBtn.style.transform = `translate(${sTx}px, ${sTy}px) scale(1.1)`;
+      syncBtn.classList.add("sync-active");
+      syncIcon.classList.add("animate-spin");
+      // 2. ASPIRATION DES AUTRES
+      allCards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const tx = centerX - (rect.left + rect.width / 2);
+        const ty = centerY - (rect.top + rect.height / 2);
+        card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease";
+        card.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
+        card.style.opacity = "0";
+      });
+      // 3. MISE EN PLACE DE L'ORBITE
+      setTimeout(() => {
+        overlay.style.display = "flex";
+        setTimeout(() => overlay.style.opacity = "1", 10);
+        syncContent.classList.add("hidden");
+        progressInfo.classList.remove("hidden");
+        const radius = Math.min(220 + (allCards.length * 5), (window.innerWidth / 2) - 100);
+        const cardScale = allCards.length > 10 ? 0.6 : 0.8;
+        allCards.forEach((card, index) => {
+          const clone = card.cloneNode(true);
+          clone.className = "absolute bg-white rounded-2xl shadow-xl p-4 w-28 h-28 flex flex-col items-center justify-center text-center";
+          clone.style.opacity = "1";
+          const startAngle = (360 / allCards.length) * index;
+          // Position de départ (caché derrière Sync)
+          clone.style.transform = `rotate(${startAngle}deg) translateX(0px) scale(0)`;
+          orbitContainer.appendChild(clone);
+          // Animation d'éclosion
+          setTimeout(() => {
+            clone.style.transition = "transform 0.8s cubic-bezier(0.17, 0.67, 0.41, 1.18)";
+            clone.style.transform = `rotate(${startAngle}deg) translateX(${radius}px) rotate(${-startAngle}deg) scale(${cardScale})`;
+            // Lancer la gravitation une fois l'éclosion finie
+            setTimeout(() => {
+              clone.style.transition = "none"; // Important : on coupe la transition pour laisser le JS animer
+              clone.animate([{
+                  transform: `rotate(${startAngle}deg) translateX(${radius}px) rotate(${-startAngle}deg) scale(${cardScale})`
+                },
+                {
+                  transform: `rotate(${startAngle + 360}deg) translateX(${radius}px) rotate(${-startAngle - 360}deg) scale(${cardScale})`
+                }
+              ], {
+                duration: 12000,
+                iterations: Infinity,
+                easing: 'linear'
+              });
+            }, 800);
+          }, index * 50);
+        });
+        // 4. GESTION DU COMPTEUR
+        const startTime = Date.now();
+        const timer = setInterval(() => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(Math.floor((elapsed / duration) * 100), 100);
+          const remaining = Math.max(Math.ceil((duration - elapsed) / 1000), 0);
+          percentEl.innerText = `${progress}%`;
+          timeEl.innerText = `TEMPS : ${remaining}S`;
+          if (progress >= 100) {
+            clearInterval(timer);
+            endProcess();
+          }
+        }, 50);
+        lucide.createIcons();
+      }, 700);
+
+      function endProcess() {
+        setTimeout(() => {
+          overlay.style.opacity = "0";
+          orbitContainer.style.opacity = "0";
+          setTimeout(() => {
+            overlay.style.display = "none";
+            orbitContainer.innerHTML = "";
+            orbitContainer.style.opacity = "1";
+            progressInfo.classList.add("hidden");
+            syncContent.classList.remove("hidden");
+            syncBtn.style.transform = "translate(0, 0) scale(1)";
+            syncBtn.classList.remove("sync-active");
+            syncIcon.classList.remove("animate-spin");
+            allCards.forEach(card => {
+              card.style.transform = "translate(0, 0) scale(1)";
+              card.style.opacity = "1";
+            });
+            setTimeout(() => {
+              syncBtn.style.zIndex = "10";
+              document.body.classList.remove("animating");
+              isAnimating = false;
+            }, 600);
+          }, 500);
+        }, 600);
+      }
+    };
+  </script>
+</body>
+
+</html>

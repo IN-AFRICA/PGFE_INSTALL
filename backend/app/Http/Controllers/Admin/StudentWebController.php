@@ -6,6 +6,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Models\Presence;
+use App\Models\Deliberation;
+use App\Models\StudentExit;
+use App\Models\Visit;
+use App\Enums\GenderEnum;
 use Illuminate\Http\Request;
 
 final class StudentWebController extends Controller
@@ -37,9 +42,16 @@ final class StudentWebController extends Controller
             ->appends($request->query());
 
         $schools = \App\Models\School::query()->orderBy('name')->get(['id', 'name']);
-        
+
+        $baseStatsQuery = Student::query();
+        if ($selectedSchoolId) {
+            $baseStatsQuery->where('school_id', $selectedSchoolId);
+        }
+
         $stats = [
-            'total' => $selectedSchoolId ? Student::where('school_id', $selectedSchoolId)->count() : Student::count(),
+            'total' => (clone $baseStatsQuery)->count(),
+            'boys' => (clone $baseStatsQuery)->where('gender', GenderEnum::MA->value)->count(),
+            'girls' => (clone $baseStatsQuery)->where('gender', GenderEnum::FA->value)->count(),
         ];
 
         return view('backend.pages.students.index', compact('students', 'schools', 'stats'));
@@ -54,7 +66,50 @@ final class StudentWebController extends Controller
 
         $schools = \App\Models\School::orderBy('name')->get(['id', 'name']);
 
-        return view('backend.pages.students.edit', compact('student', 'schools'));
+        // Charger le contexte scolaire et l'inscription principale
+        $student->loadMissing(['school', 'registration.classroom', 'registration.schoolYear']);
+
+        // Présences récentes de l'élève (limitées pour la vue super admin)
+        $presences = Presence::query()
+            ->where('student_id', $student->id)
+            ->where('school_id', $student->school_id)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+
+        // Fiches de cotation récentes (notes)
+        $notes = $student->notes()
+            ->with(['course:id,name', 'semester:id,name', 'schoolYear:id,title', 'classroom:id,name'])
+            ->latest('id')
+            ->limit(20)
+            ->get();
+
+        // Délibérations récentes de l'élève
+        $deliberations = Deliberation::query()
+            ->with(['classroom:id,name', 'course:id,name', 'schoolYear:id,title'])
+            ->where('student_id', $student->id)
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get();
+
+        // Sorties récentes (StudentExit)
+        $exits = StudentExit::query()
+            ->with(['filiere:id,name', 'schoolYear:id,title'])
+            ->where('student_id', $student->id)
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get();
+
+        // Visites de classe liées à la même école (aperçu global, pas par élève)
+        $visits = Visit::query()
+            ->with(['classroom:id,name', 'school:id,name'])
+            ->where('school_id', $student->school_id)
+            ->latest('visit_hour')
+            ->limit(20)
+            ->get();
+
+        return view('backend.pages.students.edit', compact('student', 'schools', 'presences', 'notes', 'deliberations', 'exits', 'visits'));
     }
 
     public function update(Request $request, Student $student)

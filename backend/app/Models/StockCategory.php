@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class StockCategory extends Model
 {
+    use \App\Models\Concerns\HasUuid;
     use HasFactory;
     protected $fillable = [
         'name', 'school_id', 'user_id',

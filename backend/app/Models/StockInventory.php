@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockInventory extends Model
 {
+    use \App\Models\Concerns\HasUuid;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+    use \App\Models\Concerns\ScopeBySchool;
     protected $fillable = [
         'inventory_date', 'note', 'school_id', 'user_id',
     ];

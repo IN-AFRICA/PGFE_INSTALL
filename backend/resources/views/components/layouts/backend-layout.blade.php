@@ -21,3 +21,8 @@
         {{ $slot }}
     </div>
 @endsection
+
+@section('main-sidebar')
+    {{-- Pas de sidebar principale pour ce layout si la vue le souhaite --}}
+    @yield('override-main-sidebar')
+@endsection

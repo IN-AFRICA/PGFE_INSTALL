@@ -25,14 +25,33 @@ final class InfraBailleurController extends Controller
     public function store(InfraBailleurRequest $request): InfraBailleurResource|\Illuminate\Http\JsonResponse|Response
     {
         try {
-            $infraBailleur = InfraBailleur::create($request->validated());
+            $user = $request->user();
+
+            if (! $user || is_null($user->school_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Aucune école active n'est associée à l'utilisateur connecté.",
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            if (! $user->relationLoaded('academicPersonal')) {
+                $user->load('academicPersonal');
+            }
+
+            $data = $request->validated();
+            $data['school_id'] = $user->school_id;
+            
+            if ($user->academicPersonal) {
+                $data['academic_personal_id'] = $user->academicPersonal->id;
+            }
+
+            $infraBailleur = InfraBailleur::create($data);
 
             return response()->json([
                 'data' => new InfraBailleurResource($infraBailleur),
                 'success' => true,
                 'message' => 'Bailleur d\'infrastructure créé avec succès',
             ], Response::HTTP_CREATED);
-            // return new InfraBailleurResource($infraBailleur);
         } catch (Exception $exception) {
             report($exception);
 
@@ -41,52 +60,45 @@ final class InfraBailleurController extends Controller
         }
     }
 
-    public function show(InfraBailleur $infraBailleur): InfraBailleurResource|Response
+    public function show(InfraBailleur $bailleur): Response
     {
-        try {
-            $bailleur = InfraBailleur::findOrFail($infraBailleur->id);
-        } catch (Exception $exception) {
-            report($exception);
-
-            return response()->json([
-                'error' => 'There is an error.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
         return response()->json([
-            'data' => $bailleur,
+            'data' => new InfraBailleurResource($bailleur),
             'success' => true,
             'message' => 'Détails du bailleur d\'infrastructure récupérés avec succès',
         ], Response::HTTP_OK);
-        // return InfraBailleurResource::make($infraBailleur);
     }
 
-    public function update(InfraBailleurRequest $request, InfraBailleur $infraBailleur): InfraBailleurResource|\Illuminate\Http\JsonResponse|Response
+    public function update(InfraBailleurRequest $request, InfraBailleur $bailleur): Response
     {
         try {
-            $infraBailleur->update($request->validated());
+            $bailleur->update($request->validated());
 
             return response()->json([
-                'data' => new InfraBailleurResource($infraBailleur),
+                'data' => new InfraBailleurResource($bailleur),
                 'success' => true,
                 'message' => 'Bailleur d\'infrastructure mis à jour avec succès',
-            ]);
+            ], Response::HTTP_OK);
         } catch (Exception $exception) {
             report($exception);
 
-            return response()->json(['error' => 'There is an error.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(['error' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function destroy(InfraBailleur $infraBailleur): \Illuminate\Http\JsonResponse|Response
+    public function destroy(InfraBailleur $bailleur): Response
     {
         try {
-            $infraBailleur->delete();
+            $bailleur->delete();
 
-            return response()->json(['message' => 'Deleted successfully'], Response::HTTP_OK);
+            return response()->json([
+                'success' => true,
+                'message' => 'Bailleur supprimé avec succès'
+            ], Response::HTTP_OK);
         } catch (Exception $exception) {
             report($exception);
 
-            return response()->json(['error' => 'There is an error.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(['error' => 'Une erreur est survenue.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

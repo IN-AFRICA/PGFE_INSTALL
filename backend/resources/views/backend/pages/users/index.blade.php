@@ -143,4 +143,4 @@
             @endif
         </div>
     </div>
-</x-layouts.backend-layout>
+</x-backend.pages.settings.layout></x-layouts.modules-layout>

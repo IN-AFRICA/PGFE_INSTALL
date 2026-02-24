@@ -1,16 +1,30 @@
 <script lang="ts" setup>
 import { cn } from '@/lib/utils'
 
-defineProps<{
+const props = defineProps<{
   link: string
   icon: string
   text: string
   isActive?: boolean
+  id?: number
 }>()
+
+const emit = defineEmits<{
+  click: []
+}>()
+
+const handleClick = (e: Event) => {
+  // Uniquement pour le module Synchroniser (id: 10)
+  if (props.id === 10) {
+    e.preventDefault()
+    emit('click')
+  }
+}
 </script>
 <template>
   <RouterLink
     :to="link"
+    @click="handleClick"
     :class="
       cn(
         'flex flex-col items-center p-4 md:p-6 rounded-lg group transition-all duration-200 ease-linear',

@@ -6,10 +6,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\HasUuid;
 
 final class Repechage extends Model
 {
     use HasFactory;
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'student_id',

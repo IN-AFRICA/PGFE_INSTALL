@@ -24,10 +24,12 @@ final class SuperAdminDashboardController extends Controller
             'total_revenue' => (float) Payment::sum('amount'),
         ];
 
-        // Revenue by school
+        // Revenue by school (global sync timestamp used for now)
         $schools_breakdown = School::select('id', 'name', 'code')
             ->get()
             ->map(function($school) {
+                $globalLastSync = DB::table('sync_logs')->max('last_sync_at');
+
                 return [
                     'id' => $school->id,
                     'name' => $school->name,
@@ -36,9 +38,7 @@ final class SuperAdminDashboardController extends Controller
                     'revenue' => (float) Payment::whereHas('student', function($q) use ($school) {
                         $q->where('school_id', $school->id);
                     })->sum('amount'),
-                    'last_sync' => DB::table('sync_logs')
-                        ->where('school_id', $school->id)
-                        ->max('last_sync')
+                    'last_sync' => $globalLastSync,
                 ];
             });
 
@@ -106,17 +106,18 @@ final class SuperAdminDashboardController extends Controller
         $monitoring = School::select('id', 'name', 'code')
             ->get()
             ->map(function($school) {
+                // sync_logs store a global last_sync_at per table.
+                // Use the OLDEST (min) last_sync_at to detect that at least one
+                // table is late in synchronization.
                 $lastSync = DB::table('sync_logs')
-                    ->where('school_id', $school->id)
-                    ->latest('last_sync')
-                    ->first();
+                    ->min('last_sync_at');
 
                 return [
                     'id' => $school->id,
                     'name' => $school->name,
                     'code' => $school->code,
-                    'last_sync' => $lastSync ? $lastSync->last_sync : null,
-                    'status' => $this->getSyncStatus($lastSync ? $lastSync->last_sync : null)
+                    'last_sync' => $lastSync ?: null,
+                    'status' => $this->getSyncStatus($lastSync ?: null)
                 ];
             });
 
@@ -128,12 +129,21 @@ final class SuperAdminDashboardController extends Controller
 
     private function getSyncStatus(?string $lastSync): string
     {
-        if (!$lastSync) return 'never';
-        
+        // Si aucune synchronisation n'a encore eu lieu, on considère l'état comme critique
+        if (! $lastSync) {
+            return 'danger';
+        }
+
         $diff = now()->diffInHours(\Illuminate\Support\Carbon::parse($lastSync));
-        
-        if ($diff < 24) return 'ok';
-        if ($diff < 72) return 'warning';
+
+        if ($diff < 24) {
+            return 'ok';
+        }
+
+        if ($diff < 72) {
+            return 'warning';
+        }
+
         return 'danger';
     }
 }

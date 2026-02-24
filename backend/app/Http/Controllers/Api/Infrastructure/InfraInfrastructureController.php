@@ -30,7 +30,19 @@ final class InfraInfrastructureController extends Controller
     public function store(InfraInfrastructureRequest $request)
     {
         try {
-            $infraInfrastructure = InfraInfrastructure::create($request->validated());
+            $user = $request->user();
+
+            if (! $user || is_null($user->school_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Aucune école active n'est associée à l'utilisateur connecté.",
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $data = $request->validated();
+            $data['school_id'] = $user->school_id;
+
+            $infraInfrastructure = InfraInfrastructure::create($data);
 
             return response()->json([
                 'data' => $infraInfrastructure,
@@ -47,7 +59,21 @@ final class InfraInfrastructureController extends Controller
     public function show(int $id)
     {
         try {
-            $infraInfrastructure = InfraInfrastructure::find($id);
+            $infraInfrastructure = InfraInfrastructure::with([
+                // Détails directs de l'infrastructure
+                'categorie',
+                'bailleur',
+                'school',
+
+                // Inventaires rattachés à cette infrastructure + auteurs / écoles
+                'inventaires',
+                'inventaires.author',
+                'inventaires.school',
+
+                // États rattachés à cette infrastructure + auteur
+                'etats',
+                'etats.author',
+            ])->find($id);
             if (! $infraInfrastructure) {
                 return response()->json([
                     'success' => false,

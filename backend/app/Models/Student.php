@@ -119,6 +119,11 @@ final class Student extends Model
         return $this->hasMany(Repechage::class, 'student_id');
     }
 
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(StudentTransfer::class, 'student_id');
+    }
+
     /**
      * URL publique du fichier image (storage public) ou null si absent.
      */

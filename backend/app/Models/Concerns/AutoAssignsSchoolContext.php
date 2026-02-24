@@ -42,21 +42,21 @@ trait AutoAssignsSchoolContext
             };
 
             // school_id
-            if ($canAssign('school_id') && empty($model->school_id) && $user?->school_id) {
+            if ($canAssign('school_id') && $user?->school_id && ! isset($model->getAttributes()['school_id'])) {
                 $model->school_id = $user->school_id;
             }
 
             // school_year_id
-            if ($canAssign('school_year_id') && empty($model->school_year_id) && ! empty($model->school_id)) {
-                $active = SchoolYear::active($model->school_id);
+            if ($canAssign('school_year_id') && ! isset($model->getAttributes()['school_year_id']) && $model->getAttribute('school_id')) {
+                $active = SchoolYear::active($model->getAttribute('school_id'));
                 if ($active) {
                     $model->school_year_id = $active->id;
                 }
             }
 
             // type_id (ex: Registration / Payment) UNIQUEMENT si colonne existe ET modèle autorisé
-            if ($canAssign('type_id') && empty($model->type_id) && ! empty($model->school_id) && self::isTypeAssignable($model)) {
-                $school = School::query()->find($model->school_id);
+            if ($canAssign('type_id') && ! isset($model->getAttributes()['type_id']) && $model->getAttribute('school_id') && self::isTypeAssignable($model)) {
+                $school = School::query()->find($model->getAttribute('school_id'));
                 if ($school && $school->type_id) {
                     $model->type_id = $school->type_id;
                 }

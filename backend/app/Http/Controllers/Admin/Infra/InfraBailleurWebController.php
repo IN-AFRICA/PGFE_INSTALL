@@ -17,9 +17,25 @@ class InfraBailleurWebController extends Controller
     { 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:infra_bailleurs,name',
+            'description' => 'nullable|string',
         ]);
 
-        \App\Models\InfraBailleur::create($validated);
+        $user = $request->user();
+
+        // L'école est auto-renseignée par le trait AutoAssignsSchoolContext sur le modèle.
+        $data = $validated;
+
+        if ($user) {
+            if (! $user->relationLoaded('academicPersonal')) {
+                $user->load('academicPersonal');
+            }
+
+            if ($user->academicPersonal) {
+                $data['academic_personal_id'] = $user->academicPersonal->id;
+            }
+        }
+
+        \App\Models\InfraBailleur::create($data);
 
         return redirect()->route('admin.infra-bailleurs.index')->with('success', 'Bailleur ajouté avec succès.');
     }

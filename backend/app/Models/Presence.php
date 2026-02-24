@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 final class Presence extends Model
 {
     use HasFactory;
+    use \App\Models\Concerns\HasUuid;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+    use \App\Models\Concerns\ScopeBySchool;
 
     protected $guarded = [];
 

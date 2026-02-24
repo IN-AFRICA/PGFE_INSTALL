@@ -19,9 +19,9 @@ final class RegistrationWebController extends Controller
     public function index()
     {
         $registrations = Registration::query()
-            ->with(['student:id,name,firstname,lastname', 'classroom:id,name', 'school:id,name'])
+            ->with(['student', 'classroom:id,name', 'school:id,name'])
             ->latest('id')
-            ->paginate(20, ['id', 'student_id', 'classroom_id', 'school_id', 'registration_date', 'registration_status']);
+            ->paginate(20);
 
         return view('backend.pages.registrations.index', compact('registrations'));
     }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\InfraInfrastructure;
 use App\Models\InfraEquipement;
 use App\Models\InfraInfrastructureInventaire;
+use App\Models\InfraInventaire;
 use App\Models\InfraEtat;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ final class InfraDashboardController extends Controller
             $stats = [
                 'total_infrastructures' => InfraInfrastructure::count(),
                 'total_equipements' => InfraEquipement::count(),
-                'total_inventaires' => InfraInfrastructureInventaire::count(),
+                'total_inventaires' => InfraInfrastructureInventaire::count() + InfraInventaire::count(),
                 'total_signalements' => InfraEtat::count(),
                 'status_distribution' => InfraInfrastructureInventaire::select('status', DB::raw('count(*) as total'))
                     ->groupBy('status')

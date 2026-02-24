@@ -1,0 +1,69 @@
+name: deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  audit:
+    uses: './.github/workflows/audit.yaml'
+  deploy:
+    name: Deploy to Production
+    needs: [audit]
+    runs-on: ubuntu-latest
+    steps:
+      - name: execute ssh command
+        uses : appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+#          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd ~/enabel.inafrica.tech
+
+            # Sauvegarder les fichiers/dossiers à préserver (copie, pas déplacement)
+            cp -r config /tmp/config_backup || true
+            cp -r storage /tmp/storage_backup || true
+            cp -r public /tmp/public_backup || true
+
+            # Afficher l'état du dépôt avant pull
+            echo '--- AVANT PULL ---'
+            git status
+            ls -l
+
+            git reset --hard
+            git clean -fd
+            git pull origin main --rebase
+
+            # Afficher l'état du dépôt après pull
+            echo '--- APRES PULL ---'
+            git status
+            ls -l
+
+            # Supprimer le package rapids/rapids si présent (évite l'erreur de rapidModels)
+            if grep -q 'rapids/rapids' composer.json; then
+              composer remove rapids/rapids || true
+            fi
+
+            # Fusionner/restaurer le contenu sauvegardé dans les dossiers correspondants
+            rsync -a /tmp/config_backup/ config/ || true
+            rsync -a /tmp/storage_backup/ storage/ || true
+            rsync -a /tmp/public_backup/ public/ || true
+
+            # Nettoyer les sauvegardes temporaires
+            rm -rf /tmp/config_backup /tmp/storage_backup /tmp/public_backup
+
+            # Installer les dépendances prod
+            composer install
+
+            # Migrations et cache Laravel
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:clear
+            php artisan view:cache
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear

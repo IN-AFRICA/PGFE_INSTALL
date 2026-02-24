@@ -64,6 +64,9 @@
 
     <div class="flex w-full min-h-[calc(100vh-3.5rem)] bg-gray-50 dark:bg-gray-950 p-4 gap-6">
         <!-- Floating Sidebar -->
+        @yield('main-sidebar')
+        @hasSection('main-sidebar')
+        @else
         <aside class="hidden lg:block w-64 shrink-0">
             <div class="sticky top-6 h-[calc(100vh-5rem)] bg-white dark:bg-gray-900 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden transition-all duration-300">
                 <!-- Logo/brand -->
@@ -95,6 +98,7 @@
                 </div>
             </div>
         </aside>
+        @endif
 
         <!-- Contenu principal -->
         <main class="flex-1 min-w-0">

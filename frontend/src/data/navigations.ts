@@ -16,7 +16,7 @@ export const modulesItems = [
     id: 3,
     text: 'Infrastructures Equipements',
     icon: 'hugeicons--building-06',
-    link: '/infra',
+    link: '/infra/prealables',
     permission: 'infrastructure.full',
   },
   {
@@ -37,7 +37,7 @@ export const modulesItems = [
     id: 6,
     text: 'Location Vente',
     icon: 'hugeicons--shopping-cart-01',
-    link: '#',
+    link: '/location',
     permission: 'sales.full', // Using sales.full for now
   },
   {
@@ -56,14 +56,14 @@ export const modulesItems = [
   },
   {
     id: 9,
-    text: 'Synchroniser',
-    icon: 'hugeicons--file-sync',
+    text: 'Horaire',
+    icon: 'hugeicons--calendar-03',
     link: '#',
   },
   {
     id: 10,
-    text: 'Horaire',
-    icon: 'hugeicons--calendar-03',
+    text: 'Synchroniser',
+    icon: 'hugeicons--refresh-04',
     link: '#',
   }
 ]
@@ -177,13 +177,6 @@ export const adminModuleItemsNav = [
 ]
 export const infraModuleItemNav = [
   {
-    id: 1,
-    text: 'Tableau de bord',
-    icon: 'hugeicons--dashboard-square-02',
-    link: '/infra',
-    permission: 'infrastructure.full',
-  },
-  {
     id: 2,
     text: 'Préalables',
     icon: 'hugeicons--file-edit',
@@ -223,6 +216,23 @@ export const stockModuleItemsNav = [
   },
 ]
 
+export const locationModuleItemNav = [
+  {
+    id: 1,
+    text: 'Préalables',
+    icon: 'hugeicons--file-edit',
+    link: '/location/prealables',
+    permission: 'location.full',
+  },
+  {
+    id: 2,
+    text: 'Opérations',
+    icon: 'hugeicons--task-add-01',
+    link: '/location/operations',
+    permission: 'location.full',
+  },
+]
+
 export const modulesNavigation = {
   students: studentModulesItemNav,
   rh: rhModulesItemNav,
@@ -230,4 +240,5 @@ export const modulesNavigation = {
   admin: adminModuleItemsNav,
   infra: infraModuleItemNav,
   stock: stockModuleItemsNav,
+  location: locationModuleItemNav,
 }

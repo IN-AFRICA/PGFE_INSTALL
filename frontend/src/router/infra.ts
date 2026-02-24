@@ -4,8 +4,7 @@ const infraRoutes: RouteRecordRaw[] = [
   {
     meta: { permission: 'infrastructure.full' },
     path: '/infra',
-    component: () => import('@/app/infra/InfraHome.vue'),
-    // Commenté pour avoir le composant pays par defaut
+    redirect: '/infra/prealables',
   },
   {
     meta: { permission: 'infrastructure.full' },
@@ -19,13 +18,46 @@ const infraRoutes: RouteRecordRaw[] = [
     name: '/infra/operations/infrastructures',
     component: () => import('@/app/infra/MainInfraInfrastructures.vue'),
   },
+  {
+    meta: { permission: 'infrastructure.full' },
+    path: '/infra/operations/infrastructures/nouveau',
+    name: 'infra-operations-infrastructures-nouveau',
+    component: () => import('@/app/infra/InfrastructureForm.vue'),
+  },
+  {
+    meta: { permission: 'infrastructure.full' },
+    path: '/infra/operations/infrastructures/:id/modifier',
+    name: 'infra-operations-infrastructures-modifier',
+    component: () => import('@/app/infra/InfrastructureForm.vue'),
+  },
 
   // Préalables Routes
+  // Route par défaut: Types & États
   {
     meta: { permission: 'infrastructure.full' },
     path: '/infra/prealables',
     name: '/infra/prealables',
+    component: () => import('@/app/infra/InfraTypeEtat.vue'),
+  },
+  // Catégories & Bailleurs (side-by-side)
+  {
+    meta: { permission: 'infrastructure.full' },
+    path: '/infra/prealables/cat-bailleurs',
+    name: 'infra-prealables-cat-bailleurs',
+    component: () => import('@/app/infra/InfraCatBailleur.vue'),
+  },
+  // Inventaire Équipements
+  {
+    meta: { permission: 'infrastructure.full' },
+    path: '/infra/prealables/inventaires',
+    name: 'infra-prealables-inventaires',
     component: () => import('@/app/infra/MainInfraPrealables.vue'),
+  },
+  {
+    meta: { permission: 'infrastructure.full' },
+    path: '/infra/prealables/inventaires/:id',
+    name: 'infra-prealables-inventaires-details',
+    component: () => import('@/app/infra/EquipmentInventoryDetails.vue'),
   },
   {
     meta: { permission: 'infrastructure.full' },
@@ -39,12 +71,7 @@ const infraRoutes: RouteRecordRaw[] = [
     name: 'infra-prealables-inventory-details',
     component: () => import('@/app/infra/InventoryDetails.vue'),
   },
-  {
-    meta: { permission: 'infrastructure.full' },
-    path: '/infra/types-etats',
-    name: '/infra/types-etats',
-    component: () => import('@/app/infra/InfraTypeEtat.vue'),
-  },
+
 
   // Form Routes
   {

@@ -30,7 +30,7 @@ final class ClassroomWebController extends Controller
         }
 
         $classrooms = $query->orderByDesc('id')
-            ->paginate(20, ['id', 'name', 'school_id', 'filiaire_id'])
+            ->paginate(20)
             ->appends($request->query());
 
         $schools = \App\Models\School::query()->orderBy('name')->get(['id', 'name']);

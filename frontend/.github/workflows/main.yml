@@ -1,0 +1,42 @@
+name: Deploy sur cPanel
+
+on:
+  push:
+    branches:
+      - deploy   
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'          
+
+
+      - name: Install dependencies & build
+        run: |
+          pnpm install
+          pnpm exec vite build
+      - name: Deploy to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: ../
+          security: loose
+          dangerous-clean-slate: false

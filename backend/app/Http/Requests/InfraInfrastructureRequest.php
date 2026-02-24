@@ -16,13 +16,12 @@ final class InfraInfrastructureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255',
-            'date_construction' => 'string|max:255',
-            'montant_construction' => 'integer',
-            'emplacement' => 'string|max:255',
-            'infra_categorie_id' => 'integer',
-            'infra_bailleur_id' => 'integer',
-            'school_id' => 'integer',
+            'name' => 'required|string|max:255',
+            'date_construction' => 'required|string|max:255',
+            'montant_construction' => 'required|integer',
+            'emplacement' => 'required|string|max:255',
+            'infra_categorie_id' => 'required|integer|exists:infra_categories,id',
+            'infra_bailleur_id' => 'required|integer|exists:infra_bailleurs,id',
         ];
     }
 
@@ -40,8 +39,9 @@ final class InfraInfrastructureRequest extends FormRequest
             'emplacement.max' => "L'emplacement ne doit pas dépasser 255 caractères.",
             'emplacement.required' => "L'emplacement est requis.",
             'infra_categorie_id.integer' => "L'identifiant de la catégorie d'infrastructure doit être un entier.",
+            'infra_categorie_id.exists' => "La catégorie d'infrastructure sélectionnée est invalide.",
             'infra_bailleur_id.integer' => "L'identifiant du bailleur d'infrastructure doit être un entier.",
-            'school_id.integer' => "L'identifiant de l'école doit être un entier.",
+            'infra_bailleur_id.exists' => "Le bailleur d'infrastructure sélectionné est invalide.",
         ];
     }
 }

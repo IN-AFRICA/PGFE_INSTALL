@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class StockProvider extends Model
 {
+    use \App\Models\Concerns\HasUuid;
     use HasFactory;
     protected $fillable = [
         'name', 'contact', 'address', 'school_id', 'user_id',

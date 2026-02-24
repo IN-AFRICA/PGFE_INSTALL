@@ -8,7 +8,7 @@ const props = defineProps<{
   linkBack: string
   title: string
   groupRoute: string
-  module: 'students' | 'rh' | 'admin' | 'compta' | 'stock' | 'infra'
+  module: 'students' | 'rh' | 'admin' | 'compta' | 'stock' | 'infra' | 'location'
   noAnimatedWrapper?: boolean
   breadcrumb: BreadcrumbItem[]
 }>()

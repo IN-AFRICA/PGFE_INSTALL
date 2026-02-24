@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class InfraInventoryEquipment extends Model
 {
+    use \App\Models\Concerns\HasUuid;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+    use \App\Models\Concerns\ScopeBySchool;
+
+    protected $table = 'infra_inventory_equipment';
+
     protected $fillable = [
         'inventory_id', 'equipment_id', 'quantity', 'school_id', 'user_id',
     ];

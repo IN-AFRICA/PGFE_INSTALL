@@ -35,6 +35,16 @@ final class Classroom extends Model
         return $this->belongsTo(AcademicLevel::class, 'academic_level_id');
     }
 
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class, 'school_id');
+    }
+
+    public function filiaire(): BelongsTo
+    {
+        return $this->belongsTo(Filiaire::class, 'filiaire_id');
+    }
+
     public function visits(): HasMany|self
     {
         return $this->hasMany(Visit::class);

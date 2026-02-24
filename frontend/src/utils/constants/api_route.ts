@@ -14,6 +14,7 @@ export const API_ROUTES = {
   LOGIN: 'auth/login',
   LOGOUT: 'auth/logout',
   USER_INFOS: 'auth/me',
+  SYNC: 'sync',
 
   // Routes for Filiere
   CREATE_FILLIERE: 'school/filiaires/store',
@@ -421,49 +422,122 @@ export const API_ROUTES = {
   UPDATE_STOCK_EXIT: (id: number | string) => `stock/exits/${id}`,
   DELETE_STOCK_EXIT: (id: number | string) => `stock/exits/${id}`,
 
-  // Infrastructure - Equipment routes
+  // ============================================
+  // MODULE INFRASTRUCTURE - Routes nettoyées
+  // ============================================
+
+  // Dashboard
+  GET_INFRA_DASHBOARD: 'infrastructures/dashboard',
+
+  // Categories d'équipements
+  GET_INFRA_CATEGORIES: 'infrastructures/categories',
+  CREATE_INFRA_CATEGORY: 'infrastructures/categories',
+  UPDATE_INFRA_CATEGORY: (id: number | string) => `infrastructures/categories/${id}`,
+  DELETE_INFRA_CATEGORY: (id: number | string) => `infrastructures/categories/${id}`,
+
+  // Bailleurs (Sponsors/Donors)
+  GET_INFRA_BAILLEURS: 'infrastructures/bailleurs',
+  CREATE_INFRA_BAILLEUR: 'infrastructures/bailleurs',
+  UPDATE_INFRA_BAILLEUR: (id: number | string) => `infrastructures/bailleurs/${id}`,
+  DELETE_INFRA_BAILLEUR: (id: number | string) => `infrastructures/bailleurs/${id}`,
+
+  // Équipements
   GET_INFRA_EQUIPMENTS: 'infrastructures/equipments',
   CREATE_INFRA_EQUIPMENT: 'infrastructures/equipments',
-  GET_INFRA_EQUIPMENT: (id: number | string) => `infrastructures/equipments/${id}`,
   UPDATE_INFRA_EQUIPMENT: (id: number | string) => `infrastructures/equipments/${id}`,
   DELETE_INFRA_EQUIPMENT: (id: number | string) => `infrastructures/equipments/${id}`,
 
-  // Infrastructure - Inventory routes
+  // Inventaires d'équipements
   GET_INFRA_INVENTORIES: 'infrastructures/inventories',
   CREATE_INFRA_INVENTORY: 'infrastructures/inventories',
-  GET_INFRA_INVENTORY: (id: number | string) => `infrastructures/inventories/${id}`,
-  UPDATE_INFRA_INVENTORY: (id: number | string) => `infrastructures/inventories/${id}`,
   DELETE_INFRA_INVENTORY: (id: number | string) => `infrastructures/inventories/${id}`,
 
-  // Infrastructure - Inventory Equipment routes
-  CREATE_INVENTORY_EQUIPMENT: (inventoryId: number | string) =>
-    `infrastructures/inventories/${inventoryId}/equipments`,
+  // Items d'inventaires d'équipements
+  CREATE_INVENTORY_ITEM: (inventoryId: number | string) =>
+    `infrastructures/inventories/${inventoryId}/item`,
+  GET_INVENTORY_ITEMS: (inventoryId: number | string) =>
+    `infrastructures/inventories/${inventoryId}/item`,
 
-  // Infrastructure - Inventory Real State routes
-  CREATE_INVENTORY_REAL_STATE: (inventoryId: number | string) =>
-    `infrastructures/inventories/${inventoryId}/real-states`,
+  // Inventaires d'infrastructures (suivi des bâtiments)
+  GET_INFRA_INFRASTRUCTURE_INVENTAIRES: 'infrastructures/infrastructure-inventaires',
+  CREATE_INFRA_INFRASTRUCTURE_INVENTAIRE: 'infrastructures/infrastructure-inventaires',
+  GET_INFRA_INFRASTRUCTURE_INVENTAIRE: (id: number | string) =>
+    `infrastructures/infrastructure-inventaires/${id}`,
+  DELETE_INFRA_INFRASTRUCTURE_INVENTAIRE: (id: number | string) =>
+    `infrastructures/infrastructure-inventaires/${id}`,
 
-  // Infrastructure - State routes
+  // Items d'inventaires d'infrastructures
+  CREATE_INFRA_INFRASTRUCTURE_INVENTAIRE_ITEM: (inventoryId: number | string) =>
+    `infrastructures/infrastructure-inventaires/${inventoryId}/item`,
+  GET_INFRA_INFRASTRUCTURE_INVENTAIRE_ITEMS: (inventoryId: number | string) =>
+    `infrastructures/infrastructure-inventaires/${inventoryId}/item`,
+
+  // Infrastructures (Bâtiments/Salles)
+  GET_INFRA_INFRASTRUCTURES: 'infrastructures/infrastructures',
+  CREATE_INFRA_INFRASTRUCTURE: 'infrastructures/infrastructures',
+  UPDATE_INFRA_INFRASTRUCTURE: (id: number | string) => `infrastructures/infrastructures/${id}`,
+  DELETE_INFRA_INFRASTRUCTURE: (id: number | string) => `infrastructures/infrastructures/${id}`,
+
+  // États (Conditions)
   GET_INFRA_STATES: 'infrastructures/states',
   CREATE_INFRA_STATE: 'infrastructures/states',
-  GET_INFRA_STATE: (id: number | string) => `infrastructures/states/${id}`,
   UPDATE_INFRA_STATE: (id: number | string) => `infrastructures/states/${id}`,
   DELETE_INFRA_STATE: (id: number | string) => `infrastructures/states/${id}`,
 
-  // Infrastructure - Type routes
+  // Types
   GET_INFRA_TYPES: 'infrastructures/types',
   CREATE_INFRA_TYPE: 'infrastructures/types',
-  GET_INFRA_TYPE: (id: number | string) => `infrastructures/types/${id}`,
   UPDATE_INFRA_TYPE: (id: number | string) => `infrastructures/types/${id}`,
   DELETE_INFRA_TYPE: (id: number | string) => `infrastructures/types/${id}`,
 
-  // Infrastructure - Infrastructure Inventaires
-  GET_INFRA_INFRASTRUCTURE_INVENTARIES: 'infrastructures/infrastructure-inventaires',
-  CREATE_INFRA_INFRASTRUCTURE_INVENTARY: 'infrastructures/infrastructure-inventaires',
-  GET_INFRA_INFRASTRUCTURE_INVENTARY: (id: number | string) =>
-    `infrastructures/infrastructure-inventaires/${id}`,
-  UPDATE_INFRA_INFRASTRUCTURE_INVENTARY: (id: number | string) =>
-    `infrastructures/infrastructure-inventaires/${id}`,
-  DELETE_INFRA_INFRASTRUCTURE_INVENTARY: (id: number | string) =>
-    `infrastructures/infrastructure-inventaires/${id}`,
+  // === MODULE LOCATION (RENTAL) ===
+
+  // Rental - Sessions routes
+  GET_RENTAL_SESSIONS: 'rental/sessions',
+  CREATE_RENTAL_SESSION: 'rental/sessions',
+  GET_RENTAL_SESSION: (id: number | string) => `rental/sessions/${id}`,
+  UPDATE_RENTAL_SESSION: (id: number | string) => `rental/sessions/${id}`,
+  DELETE_RENTAL_SESSION: (id: number | string) => `rental/sessions/${id}`,
+
+  // Rental - Clients routes
+  GET_RENTAL_CLIENTS: 'rental/clients',
+  CREATE_RENTAL_CLIENT: 'rental/clients',
+  GET_RENTAL_CLIENT: (id: number | string) => `rental/clients/${id}`,
+  UPDATE_RENTAL_CLIENT: (id: number | string) => `rental/clients/${id}`,
+  DELETE_RENTAL_CLIENT: (id: number | string) => `rental/clients/${id}`,
+
+  // Rental - Equipments routes
+  GET_RENTAL_EQUIPMENTS: 'rental/equipments',
+  CREATE_RENTAL_EQUIPMENT: 'rental/equipments',
+  GET_RENTAL_EQUIPMENT: (id: number | string) => `rental/equipments/${id}`,
+  UPDATE_RENTAL_EQUIPMENT: (id: number | string) => `rental/equipments/${id}`,
+  DELETE_RENTAL_EQUIPMENT: (id: number | string) => `rental/equipments/${id}`,
+
+  // Rental - Projects routes
+  GET_RENTAL_PROJECTS: 'rental/projects',
+  CREATE_RENTAL_PROJECT: 'rental/projects',
+  GET_RENTAL_PROJECT: (id: number | string) => `rental/projects/${id}`,
+  UPDATE_RENTAL_PROJECT: (id: number | string) => `rental/projects/${id}`,
+  DELETE_RENTAL_PROJECT: (id: number | string) => `rental/projects/${id}`,
+
+  // Rental - Contracts routes
+  GET_RENTAL_CONTRACTS: 'rental/contracts',
+  CREATE_RENTAL_CONTRACT: 'rental/contracts',
+  GET_RENTAL_CONTRACT: (id: number | string) => `rental/contracts/${id}`,
+  UPDATE_RENTAL_CONTRACT: (id: number | string) => `rental/contracts/${id}`,
+  DELETE_RENTAL_CONTRACT: (id: number | string) => `rental/contracts/${id}`,
+
+  // Rental - Contract Equipments routes
+  GET_RENTAL_CONTRACT_EQUIPMENTS: 'rental/contract-equipments',
+  CREATE_RENTAL_CONTRACT_EQUIPMENT: 'rental/contract-equipments',
+  GET_RENTAL_CONTRACT_EQUIPMENT: (id: number | string) => `rental/contract-equipments/${id}`,
+  UPDATE_RENTAL_CONTRACT_EQUIPMENT: (id: number | string) => `rental/contract-equipments/${id}`,
+  DELETE_RENTAL_CONTRACT_EQUIPMENT: (id: number | string) => `rental/contract-equipments/${id}`,
+
+  // Rental - Payments routes
+  GET_RENTAL_PAYMENTS: 'rental/payments',
+  CREATE_RENTAL_PAYMENT: 'rental/payments',
+  GET_RENTAL_PAYMENT: (id: number | string) => `rental/payments/${id}`,
+  UPDATE_RENTAL_PAYMENT: (id: number | string) => `rental/payments/${id}`,
+  DELETE_RENTAL_PAYMENT: (id: number | string) => `rental/payments/${id}`,
 }

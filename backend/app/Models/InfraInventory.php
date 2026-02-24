@@ -12,4 +12,7 @@ class InfraInventory extends Model
 
     public function school() { return $this->belongsTo(School::class); }
     public function user() { return $this->belongsTo(User::class); }
+    public function items() { return $this->hasMany(InfraInventoryEquipment::class, 'inventory_id'); }
+
+    public function realStates() { return $this->hasMany(InfraInventoryRealState::class, 'inventory_id'); }
 }

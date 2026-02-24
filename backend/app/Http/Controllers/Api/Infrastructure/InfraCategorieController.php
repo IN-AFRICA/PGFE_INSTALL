@@ -25,7 +25,31 @@ final class InfraCategorieController extends Controller
     public function store(InfraCategorieRequest $request): InfraCategorieResource|\Illuminate\Http\JsonResponse
     {
         try {
-            $infraCategorie = InfraCategorie::create($request->validated());
+            $user = $request->user();
+
+            if (! $user || is_null($user->school_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Aucune école active n'est associée à l'utilisateur connecté.",
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            if (! $user->relationLoaded('academicPersonal')) {
+                $user->load('academicPersonal');
+            }
+
+            if (! $user->academicPersonal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Aucun personnel académique n'est associé à l'utilisateur connecté.",
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $data = $request->validated();
+            $data['school_id'] = $user->school_id;
+            $data['academic_personal_id'] = $user->academicPersonal->id;
+
+            $infraCategorie = InfraCategorie::create($data);
 
             return new InfraCategorieResource($infraCategorie);
         } catch (Exception $exception) {
@@ -43,7 +67,31 @@ final class InfraCategorieController extends Controller
     public function update(InfraCategorieRequest $request, InfraCategorie $infraCategorie): InfraCategorieResource|\Illuminate\Http\JsonResponse
     {
         try {
-            $infraCategorie->update($request->validated());
+            $user = $request->user();
+
+            if (! $user || is_null($user->school_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Aucune école active n'est associée à l'utilisateur connecté.",
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            if (! $user->relationLoaded('academicPersonal')) {
+                $user->load('academicPersonal');
+            }
+
+            if (! $user->academicPersonal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Aucun personnel académique n'est associé à l'utilisateur connecté.",
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $data = $request->validated();
+            $data['school_id'] = $user->school_id;
+            $data['academic_personal_id'] = $user->academicPersonal->id;
+
+            $infraCategorie->update($data);
 
             return new InfraCategorieResource($infraCategorie);
         } catch (Exception $exception) {

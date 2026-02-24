@@ -13,6 +13,7 @@ final class AccountNumber extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use \App\Models\Concerns\HasUuid;
 
     protected $guarded = [];
 

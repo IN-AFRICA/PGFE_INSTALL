@@ -52,20 +52,20 @@
                         
                         <div class="space-y-2">
                             <label class="text-sm font-black text-gray-700 dark:text-gray-300 ml-1">Type d'équipement</label>
-                            <select name="categorie_id" required class="w-full h-14 px-5 rounded-2xl border-gray-100 dark:border-gray-800 dark:bg-gray-950 focus:ring-blue-500 font-bold appearance-none transition-all">
+                            <select name="infra_categorie_id" required class="w-full h-14 px-5 rounded-2xl border-gray-100 dark:border-gray-800 dark:bg-gray-950 focus:ring-blue-500 font-bold appearance-none transition-all">
                                 <option value="">Choisir un type</option>
                                 @foreach(\App\Models\InfraCategorie::all() as $cat)
-                                    <option value="{{ $cat->id }}" @selected(old('categorie_id', $equipement->categorie_id) == $cat->id)>{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}" @selected(old('infra_categorie_id', $equipement->infra_categorie_id) == $cat->id)>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
 
                         <div class="space-y-2">
                             <label class="text-sm font-black text-gray-700 dark:text-gray-300 ml-1">Partenaire Financeur</label>
-                            <select name="bailleur_id" class="w-full h-14 px-5 rounded-2xl border-gray-100 dark:border-gray-800 dark:bg-gray-950 focus:ring-blue-500 font-bold appearance-none transition-all">
+                            <select name="infra_bailleur_id" class="w-full h-14 px-5 rounded-2xl border-gray-100 dark:border-gray-800 dark:bg-gray-950 focus:ring-blue-500 font-bold appearance-none transition-all">
                                 <option value="">Don / Propre</option>
                                 @foreach(\App\Models\InfraBailleur::all() as $bailleur)
-                                    <option value="{{ $bailleur->id }}" @selected(old('bailleur_id', $equipement->bailleur_id) == $bailleur->id)>{{ $bailleur->name }}</option>
+                                    <option value="{{ $bailleur->id }}" @selected(old('infra_bailleur_id', $equipement->infra_bailleur_id) == $bailleur->id)>{{ $bailleur->name }}</option>
                                 @endforeach
                             </select>
                         </div>

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockEntry extends Model
 {
+    use \App\Models\Concerns\HasUuid;
+
     protected $fillable = [
         'article_id', 'quantity', 'entry_date', 'note', 'school_id', 'user_id',
     ];

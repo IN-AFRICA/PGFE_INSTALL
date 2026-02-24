@@ -16,7 +16,7 @@ final class InfraCategorieResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'school_id' => $this->school_id,
-            'author_id' => $this->author_id,
+            'author_id' => $this->academic_personal_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

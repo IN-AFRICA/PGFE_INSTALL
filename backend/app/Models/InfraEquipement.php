@@ -18,19 +18,19 @@ final class InfraEquipement extends Model
         'code',
         'date_acquisition',
         'montant_acquisition',
-        'bailleur_id',
-        'categorie_id',
+        'infra_bailleur_id',
+        'infra_categorie_id',
         'emplacement',
         'school_id',
     ];
 
     public function categorie()
     {
-        return $this->belongsTo(InfraCategorie::class, 'categorie_id');
+        return $this->belongsTo(InfraCategorie::class, 'infra_categorie_id');
     }
 
     public function bailleur()
     {
-        return $this->belongsTo(InfraBailleur::class, 'bailleur_id');
+        return $this->belongsTo(InfraBailleur::class, 'infra_bailleur_id');
     }
 }

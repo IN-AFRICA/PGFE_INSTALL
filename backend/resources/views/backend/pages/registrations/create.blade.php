@@ -1,4 +1,4 @@
-<x-layouts.backend-layout :breadcrumbs="[['title'=>'Inscriptions','url'=>route('admin.registrations.index')],['title'=>'Nouvelle']]">
+<x-layouts.modules-layout :breadcrumbs="[['title'=>'Inscriptions','url'=>route('admin.registrations.index')],['title'=>'Nouvelle']]">
     <h1 class="text-lg font-semibold mb-6">Nouvelle inscription</h1>
     <form method="POST" action="{{ route('admin.registrations.store') }}" class="space-y-8">
         @csrf
@@ -87,5 +87,5 @@
             </button>
         </div>
     </form>
-</x-layouts.backend-layout>
+</x-layouts.modules-layout>
 

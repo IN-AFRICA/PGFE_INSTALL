@@ -16,10 +16,10 @@ final class InfraBailleurRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255',
-            'description' => 'string',
-            'school_id' => 'integer',
-            'academic_personal_id' => 'integer',
+            'name' => 'required|string|max:255|unique:infra_bailleurs,name,' . ($this->route('bailleur')?->id ?? 'NULL') . ',id',
+            'description' => 'nullable|string',
+            'school_id' => 'nullable|integer',
+            'academic_personal_id' => 'nullable|integer',
         ];
     }
 

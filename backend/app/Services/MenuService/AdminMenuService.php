@@ -57,7 +57,6 @@ final class AdminMenuService
             ]),
         ];
 
-        // Menus contextuels, affichés uniquement si une école est sélectionnée
         // Menus contextuels, affichés si une école est sélectionnée OU pour le super-admin
         if ($selectedSchoolId || ($user && $user->hasRole('super-admin'))) {
             // Groupe Mois, Infrastructures, Stock (refactorisé)
@@ -231,7 +230,56 @@ final class AdminMenuService
                     'label' => 'Élèves',
                     'icon' => 'lucide:users',
                     'route' => $this->getRouteWithContext('admin.students.index'),
-                    'active' => $this->isCurrentRoutePrefixed('admin.students.'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.students.')
+                        || $this->isCurrentRoutePrefixed('admin.presences.')
+                        || $this->isCurrentRoutePrefixed('admin.fiche-cotations.')
+                        || $this->isCurrentRoutePrefixed('admin.deliberations.')
+                        || $this->isCurrentRoutePrefixed('admin.student-exits.')
+                        || $this->isCurrentRoutePrefixed('admin.visits.'),
+                    'children' => [
+                        new AdminMenuItem([
+                            'id' => 'students-directory',
+                            'label' => 'Annuaire des élèves',
+                            'icon' => 'lucide:list',
+                            'route' => $this->getRouteWithContext('admin.students.index'),
+                            'active' => $this->isCurrentRoutePrefixed('admin.students.'),
+                        ]),
+                        new AdminMenuItem([
+                            'id' => 'students-presences',
+                            'label' => 'Présences',
+                            'icon' => 'lucide:calendar-check',
+                            'route' => $this->getRouteWithContext('admin.presences.index'),
+                            'active' => $this->isCurrentRoutePrefixed('admin.presences.'),
+                        ]),
+                        new AdminMenuItem([
+                            'id' => 'students-fiche-cotation',
+                            'label' => 'Fiches de cotation',
+                            'icon' => 'lucide:clipboard-list',
+                            'route' => $this->getRouteWithContext('admin.fiche-cotations.index'),
+                            'active' => $this->isCurrentRoutePrefixed('admin.fiche-cotations.'),
+                        ]),
+                        new AdminMenuItem([
+                            'id' => 'students-deliberations',
+                            'label' => 'Délibérations',
+                            'icon' => 'lucide:scale',
+                            'route' => $this->getRouteWithContext('admin.deliberations.index'),
+                            'active' => $this->isCurrentRoutePrefixed('admin.deliberations.'),
+                        ]),
+                        new AdminMenuItem([
+                            'id' => 'students-exits',
+                            'label' => 'Sorties élèves',
+                            'icon' => 'lucide:log-out',
+                            'route' => $this->getRouteWithContext('admin.student-exits.index'),
+                            'active' => $this->isCurrentRoutePrefixed('admin.student-exits.'),
+                        ]),
+                        new AdminMenuItem([
+                            'id' => 'students-visits',
+                            'label' => 'Visites de classe',
+                            'icon' => 'lucide:eye',
+                            'route' => $this->getRouteWithContext('admin.visits.index'),
+                            'active' => $this->isCurrentRoutePrefixed('admin.visits.'),
+                        ]),
+                    ],
                 ]),
             ];
 
@@ -290,6 +338,24 @@ final class AdminMenuService
                 ]),
             ];
 
+            // Groupe Pédagogie — planification des cours et activités scolaires
+            $groups['Pédagogie'] = [
+                new AdminMenuItem([
+                    'id' => 'planning',
+                    'label' => 'Planification des cours',
+                    'icon' => 'lucide:calendar-clock',
+                    'route' => $this->getRouteWithContext('admin.planning.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.planning.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'activities',
+                    'label' => 'Activités scolaires',
+                    'icon' => 'lucide:party-popper',
+                    'route' => $this->getRouteWithContext('admin.activities.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.activities.'),
+                ]),
+            ];
+
             // Groupe Année scolaire — création/activation année, semestres, périodes
             $groups['Année scolaire'] = [
                 new AdminMenuItem([
@@ -330,6 +396,98 @@ final class AdminMenuService
                     ],
                 ]),
             ];
+        }
+
+        // Filtrage contextuel : dans chaque module, la sidebar ne doit afficher
+        // que les liens de ce module (plus aucun "mega-menu" global).
+        $current = Request::route()?->getName() ?? '';
+        $restrictGestionRootId = null;
+
+        if ($current !== '') {
+            // Module Élèves (élèves, présences, fiches, délibérations, sorties, visites)
+            if (
+                str_starts_with($current, 'admin.students.') ||
+                str_starts_with($current, 'admin.presences.') ||
+                str_starts_with($current, 'admin.fiche-cotations.') ||
+                str_starts_with($current, 'admin.deliberations.') ||
+                str_starts_with($current, 'admin.student-exits.') ||
+                str_starts_with($current, 'admin.visits.')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Élèves']));
+            }
+            // Module Écoles (écoles, filières, niveaux, classes)
+            elseif (
+                str_starts_with($current, 'admin.schools.') ||
+                str_starts_with($current, 'admin.filiaires.') ||
+                str_starts_with($current, 'admin.academic-levels.') ||
+                str_starts_with($current, 'admin.classrooms.')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Écoles']));
+            }
+            // Module Comptabilité
+            elseif (str_starts_with($current, 'admin.accounting.')) {
+                $groups = array_intersect_key($groups, array_flip(['Comptabilité']));
+            }
+            // Module Pédagogie (planning & activités)
+            elseif (
+                str_starts_with($current, 'admin.planning.') ||
+                str_starts_with($current, 'admin.activities.')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Pédagogie']));
+            }
+            // Module Année scolaire (année, semestres, périodes, mois)
+            elseif (
+                str_starts_with($current, 'admin.school-years.') ||
+                str_starts_with($current, 'admin.semesters.') ||
+                str_starts_with($current, 'admin.periods.') ||
+                str_starts_with($current, 'admin.mois.')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Année scolaire']));
+            }
+            // Module Infrastructures (namespace infra-*)
+            elseif (
+                str_starts_with($current, 'admin.infra.dashboard') ||
+                str_starts_with($current, 'admin.infra-')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Gestion']));
+                $restrictGestionRootId = 'infrastructures';
+            }
+            // Module Stock (stock-*)
+            elseif (str_starts_with($current, 'admin.stock-')) {
+                $groups = array_intersect_key($groups, array_flip(['Gestion']));
+                $restrictGestionRootId = 'stock';
+            }
+            // Module Mois / Horaire (mois index seul)
+            elseif (str_starts_with($current, 'admin.mois.')) {
+                $groups = array_intersect_key($groups, array_flip(['Gestion']));
+                $restrictGestionRootId = 'mois';
+            }
+            // Module Utilisateurs (users & rôles)
+            elseif (
+                str_starts_with($current, 'admin.users.') ||
+                str_starts_with($current, 'admin.roles.')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Utilisateurs']));
+            }
+            // Module Pays (pays / provinces / communes / territoires)
+            elseif (
+                str_starts_with($current, 'admin.countries.') ||
+                str_starts_with($current, 'admin.provinces.') ||
+                str_starts_with($current, 'admin.communes.') ||
+                str_starts_with($current, 'admin.territories.')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Pays']));
+            }
+            // Dashboard & autres: on garde le menu complet
+        }
+
+        // Si on est dans un sous-module de "Gestion", on restreint ce groupe
+        // au bloc concerné (Mois, Infrastructures ou Stock).
+        if ($restrictGestionRootId !== null && isset($groups['Gestion'])) {
+            $groups['Gestion'] = array_values(array_filter(
+                $groups['Gestion'],
+                fn (AdminMenuItem $item) => $item->id === $restrictGestionRootId
+            ));
         }
 
         return $groups;
