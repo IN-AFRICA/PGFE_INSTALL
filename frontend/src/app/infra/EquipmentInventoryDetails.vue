@@ -22,42 +22,21 @@ const route = useRoute()
 const router = useRouter()
 const inventoryId = route.params.id
 
-// Fetch Equipment Inventory Details
-// TEMPORAIRE: Commenté à cause de l'erreur backend "categorie" relation
-// const { data: inventory, loading, fetchData } = useGetApi(
-//   API_ROUTES.GET_INFRA_INVENTORY(inventoryId as string)
-// )
-
 // Fetch items for this inventory
 const { data: rawItems, loading: loadingItems, fetchData: fetchItems } = useGetApi(
-  API_ROUTES.GET_INVENTORY_ITEMS(inventoryId as string)
+  API_ROUTES.GET_INFRA_EQUIPMENTS
 )
 
-// Fetch equipments for name mapping
-const { data: rawEquipments, fetchData: fetchEquipments } = useGetApi(API_ROUTES.GET_INFRA_EQUIPMENTS)
+// Fetch types and states for name mapping
+const { data: rawTypes, fetchData: fetchTypes } = useGetApi(API_ROUTES.GET_INFRA_TYPES)
+const { data: rawStates, fetchData: fetchStates } = useGetApi(API_ROUTES.GET_INFRA_STATES)
 
 onMounted(async () => {
   await Promise.all([
-    // fetchData(), // Commenté temporairement
     fetchItems(),
-    fetchEquipments()
+    fetchTypes(),
+    fetchStates(),
   ])
-})
-
-// Temporaire: Utiliser les données des items au lieu de l'inventory principal
-const inventoryData = computed(() => {
-  // Si on a des items, on peut extraire les infos de base depuis le premier item
-  if (items.value.length > 0) {
-    const firstItem = items.value[0]
-    return {
-      id: inventoryId,
-      inventory_date: firstItem.created_at,
-      note: 'Inventaire équipements',
-      school: firstItem.school,
-      user: firstItem.user
-    }
-  }
-  return null
 })
 
 const items = computed(() => {
@@ -66,16 +45,40 @@ const items = computed(() => {
   return (rawItems.value as any).data || []
 })
 
-const equipments = computed(() => {
-  if (!rawEquipments.value) return []
-  if (Array.isArray(rawEquipments.value)) return rawEquipments.value
-  return (rawEquipments.value as any).data || []
+const types = computed(() => {
+  if (!rawTypes.value) return []
+  if (Array.isArray(rawTypes.value)) return rawTypes.value
+  return (rawTypes.value as any).data || []
 })
 
-const getEquipmentName = (equipmentId: number) => {
-  const eq = equipments.value.find((e: any) => e.id === equipmentId)
-  return eq ? eq.name : `Équipement #${equipmentId}`
+const states = computed(() => {
+  if (!rawStates.value) return []
+  if (Array.isArray(rawStates.value)) return rawStates.value
+  return (rawStates.value as any).data || []
+})
+
+const getTypeName = (typeId: number | string) => {
+  const t = types.value.find((item: any) => item.id === Number(typeId))
+  return t ? t.name : '-'
 }
+
+const getStateName = (stateId: number | string) => {
+  const s = states.value.find((item: any) => item.id === Number(stateId))
+  return s ? s.name : '-'
+}
+
+// Build inventory info from available data
+const inventoryData = computed(() => {
+  if (items.value.length > 0) {
+    const firstItem = items.value[0]
+    return {
+      id: inventoryId,
+      inventory_date: firstItem.created_at,
+      note: 'Inventaire équipements',
+    }
+  }
+  return null
+})
 
 const formattedDate = computed(() => {
   const date = inventoryData.value?.inventory_date
@@ -153,18 +156,35 @@ const goBack = () => {
             <TableHeader>
               <TableRow>
                 <TableHead class="w-[60px]">N°</TableHead>
-                <TableHead>Équipement</TableHead>
-                <TableHead class="text-right">Quantité</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>N° Série</TableHead>
+                <TableHead>Emplacement</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>État</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow v-for="(item, index) in items" :key="item.id || index">
                 <TableCell>{{ Number(index) + 1 }}</TableCell>
-                <TableCell class="font-medium">{{ getEquipmentName(item.equipment_id) }}</TableCell>
-                <TableCell class="text-right">{{ item.quantity }}</TableCell>
+                <TableCell class="font-medium">{{ item.name || '-' }}</TableCell>
+                <TableCell>{{ item.serial_number || '-' }}</TableCell>
+                <TableCell>{{ item.location || '-' }}</TableCell>
+                <TableCell>{{ getTypeName(item.type_id) }}</TableCell>
+                <TableCell>
+                  <span 
+                    class="px-2 py-1 rounded-full text-xs font-medium"
+                    :class="{
+                      'bg-green-100 text-green-700': getStateName(item.state_id).toLowerCase().includes('bon'),
+                      'bg-yellow-100 text-yellow-700': getStateName(item.state_id).toLowerCase().includes('moyen'),
+                      'bg-red-100 text-red-700': getStateName(item.state_id).toLowerCase().includes('mauvais'),
+                    }"
+                  >
+                    {{ getStateName(item.state_id) }}
+                  </span>
+                </TableCell>
               </TableRow>
               <TableRow v-if="items.length === 0">
-                <TableCell colspan="3" class="text-center h-24 text-gray-500">
+                <TableCell colspan="6" class="text-center h-24 text-gray-500">
                   Aucun équipement ajouté à cet inventaire
                 </TableCell>
               </TableRow>
