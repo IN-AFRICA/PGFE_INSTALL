@@ -1,5 +1,7 @@
 import { useAuthStore } from './../stores/auth'
-import { BASE_URL, SANCTUM_BASE_URL } from '@/utils/constants/api_route'
+import { useAppStore } from './../stores/app'
+import { BASE_URL, SANCTUM_BASE_URL, API_ROUTES } from '@/utils/constants/api_route'
+import router from '@/router'
 import axios, {
   type AxiosInstance,
   type AxiosResponse,
@@ -136,6 +138,26 @@ api.interceptors.response.use(
 
       case 500:
         break
+
+      case 503: {
+        // Global Sync Lock — Backend signals that a sync is in progress
+        const syncCode = error?.response?.data?.code
+        const isSyncStatusPoll = url?.includes(API_ROUTES.SYNC_STATUS)
+
+        if (syncCode === 'SYNC_IN_PROGRESS' && !isSyncStatusPoll) {
+          try {
+            const appStore = useAppStore()
+            if (!appStore.isGlobalSyncing) {
+              const currentRoute = router.currentRoute.value
+              appStore.enterSyncLock(currentRoute)
+              router.push({ path: '/' })
+            }
+          } catch (e) {
+            console.error('[SyncLock] Erreur lors de la redirection:', e)
+          }
+        }
+        break
+      }
 
       default:
         break

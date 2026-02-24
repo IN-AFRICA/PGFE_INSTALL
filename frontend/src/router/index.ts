@@ -10,6 +10,7 @@ import { infraRoutes } from '@/router/infra.ts'
 import { stockRoutes } from '@/router/stock.ts'
 // import { useAuthStore } from '@/stores/auth' // Keeping original comment for context if needed, but adding real import
 import { useAuthStore } from '@/stores/auth'
+import { useAppStore } from '@/stores/app'
 import { locationRoutes } from './location.ts'
 
 const routes: RouteRecordRaw[] = [
@@ -33,10 +34,17 @@ const router = createRouter({
   routes,
 })
 
-/* Global auth guard: block access if not authenticated */
+/* Global guards: sync lock + auth */
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
+  const appStore = useAppStore()
   const publicPaths = ['/login', '/register']
+
+  // ── Sync Lock Guard ───────────────────────────────────
+  // If a global sync is in progress, trap the user on the sync screen (root ModuleSelector)
+  if (appStore.isGlobalSyncing && to.name !== 'root' && !publicPaths.includes(to.path)) {
+    return next({ name: 'root' })
+  }
 
   // Allow explicitly public paths
   if (publicPaths.includes(to.path)) {

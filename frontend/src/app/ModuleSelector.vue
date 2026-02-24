@@ -4,13 +4,18 @@ import ModuleCard from '@/components/atoms/ModuleCard.vue'
 import { modulesItems } from '@/data/navigations'
 import DashSibarNavigation from '@/components/molecules/DashSibarNavigation.vue'
 import { useAuthStore } from '@/stores/auth'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePostApi } from '@/composables/usePostApi'
 import { API_ROUTES } from '@/utils/constants/api_route'
+import api from '@/services/api'
 import { showCustomToast } from '@/utils/widgets/custom_toast'
 import { useSyncAnimation } from '@/composables/useSyncAnimation'
+import { useAppStore } from '@/stores/app'
 
 const authStore = useAuthStore()
+const appStore = useAppStore()
+const router = useRouter()
 const { postData, success: syncSuccess } = usePostApi()
 const {
   isSyncing,
@@ -34,30 +39,92 @@ const setCardRef = (el: unknown, index: number) => {
   cardRefs.value[index] = (el as any)?.$el ?? null
 }
 
+const finishSyncAnimation = async (toastMessage?: string, toastType: 'success' | 'error' = 'success') => {
+  const syncEl = syncCardRef.value
+  const cardEls = cardRefs.value.filter((el): el is HTMLElement => el !== null)
+  const orbitEl = orbitContainerRef.value
+
+  if (syncEl && orbitEl) {
+    await endAnimation(syncEl, cardEls, orbitEl)
+  }
+  
+  const savedRoute = appStore.exitSyncLock()
+  
+  if (toastMessage) {
+    showCustomToast({ message: toastMessage, type: toastType })
+  }
+
+  // Restore previous route if we were locked out
+  if (savedRoute && savedRoute.path !== '/') {
+    router.replace(savedRoute.fullPath)
+  }
+}
+
 const handleSyncClick = async () => {
-  if (isSyncing.value) return
+  if (isSyncing.value || appStore.isGlobalSyncing) return
 
   const syncEl = syncCardRef.value
   const cardEls = cardRefs.value.filter((el): el is HTMLElement => el !== null)
 
   if (!syncEl) return
 
-  const finish = async (toast: Parameters<typeof showCustomToast>[0]) => {
-    const orbitEl = orbitContainerRef.value
-    if (orbitEl) await endAnimation(syncEl, cardEls, orbitEl)
-    showCustomToast(toast)
-  }
+  // Mark ourself as the sync lock initiator (saving the root route)
+  appStore.enterSyncLock(router.currentRoute.value)
 
   startAnimation(syncEl, cardEls, orbitContainerRef)
 
   await postData(API_ROUTES.SYNC, {})
 
   if (syncSuccess.value) {
-    finish({ message: 'Synchronisation effectuée avec succès', type: 'success' })
+    await finishSyncAnimation('Synchronisation effectuée avec succès', 'success')
   } else {
-    finish({ message: 'Erreur lors de la synchronisation', type: 'error' })
+    await finishSyncAnimation('Erreur lors de la synchronisation', 'error')
   }
 }
+
+// === Global Lock Polling ===
+let pollInterval: ReturnType<typeof setInterval> | null = null
+
+async function checkSyncStatus() {
+  try {
+    await api.get(API_ROUTES.SYNC_STATUS)
+    // If 200 OK, sync is finished
+    await finishSyncAnimation('Synchronisation globale terminée.', 'success')
+    if (pollInterval) clearInterval(pollInterval)
+  } catch (err: any) {
+    const status = err?.response?.status
+    if (status === 503) {
+      // Still syncing
+      return
+    }
+    // Any other error means the sync lock is probably gone
+    if (status === 200 || status === 404 || !status) {
+      await finishSyncAnimation()
+      if (pollInterval) clearInterval(pollInterval)
+    }
+  }
+}
+
+onMounted(() => {
+  // If the store says we are globally syncing, but the animation isn't running
+  // (Meaning we were redirected here by the 503 interceptor)
+  if (appStore.isGlobalSyncing && !isSyncing.value) {
+    const syncEl = syncCardRef.value
+    const cardEls = cardRefs.value.filter((el): el is HTMLElement => el !== null)
+    
+    // We delay the animation start slightly to allow the DOM to render the cards
+    setTimeout(() => {
+      if (syncEl) {
+        startAnimation(syncEl, cardEls, orbitContainerRef)
+        pollInterval = setInterval(checkSyncStatus, 15000)
+      }
+    }, 100)
+  }
+})
+
+onUnmounted(() => {
+  if (pollInterval) clearInterval(pollInterval)
+})
 </script>
 
 <template>

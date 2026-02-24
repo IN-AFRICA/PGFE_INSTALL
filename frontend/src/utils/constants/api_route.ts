@@ -15,6 +15,7 @@ export const API_ROUTES = {
   LOGOUT: 'auth/logout',
   USER_INFOS: 'auth/me',
   SYNC: 'sync',
+  SYNC_STATUS: 'sync/status',
 
   // Routes for Filiere
   CREATE_FILLIERE: 'school/filiaires/store',
