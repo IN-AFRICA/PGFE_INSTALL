@@ -7,8 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class InfraInventory extends Model
 {
     protected $fillable = [
-        'inventory_date', 'note', 'school_id', 'user_id',
+        'inventory_date', 'note', 'school_id', 'user_id', 'uuid',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
 
     public function school() { return $this->belongsTo(School::class); }
     public function user() { return $this->belongsTo(User::class); }

@@ -50,7 +50,11 @@ final class InfraInfrastructureInventaireController extends Controller
             $data['author_id'] = $user->id;
 
             $inventaire = InfraInfrastructureInventaire::create($data);
-            $inventaire->load('infrastructure');
+            $inventaire->load([
+                'infrastructure.categorie',
+                'infrastructure.bailleur',
+                'infrastructure.etats',
+            ]);
 
             return response()->json([
                 'data' => new InfraInfrastructureInventaireResource($inventaire),

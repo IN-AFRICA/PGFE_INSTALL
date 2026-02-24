@@ -10,7 +10,15 @@ class RentalContractEquipmentController extends Controller
 {
     public function index(Request $request)
     {
-        $items = RentalContractEquipment::where('school_id', $request->user()->school_id)->get();
+        $items = RentalContractEquipment::where('school_id', $request->user()->school_id)
+            ->with(['equipment', 'rentalContract.client'])
+            ->get();
+        // Map to include client name
+        $items = $items->map(function ($item) {
+            $data = $item->toArray();
+            $data['client_name'] = $item->rentalContract && $item->rentalContract->client ? $item->rentalContract->client->name : null;
+            return $data;
+        });
         return response()->json(['data' => $items]);
     }
 
@@ -23,7 +31,10 @@ class RentalContractEquipmentController extends Controller
     public function show(RentalContractEquipment $contractEquipment)
     {
         $this->authorize('view', $contractEquipment);
-        return response()->json(['data' => $contractEquipment]);
+        $contractEquipment->load(['equipment', 'rentalContract.client']);
+        $data = $contractEquipment->toArray();
+        $data['client_name'] = $contractEquipment->rentalContract && $contractEquipment->rentalContract->client ? $contractEquipment->rentalContract->client->name : null;
+        return response()->json(['data' => $data]);
     }
 
     public function update(RentalContractEquipmentRequest $request, RentalContractEquipment $contractEquipment)

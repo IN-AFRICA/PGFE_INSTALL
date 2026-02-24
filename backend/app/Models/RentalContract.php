@@ -13,7 +13,6 @@ class RentalContract extends Model
     protected $fillable = [
         'contract_code',
         'client_id',
-        'start_date',
         'end_date',
         'loan_start_date',
         'total_amount',

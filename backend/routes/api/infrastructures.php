@@ -24,7 +24,13 @@ Route::middleware('auth:sanctum')
         Route::apiResource('states', InfraStateController::class);
         Route::apiResource('inventories', InfraInventoryController::class);
         Route::apiResource('infrastructures', InfraInfrastructureController::class);
+        Route::apiResource('inventory-equipments', InfraInventoryEquipmentController::class);
         Route::post('inventories/{inventory}/equipments', [InfraInventoryEquipmentController::class, 'store']);
         Route::post('inventories/{inventory}/real-states', [InfraInventoryRealStateController::class, 'store']);
         Route::apiResource('infrastructure-inventaires', InfraInfrastructureInventaireController::class);
+        Route::post('inventaire/{id}/item', [\App\Http\Controllers\Api\Infrastructure\InfraInfrastructureInventaireItemController::class, 'store']);
+        Route::get('infrastructure-inventaires/{id}/item', [\App\Http\Controllers\Api\Infrastructure\InfraInfrastructureInventaireItemV2Controller::class, 'index']);
+        Route::post('infrastructure-inventaires/{id}/item', [\App\Http\Controllers\Api\Infrastructure\InfraInfrastructureInventaireItemV2Controller::class, 'store']);
+        Route::get('inventories/{id}/item', [\App\Http\Controllers\InfraInventoryItemController::class, 'index']);
+        Route::post('inventories/{id}/item', [\App\Http\Controllers\InfraInventoryItemController::class, 'store']);
     });
