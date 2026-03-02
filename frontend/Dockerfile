@@ -1,7 +1,9 @@
 # ── Stage 1 : Build de l'application Vue ──
 FROM node:22-alpine AS builder
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Installer pnpm directement (plus fiable que corepack en Docker)
+ENV COREPACK_ENABLE_STRICT=0
+RUN npm install -g pnpm@10.11.1
 
 WORKDIR /app
 
@@ -11,7 +13,7 @@ RUN pnpm install --frozen-lockfile
 
 # Copier le code source et builder
 COPY . .
-RUN pnpm run build
+RUN pnpm run build-only
 
 # ── Stage 2 : Serveur de production nginx ──
 FROM nginx:stable-alpine AS production
