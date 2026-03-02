@@ -3,7 +3,7 @@ FROM composer:2 AS composer
 
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN --network=host composer install --no-dev --no-autoloader --no-scripts --no-progress
+RUN --network=host composer install --no-dev --no-autoloader --no-scripts --no-progress --ignore-platform-reqs
 
 # ── Stage 2 : Build des assets frontend (si nécessaire) ──
 FROM node:22-alpine AS node-builder
