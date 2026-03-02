@@ -3,14 +3,14 @@ FROM composer:2 AS composer
 
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-autoloader --no-scripts --no-progress
+RUN --network=host composer install --no-dev --no-autoloader --no-scripts --no-progress
 
 # ── Stage 2 : Build des assets frontend (si nécessaire) ──
 FROM node:22-alpine AS node-builder
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN --network=host npm ci --only=production
 
 COPY . .
 RUN npm run build 2>/dev/null || echo "No npm build script found"
@@ -19,7 +19,7 @@ RUN npm run build 2>/dev/null || echo "No npm build script found"
 FROM php:8.2-fpm-alpine AS production
 
 # Installation des extensions PHP requises par Laravel et les packages utilisés
-RUN apk add --no-cache \
+RUN --network=host apk add --no-cache \
     git \
     curl \
     libpng-dev \
