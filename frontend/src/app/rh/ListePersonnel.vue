@@ -203,12 +203,12 @@ function onPerPageUpdate(val: number) {
                 <Checkbox class="bg-white scale-70" />
               </TableCell>
               <TableCell>{{ item.matricule }}</TableCell>
-              <TableCell>{{ item.firstname }} {{ item.name }}</TableCell>
+              <TableCell>{{ item.pre_name }} {{ item.name }}</TableCell>
               <TableCell>{{ item.gender }}</TableCell>
               <TableCell>{{ item.phone }}</TableCell>
               <TableCell>{{ item.civil_status }}</TableCell>
-              <TableCell>{{ item.fonction.name }}</TableCell>
-              <TableCell>{{ item.academic_level.name }}</TableCell>
+              <TableCell>{{ item.fonction?.name || '—' }}</TableCell>
+              <TableCell>{{ item.academic_level?.name || '—' }}</TableCell>
               <TableCell>
                 <div class="flex items-center gap-2 w-max">
                   <RouterLink :to="`/rh/saisie/personnel/nouveau?id=${item.id}`">

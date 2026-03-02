@@ -12,6 +12,9 @@ import { stockRoutes } from '@/router/stock.ts'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { locationRoutes } from './location.ts'
+import { scheduleRoutes } from './schedule'
+import { insertionRoutes } from './insertions'
+
 
 const routes: RouteRecordRaw[] = [
   {
@@ -27,6 +30,8 @@ const routes: RouteRecordRaw[] = [
   ...infraRoutes,
   ...stockRoutes,
   ...locationRoutes,
+  ...scheduleRoutes,
+  ...insertionRoutes,
 ]
 
 const router = createRouter({

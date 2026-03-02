@@ -71,6 +71,21 @@ const getArticleName = (articleId: string | number) => {
   return article?.name || '—'
 }
 
+// Providers for name lookup
+const { data: providersRaw, fetchData: fetchProviders } = useGetApi(API_ROUTES.GET_STOCK_PROVIDERS)
+
+const providers = computed(() => {
+  if (!providersRaw.value) return []
+  if (Array.isArray(providersRaw.value)) return providersRaw.value
+  return (providersRaw.value as any).data || []
+})
+
+const getProviderName = (providerId: string | number | null | undefined) => {
+  if (!providerId) return '—'
+  const provider = providers.value.find((p: any) => p.id?.toString() === providerId?.toString())
+  return provider?.name || '—'
+}
+
 // Computed data for entries
 const entries = computed(() => {
   if (!rawEntriesData.value) return []
@@ -166,6 +181,7 @@ onMounted(() => {
   fetchEntrees()
   fetchSorties()
   fetchArticles()
+  fetchProviders()
 })
 
 // Listen for updates from forms
@@ -216,18 +232,22 @@ eventBus.on('stockExitUpdated', () => fetchSorties())
             <Table class="rounded-md bg-white">
               <TableHeader>
                 <TableRow>
+                  <TableHead class="w-[60px]">N°</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Qté</TableHead>
+                  <TableHead>Fournisseur</TableHead>
                   <TableHead>Note</TableHead>
                   <TableHead class="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for="item in filteredEntries" :key="item.id">
+                <TableRow v-for="(item, index) in filteredEntries" :key="item.id">
+                  <TableCell>{{ Number(index) + 1 }}</TableCell>
                   <TableCell>{{ formatDate(item.entry_date) }}</TableCell>
                   <TableCell>{{ getArticleName(item.article_id) }}</TableCell>
                   <TableCell>{{ item.quantity }}</TableCell>
+                  <TableCell>{{ getProviderName(item.article?.provider_id) }}</TableCell>
                   <TableCell>{{ item.note || '—' }}</TableCell>
                   <TableCell>
                     <div class="flex items-center justify-end gap-2">
@@ -319,18 +339,22 @@ eventBus.on('stockExitUpdated', () => fetchSorties())
             <Table class="rounded-md bg-white">
               <TableHeader>
                 <TableRow>
+                  <TableHead class="w-[60px]">N°</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Qté</TableHead>
+                  <TableHead>Fournisseur</TableHead>
                   <TableHead>Motif</TableHead>
                   <TableHead class="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for="item in filteredExits" :key="item.id">
+                <TableRow v-for="(item, index) in filteredExits" :key="item.id">
+                  <TableCell>{{ Number(index) + 1 }}</TableCell>
                   <TableCell>{{ formatDate(item.exit_date) }}</TableCell>
                   <TableCell>{{ getArticleName(item.article_id) }}</TableCell>
                   <TableCell>{{ item.quantity }}</TableCell>
+                  <TableCell>{{ getProviderName(item.article?.provider_id) }}</TableCell>
                   <TableCell>{{ item.reason || '—' }}</TableCell>
                   <TableCell>
                     <div class="flex items-center justify-end gap-2">

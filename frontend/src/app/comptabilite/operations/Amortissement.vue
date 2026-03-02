@@ -114,17 +114,44 @@ const paginatedItems = computed(() => {
 
 const total = computed(() => filteredItems.value.length)
 
-const calculateAnnualDepreciation = (
-  originalValue: number,
-  durationYears: number,
-  method: string,
-) => {
-  if (method === 'lineaire') {
-    return originalValue / durationYears
-  } else {
-    return (originalValue * 2.5) / durationYears
-  }
-}
+// TODO: Ces calculs seront fournis par le backend - commenté temporairement
+// const getAnnualDepreciation = (item: Amortissement): number => {
+//   const amount = parseFloat(String(item.amount)) || 0
+//   const years = parseFloat(String(item.number_years)) || 1
+//   if (item.model === 'lineaire') {
+//     return amount / years
+//   } else {
+//     return (amount * 2.5) / years
+//   }
+// }
+
+// const getElapsedYears = (purchaseDate: string): number => {
+//   if (!purchaseDate) return 0
+//   const purchase = new Date(purchaseDate)
+//   const today = new Date()
+//   const ms = today.getTime() - purchase.getTime()
+//   const years = ms / (1000 * 60 * 60 * 24 * 365.25)
+//   return Math.max(0, Math.floor(years))
+// }
+
+// const getCumulativeDepreciation = (item: Amortissement): number => {
+//   const amount = parseFloat(String(item.amount)) || 0
+//   const annual = getAnnualDepreciation(item)
+//   const elapsed = getElapsedYears(item.purchase_date)
+//   return Math.min(annual * elapsed, amount)
+// }
+
+// const getNetBookValue = (item: Amortissement): number => {
+//   const amount = parseFloat(String(item.amount)) || 0
+//   return amount - getCumulativeDepreciation(item)
+// }
+
+// const getAmortPercentage = (item: Amortissement): string => {
+//   const amount = parseFloat(String(item.amount)) || 0
+//   if (!amount) return '0%'
+//   const pct = (getCumulativeDepreciation(item) / amount) * 100
+//   return `${pct.toFixed(1)}%`
+// }
 
 const resetForm = () => {
   formData.value = {
@@ -206,7 +233,7 @@ const {
   error: updateError,
   response: updateResponse,
   putData: updateData,
-  success: updateSuccess,
+  success: updateSuccess, 
 } = usePutApi<Amortissement>()
 
 const deleteAmortissement = async (id: number) => {
@@ -399,10 +426,12 @@ watch([page, perPage], () => {
               <TableHead class="text-right">Valeur origine</TableHead>
               <TableHead class="text-center">Durée (ans)</TableHead>
               <TableHead>Méthode</TableHead>
+              <!-- TODO: à décommenter quand le backend fournit ces données
               <TableHead class="text-right">Dotation annuelle</TableHead>
               <TableHead class="text-right">Cumul amort.</TableHead>
               <TableHead class="text-right">VNC</TableHead>
               <TableHead class="text-center">% amort.</TableHead>
+              -->
               <TableHead class="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -443,18 +472,19 @@ watch([page, perPage], () => {
                   {{ item.model }}
                 </span>
               </TableCell>
-              <TableCell class="text-right">{{ formatAmount(item.annual_depreciation) }}</TableCell>
+              <!-- TODO: à décommenter quand le backend fournit ces données -->
+              <!-- <TableCell class="text-right">{{ formatAmount(getAnnualDepreciation(item)) }}</TableCell>
               <TableCell class="text-right text-orange-600">{{
-                formatAmount(item.cumulative_depreciation)
+                formatAmount(getCumulativeDepreciation(item))
               }}</TableCell>
               <TableCell class="text-right font-semibold text-blue-600">{{
-                formatAmount(item.net_book_value)
+                formatAmount(getNetBookValue(item))
               }}</TableCell>
               <TableCell class="text-center">
                 <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                  {{ formatPercentage(item.cumulative_depreciation, item.original_value) }}
+                  {{ getAmortPercentage(item) }}
                 </span>
-              </TableCell>
+              </TableCell> -->
               <TableCell>
                 <div class="flex items-center gap-2 w-max">
                   <Button

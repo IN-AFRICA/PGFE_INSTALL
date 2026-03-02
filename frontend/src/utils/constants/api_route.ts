@@ -541,4 +541,28 @@ export const API_ROUTES = {
   GET_RENTAL_PAYMENT: (id: number | string) => `rental/payments/${id}`,
   UPDATE_RENTAL_PAYMENT: (id: number | string) => `rental/payments/${id}`,
   DELETE_RENTAL_PAYMENT: (id: number | string) => `rental/payments/${id}`,
+
+  // === MODULE SCHEDULE (HORAIRE) ===
+  GET_SCHEDULES: 'schedules',
+  CREATE_SCHEDULE: 'schedules',
+  GET_SCHEDULE: (id: number | string) => `schedules/${id}`,
+  UPDATE_SCHEDULE: (id: number | string) => `schedules/${id}`,
+  DELETE_SCHEDULE: (id: number | string) => `schedules/${id}`,
+
+  // === MODULE INSERTION ===
+  // Applications
+  POST_INSERTION_APPLICATIONS: 'insertion/applications',
+  ACCEPT_INSERTION_APPLICATION: (id: number | string) => `insertion/applications/${id}/accept`,
+  REJECT_INSERTION_APPLICATION: (id: number | string) => `insertion/applications/${id}/reject`,
+
+  // Candidates
+  GET_CANDIDATE_APPLICATIONS: (id: number | string) => `insertion/candidates/${id}/applications`,
+  REGISTER_CANDIDATE: 'insertion/candidates',
+
+  // Companies
+  CREATE_COMPANY: 'insertion/companies',
+
+  // Job Offers
+  CREATE_JOB_OFFER: 'insertion/job-offers',
+  CLOSE_JOB_OFFER: (id: number | string) => `insertion/job-offers/${id}/close`,
 }

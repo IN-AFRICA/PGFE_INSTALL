@@ -15366,6 +15366,248 @@
         }
       }
     },
+    "/v1/infrastructures/inventaire/{id}/item": {
+      "post": {
+        "operationId": "infraInfrastructureInventaireItem.store",
+        "summary": "Ajoute un ou plusieurs items (détails) à l'inventaire d'infrastructure (champ observations).\nPOST /api/v1/infrastructures/inventaire/{id}/item",
+        "tags": [
+          "InfraInfrastructureInventaireItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "etat": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "description": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "etat"
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/infrastructure-inventaires/{id}/item": {
+      "get": {
+        "operationId": "infraInfrastructureInventaireItemV2.index",
+        "summary": "GET: Liste des items (observations) d'un inventaire d'infrastructure",
+        "tags": [
+          "InfraInfrastructureInventaireItemV2"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "infraInfrastructureInventaireItemV2.store",
+        "summary": "Ajoute un ou plusieurs items (détails) à l'inventaire d'infrastructure (champ observations).\nPOST /api/v1/infrastructures/infrastructure-inventaires/{id}/item",
+        "tags": [
+          "InfraInfrastructureInventaireItemV2"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "etat": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "description": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "etat"
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
     "/v1/infrastructures/inventories": {
       "get": {
         "operationId": "v1.infra.inventories.index",
@@ -15574,10 +15816,239 @@
         }
       }
     },
+    "/v1/infrastructures/inventory-equipments": {
+      "get": {
+        "operationId": "v1.infra.inventory-equipments.index",
+        "summary": "Display a listing of the resource",
+        "tags": [
+          "InfraInventoryEquipment"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "v1.infra.inventory-equipments.store",
+        "description": "Payload simple (un équipement) :\n{\n  \"inventory_id\": 1,\n  \"equipment_id\": 50,\n  \"quantity\": 3\n}\n\nPayload en masse (plusieurs équipements) :\n{\n  \"inventory_id\": 1,\n  \"items\": [\n    { \"equipment_id\": 50, \"quantity\": 3 },\n    { \"equipment_id\": 51, \"quantity\": 2 }\n  ]\n}",
+        "summary": "Store a newly created resource in storage.\nSupporte la création d'un seul item ou de plusieurs items à la fois",
+        "tags": [
+          "InfraInventoryEquipment"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inventory_id": {
+                    "type": "integer"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "equipment_id": {
+                          "type": "integer"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "equipment_id",
+                        "quantity"
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "inventory_id",
+                  "items"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "string"
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "Équipement ajouté à l'inventaire"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "success",
+                        "message"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "string"
+                            }
+                          ],
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "additionalItems": false
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "success",
+                        "message"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/inventory-equipments/{id}": {
+      "get": {
+        "operationId": "v1.infra.inventory-equipments.show",
+        "summary": "Display the specified resource",
+        "tags": [
+          "InfraInventoryEquipment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "v1.infra.inventory-equipments.update",
+        "summary": "Update the specified resource in storage",
+        "tags": [
+          "InfraInventoryEquipment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.infra.inventory-equipments.destroy",
+        "summary": "Remove the specified resource from storage",
+        "tags": [
+          "InfraInventoryEquipment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
     "/v1/infrastructures/inventories/{inventory}/equipments": {
       "post": {
-        "operationId": "infraInventoryEquipment.store",
-        "summary": "Store a newly created resource in storage",
+        "operationId": "infraInventoryEquipment.store_0",
+        "description": "Payload simple (un équipement) :\n{\n  \"inventory_id\": 1,\n  \"equipment_id\": 50,\n  \"quantity\": 3\n}\n\nPayload en masse (plusieurs équipements) :\n{\n  \"inventory_id\": 1,\n  \"items\": [\n    { \"equipment_id\": 50, \"quantity\": 3 },\n    { \"equipment_id\": 51, \"quantity\": 2 }\n  ]\n}",
+        "summary": "Store a newly created resource in storage.\nSupporte la création d'un seul item ou de plusieurs items à la fois",
         "tags": [
           "InfraInventoryEquipment"
         ],
@@ -15601,18 +16072,30 @@
                   "inventory_id": {
                     "type": "integer"
                   },
-                  "equipment_id": {
-                    "type": "integer"
-                  },
-                  "quantity": {
-                    "type": "integer",
-                    "minimum": 1
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "equipment_id": {
+                          "type": "integer"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "equipment_id",
+                        "quantity"
+                      ]
+                    },
+                    "minItems": 1
                   }
                 },
                 "required": [
                   "inventory_id",
-                  "equipment_id",
-                  "quantity"
+                  "items"
                 ]
               }
             }
@@ -15624,7 +16107,211 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "string"
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "Équipement ajouté à l'inventaire"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "success",
+                        "message"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "string"
+                            }
+                          ],
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "additionalItems": false
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "success",
+                        "message"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/v1/infrastructures/inventories/{id}/item": {
+      "get": {
+        "operationId": "infraInventoryItem.index",
+        "summary": "GET: Liste des items (équipements) d'un inventaire d'équipement",
+        "tags": [
+          "InfraInventoryItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "infraInventoryItem.store",
+        "summary": "Ajoute un ou plusieurs items (équipements) à un inventaire d'équipement.\nPOST /api/v1/infrastructures/inventories/{id}/item",
+        "tags": [
+          "InfraInventoryItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "equipment_id": {
+                          "type": "integer"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "equipment_id",
+                        "quantity"
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "success",
+                    "message"
+                  ]
                 }
               }
             }
@@ -15641,7 +16328,8 @@
     "/v1/infrastructures/inventories/{inventory}/real-states": {
       "post": {
         "operationId": "infraInventoryRealState.store",
-        "summary": "Store a newly created resource in storage",
+        "description": "Payload simple (un état) :\n{\n  \"inventory_id\": 1,\n  \"state_id\": 3,\n  \"note\": \"Plusieurs chaises cassées\"\n}\n\nPayload en masse (plusieurs états) :\n{\n  \"inventory_id\": 1,\n  \"states\": [\n    { \"state_id\": 3, \"note\": \"Chaises cassées\" },\n    { \"state_id\": 2, \"note\": \"Tableau endommagé\" }\n  ]\n}",
+        "summary": "Store a newly created resource in storage.\nSupporte la création d'un seul état ou de plusieurs états à la fois",
         "tags": [
           "InfraInventoryRealState"
         ],
@@ -15665,19 +16353,31 @@
                   "inventory_id": {
                     "type": "integer"
                   },
-                  "state_id": {
-                    "type": "integer"
-                  },
-                  "note": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                  "states": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "state_id": {
+                          "type": "integer"
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "state_id"
+                      ]
+                    },
+                    "minItems": 1
                   }
                 },
                 "required": [
                   "inventory_id",
-                  "state_id"
+                  "states"
                 ]
               }
             }
@@ -15689,7 +16389,57 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "string"
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "État ajouté à l'inventaire"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "success",
+                        "message"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "string"
+                            }
+                          ],
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "additionalItems": false
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "success",
+                        "message"
+                      ]
+                    }
+                  ]
                 }
               }
             }
@@ -24781,7 +25531,80 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/RentalContractEquipment"
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "contract_equipment_code": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "uuid": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "rental_contract_id": {
+                          "type": "integer"
+                        },
+                        "equipment_id": {
+                          "type": "integer"
+                        },
+                        "quantity": {
+                          "type": "integer"
+                        },
+                        "price": {
+                          "type": "string"
+                        },
+                        "is_hand_over": {
+                          "type": "integer"
+                        },
+                        "school_id": {
+                          "type": "integer"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time"
+                        },
+                        "client_name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "contract_equipment_code",
+                        "uuid",
+                        "rental_contract_id",
+                        "equipment_id",
+                        "quantity",
+                        "price",
+                        "is_hand_over",
+                        "school_id",
+                        "user_id",
+                        "created_at",
+                        "updated_at",
+                        "client_name"
+                      ]
                     }
                   },
                   "required": [
@@ -25712,6 +26535,239 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/v1/schedules/{id}": {
+      "put": {
+        "operationId": "v1.schedules.update",
+        "summary": "Update an existing schedule entry",
+        "tags": [
+          "Schedule"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "school_year_id": {
+                    "type": "integer"
+                  },
+                  "classroom_id": {
+                    "type": "integer"
+                  },
+                  "academic_personal_id": {
+                    "type": "integer"
+                  },
+                  "course_id": {
+                    "type": "integer"
+                  },
+                  "day": {
+                    "type": "string"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  },
+                  "week_number": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Horaire modifié avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "v1.schedules.",
+        "summary": "Update an existing schedule entry",
+        "tags": [
+          "Schedule"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "school_year_id": {
+                    "type": "integer"
+                  },
+                  "classroom_id": {
+                    "type": "integer"
+                  },
+                  "academic_personal_id": {
+                    "type": "integer"
+                  },
+                  "course_id": {
+                    "type": "integer"
+                  },
+                  "day": {
+                    "type": "string"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  },
+                  "week_number": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Horaire modifié avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "v1.schedules.destroy",
+        "summary": "Delete a schedule entry",
+        "tags": [
+          "Schedule"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Horaire supprimé avec succès."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -32239,37 +33295,6 @@
         "tags": [
           "Sync"
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "table": {
-                    "type": "string"
-                  },
-                  "data": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "last_sync_at": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "date-time"
-                  }
-                },
-                "required": [
-                  "table"
-                ]
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "",
@@ -32281,17 +33306,13 @@
                     "success": {
                       "type": "boolean"
                     },
-                    "server_changes": {
-                      "type": "string"
-                    },
-                    "sync_time": {
+                    "results": {
                       "type": "string"
                     }
                   },
                   "required": [
                     "success",
-                    "server_changes",
-                    "sync_time"
+                    "results"
                   ]
                 }
               }
@@ -32302,43 +33323,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        },
-                        "message": {
-                          "type": "string",
-                          "enum": [
-                            "Table non valide ou non supportée pour la synchronisation multitenant."
-                          ]
-                        }
-                      },
-                      "required": [
-                        "success",
-                        "message"
-                      ]
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
                     },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        },
-                        "message": {
-                          "type": "string",
-                          "enum": [
-                            "Aucun school_id associé à l'utilisateur pour la synchronisation multitenant."
-                          ]
-                        }
-                      },
-                      "required": [
-                        "success",
-                        "message"
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Aucun school_id associé à l'utilisateur pour la synchronisation multitenant."
                       ]
                     }
+                  },
+                  "required": [
+                    "success",
+                    "message"
                   ]
                 }
               }
@@ -32347,8 +33346,30 @@
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
           },
-          "422": {
-            "$ref": "#/components/responses/ValidationException"
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Une synchronisation globale est déjà en cours."
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -35661,6 +36682,12 @@
           "id": {
             "type": "integer"
           },
+          "school_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "uuid": {
             "type": "string"
           },
@@ -35709,6 +36736,7 @@
         },
         "required": [
           "id",
+          "school_id",
           "uuid",
           "school_year_id",
           "student_id",
@@ -36304,7 +37332,10 @@
             "type": "integer"
           },
           "academic_personal_id": {
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -38434,6 +39465,12 @@
           "id": {
             "type": "integer"
           },
+          "school_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "uuid": {
             "type": "string"
           },
@@ -38511,6 +39548,7 @@
         },
         "required": [
           "id",
+          "school_id",
           "uuid",
           "country_id",
           "city",

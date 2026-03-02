@@ -10,7 +10,7 @@ export const modulesItems = [
     id: 2,
     text: 'Insertion Professionnelle',
     icon: 'hugeicons--user-account',
-    link: '',
+    link: '/insertion/prealables',
   },
   {
     id: 3,
@@ -58,7 +58,7 @@ export const modulesItems = [
     id: 9,
     text: 'Horaire',
     icon: 'hugeicons--calendar-03',
-    link: '#',
+    link: '/schedule',
   },
   {
     id: 10,
@@ -233,6 +233,34 @@ export const locationModuleItemNav = [
   },
 ]
 
+export const scheduleModuleItemNav = [
+  {
+    id: 1,
+    text: 'Opérations',
+    icon: 'hugeicons--task-add-01',
+    link: '/schedule/school-planer',
+    permission: 'users.view',
+  },
+]
+
+export const insertionModuleItemNav = [
+  {
+    id: 1,
+    text: 'Préalables',
+    icon: 'hugeicons--file-edit',
+    link: '/insertion/prealables',
+    permission: 'insertion.full',
+  },
+  {
+    id: 2,
+    text: 'Opérations',
+    icon: 'hugeicons--task-add-01',
+    link: '/insertion/operations',
+    permission: 'insertion.full',
+  },
+]
+
+
 export const modulesNavigation = {
   students: studentModulesItemNav,
   rh: rhModulesItemNav,
@@ -241,4 +269,6 @@ export const modulesNavigation = {
   infra: infraModuleItemNav,
   stock: stockModuleItemsNav,
   location: locationModuleItemNav,
+  schedule: scheduleModuleItemNav,
+  insertion: insertionModuleItemNav,
 }

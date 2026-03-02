@@ -253,7 +253,7 @@ onMounted(async () => {
             <SpanRequired />
           </Label>
           <Field name="date" v-slot="{ field, errorMessage, meta }">
-            <Input v-bind="field" type="date" class="bg-gray-100 transition-all h-10 rounded-md" />
+            <Input :model-value="field.value" @update:model-value="(v) => field.onChange(v)" type="date" class="bg-gray-100 transition-all h-10 rounded-md" />
             <span v-if="meta.touched && errorMessage" class="text-sm text-red-500">{{
               errorMessage
             }}</span>
@@ -268,7 +268,8 @@ onMounted(async () => {
           </Label>
           <Field name="description" v-slot="{ field, errorMessage, meta }">
             <Textarea
-              v-bind="field"
+              :model-value="field.value"
+              @update:model-value="(v) => field.onChange(v)"
               class="bg-gray-100 transition-all rounded-md min-h-[100px]"
               placeholder="Ex: Paiement fournisseur - Facture n°12345"
             />
@@ -286,7 +287,8 @@ onMounted(async () => {
           </Label>
           <Field name="montant" v-slot="{ field, errorMessage, meta }">
             <Input
-              v-bind="field"
+              :model-value="field.value"
+              @update:model-value="(v) => field.onChange(v)"
               type="number"
               step="0.01"
               min="0"

@@ -403,10 +403,10 @@ eventBus.on('journalUpdated', () => {
                 />
               </TableCell>
               <TableCell>{{ formatDate(entry.date) }}</TableCell>
-              <TableCell>{{ entry.piece_number || '-' }}</TableCell>
+              <TableCell>{{ entry.account?.number || entry.piece_number || '-' }}</TableCell>
               <TableCell>{{ entry.account.code || '-' }}</TableCell>
               <TableCell>{{ entry.account.name || '-' }}</TableCell>
-              <TableCell>{{ entry.label || '-' }}</TableCell>
+              <TableCell>{{ entry.description || entry.label || '-' }}</TableCell>
               <TableCell class="text-right font-medium">
                 {{
                   parseInt(entry.output_account.amount) > 0
@@ -451,7 +451,7 @@ eventBus.on('journalUpdated', () => {
                     variant="destructive"
                     size="icon"
                     class="size-8"
-                    @click="deactivateEntry(entry.id, entry.label)"
+                    @click="deactivateEntry(entry.id, entry.description)"
                     :disabled="deleting"
                     title="Abandonner"
                   >
