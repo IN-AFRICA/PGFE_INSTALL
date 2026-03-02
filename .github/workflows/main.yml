@@ -1,4 +1,4 @@
-name: Créer une Release publique avec ZIP
+name: Créer une Release publique avec ZIPS
 on:
   workflow_dispatch:
     inputs:
