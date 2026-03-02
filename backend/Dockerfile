@@ -1,9 +1,20 @@
 # ── Stage 1 : Installation des dépendances PHP ──
-FROM composer:2-php8.2 AS composer
+# On utilise php:8.2-alpine directement pour garantir PHP 8.2
+# (l'image composer:2 embarque désormais PHP 8.5 ce qui casse sabberworm/php-css-parser v8.9.0)
+FROM php:8.2-alpine AS composer
+
+# Installer Composer + extensions requises par les packages (gd, exif)
+RUN apk add --no-cache \
+        libpng-dev libjpeg-turbo-dev freetype-dev \
+        libexif-dev \
+        unzip curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd exif \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN --network=host composer install --no-dev --no-autoloader --no-scripts --no-progress --ignore-platform-reqs
+RUN composer install --no-dev --no-autoloader --no-scripts --no-progress
 
 
 # ── Stage 2 : Build des assets frontend (si nécessaire) ──
