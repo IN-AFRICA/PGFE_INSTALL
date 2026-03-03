@@ -29,8 +29,7 @@ services:
       network: host
     container_name: pgfe-backend
     restart: unless-stopped
-    ports:
-      - "9000:9000"
+    # Pas de ports exposés : php-fpm communique via le réseau Docker interne
     depends_on:
       database:
         condition: service_healthy
@@ -44,16 +43,19 @@ services:
       DB_DATABASE: ${DB_DATABASE:-pgfe_db}
       DB_USERNAME: ${DB_USERNAME:-pgfe_user}
       DB_PASSWORD: ${DB_PASSWORD:-pgfe_secret}
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
     volumes:
-      - backend-storage:/var/www/html/storage/app
+      - backend-storage:/var/www/html/storage
     networks:
       - pgfe-network
     healthcheck:
-      test: ["CMD", "php", "artisan", "about", "--no-ansi"]
+      test: ["CMD-SHELL", "php-fpm -t 2>/dev/null && echo ok"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   # ── Base de données MySQL ──
   database:

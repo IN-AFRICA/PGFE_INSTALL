@@ -92,9 +92,12 @@ ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/bin/chromium-browser \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-USER www
+# Copier et autoriser le script d'entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 9000
 
-# En production avec php-fpm, le CMD par défaut de l'image de base suffit
+# L'entrypoint gère APP_KEY, migrations et cache avant de lancer php-fpm
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]
