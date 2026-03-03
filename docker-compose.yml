@@ -1,4 +1,45 @@
 services:
+  # ── Traefik (Reverse Proxy, SSL, Auto-découverte) ──
+  traefik:
+    image: traefik:v3.1
+    container_name: pgfe-traefik
+    restart: unless-stopped
+    command:
+      # Provider Docker : auto-découverte via labels
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=pgfe-network"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirection automatique HTTP -> HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # Let's Encrypt (TLS Challenge)
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${ADMIN_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      # Dashboard (désactivé par défaut en prod, sécurisé si activé)
+      - "--api.dashboard=false"
+      # Logs
+      - "--log.level=WARN"
+      - "--accesslog=false"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik-certs:/letsencrypt"
+    networks:
+      - pgfe-network
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   # ── Frontend Vue.js (nginx) ──
   frontend:
     build:
@@ -7,8 +48,21 @@ services:
       network: host
     container_name: pgfe-frontend
     restart: unless-stopped
-    ports:
-      - "80:80"
+    # Pas de ports exposés directement : Traefik s'en charge
+    labels:
+      - "traefik.enable=true"
+      # Router HTTPS
+      - "traefik.http.routers.pgfe.rule=Host(`${APP_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.pgfe.entrypoints=websecure"
+      - "traefik.http.routers.pgfe.tls=true"
+      - "traefik.http.routers.pgfe.tls.certresolver=myresolver"
+      # Service (port interne du container nginx)
+      - "traefik.http.services.pgfe.loadbalancer.server.port=80"
+      # Headers de sécurité via middleware
+      - "traefik.http.middlewares.pgfe-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.pgfe-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.pgfe-headers.headers.forceSTSHeader=true"
+      - "traefik.http.routers.pgfe.middlewares=pgfe-headers"
     depends_on:
       backend:
         condition: service_healthy
@@ -29,14 +83,13 @@ services:
       network: host
     container_name: pgfe-backend
     restart: unless-stopped
-    # Pas de ports exposés : php-fpm communique via le réseau Docker interne
     depends_on:
       database:
         condition: service_healthy
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
-      APP_URL: http://localhost
+      APP_URL: https://${APP_DOMAIN:-localhost}
       DB_CONNECTION: mysql
       DB_HOST: database
       DB_PORT: 3306
@@ -67,8 +120,7 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE:-pgfe_db}
       MYSQL_USER: ${DB_USERNAME:-pgfe_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-pgfe_secret}
-    ports:
-      - "3306:3306"
+    # Port 3306 non exposé à l'hôte : accès uniquement via le réseau Docker interne
     volumes:
       - db-data:/var/lib/mysql
     networks:
@@ -84,6 +136,8 @@ volumes:
   db-data:
     driver: local
   backend-storage:
+    driver: local
+  traefik-certs:
     driver: local
 
 networks:
