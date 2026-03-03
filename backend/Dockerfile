@@ -1,15 +1,16 @@
 # ── Stage 1 : Installation des dépendances PHP ──
-# On utilise php:8.2-alpine directement pour garantir PHP 8.2
-# (l'image composer:2 embarque désormais PHP 8.5 ce qui casse sabberworm/php-css-parser v8.9.0)
-FROM php:8.2-alpine AS composer
+# PHP 8.3 requis par maennchen/zipstream-php 3.2.0 (php-64bit ^8.3)
+# On évite composer:2 qui embarque PHP 8.5 (incompatible avec sabberworm/php-css-parser ~8.4.0)
+FROM php:8.3-alpine AS composer
 
-# Installer Composer + extensions requises par les packages (gd, exif)
+# Installer Composer + extensions requises par les packages (gd, exif, zip)
 RUN --network=host apk add --no-cache \
         libpng-dev libjpeg-turbo-dev freetype-dev \
         libexif-dev \
+        libzip-dev \
         unzip curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd exif \
+    && docker-php-ext-install -j$(nproc) gd exif zip \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /app
@@ -32,7 +33,7 @@ COPY . .
 RUN npm run build 2>/dev/null || echo "No npm build script found"
 
 # ── Stage 3 : Runtime PHP Production ──
-FROM php:8.2-fpm-alpine AS production
+FROM php:8.3-fpm-alpine AS production
 
 # Installation des extensions PHP requises par Laravel et les packages utilisés
 RUN --network=host apk add --no-cache \
