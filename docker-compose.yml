@@ -1,7 +1,7 @@
 services:
   # ── Traefik (Reverse Proxy – mode LAN / HTTP) ──
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.6
     container_name: pgfe-traefik
     restart: unless-stopped
     command:
