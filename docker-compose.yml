@@ -30,7 +30,7 @@ services:
     container_name: pgfe-backend
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "9000:9000"
     depends_on:
       database:
         condition: service_healthy

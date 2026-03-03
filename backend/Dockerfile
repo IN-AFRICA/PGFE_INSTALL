@@ -1,35 +1,39 @@
-# ── Stage 1 : Installation des dépendances PHP ──
-# PHP 8.3 requis par maennchen/zipstream-php 3.2.0 (php-64bit ^8.3)
-# On évite composer:2 comme base car il embarque PHP 8.5 (incompatible)
-FROM php:8.3-alpine AS composer
+# ── Stage 1 : Installation des dépendances PHP (Vendor) ──
+FROM php:8.3-alpine AS php-builder
 
-# Copier le binaire Composer depuis l'image officielle (plus fiable que curl sur réseau lent)
-COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+# On récupère le binaire Composer depuis l'image officielle
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Installer les extensions PHP requises par les packages (gd, exif, zip)
-RUN --network=host apk add --no-cache \
-        libpng-dev libjpeg-turbo-dev freetype-dev \
-        libexif-dev \
-        libzip-dev \
-        unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+# Dépendances système nécessaires pour les extensions PHP (pendant le build)
+RUN apk add --no-cache \
+    libpng-dev libjpeg-turbo-dev freetype-dev libexif-dev libzip-dev zlib-dev unzip
+
+# Installation des extensions PHP requises par Laravel et ses packages
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd exif zip
 
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN --network=host composer install --no-dev --no-autoloader --no-scripts --no-progress
 
+# On utilise le chemin absolu /usr/bin/composer pour éviter le "not found"
+RUN --network=host /usr/bin/composer install \
+    --no-dev \
+    --no-autoloader \
+    --no-scripts \
+    --no-progress \
+    --ignore-platform-reqs
 
-# ── Stage 2 : Build des assets frontend (si nécessaire) ──
+# ── Stage 2 : Build des assets frontend (Vite/Mix) ──
 FROM node:22-alpine AS node-builder
-
-# Augmenter les timeouts pour connexions lentes
-ENV NPM_CONFIG_FETCH_TIMEOUT=600000
-ENV NPM_CONFIG_FETCH_RETRIES=5
 
 WORKDIR /app
 COPY package*.json ./
-RUN --network=host npm ci --omit=dev
+
+# Augmentation des timeouts pour prévenir les erreurs réseau ETIMEDOUT
+RUN npm config set fetch-retry-maxtimeout 1200000 && \
+    npm config set fetch-retries 10 && \
+    npm config set fetch-retry-mintimeout 100000 && \
+    npm ci --omit=dev
 
 COPY . .
 RUN npm run build 2>/dev/null || echo "No npm build script found"
@@ -37,80 +41,59 @@ RUN npm run build 2>/dev/null || echo "No npm build script found"
 # ── Stage 3 : Runtime PHP Production ──
 FROM php:8.3-fpm-alpine AS production
 
-# Installation des extensions PHP requises par Laravel et les packages utilisés
+# Installation des dépendances système (runtime + dev pour compiler les extensions)
 RUN --network=host apk add --no-cache \
-    git \
-    curl \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    oniguruma-dev \
-    libxml2-dev \
-    icu-dev \
-    chromium \
-    chromium-chromedriver \
+    git curl zip unzip \
+    libpng-dev libjpeg-turbo-dev freetype-dev \
+    libzip-dev libexif-dev \
+    oniguruma-dev libxml2-dev icu-dev \
+    chromium chromium-chromedriver \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        pdo_mysql \
-        mysqli \
-        gd \
-        zip \
-        mbstring \
-        xml \
-        bcmath \
-        intl \
-        exif \
+        pdo_mysql mysqli gd zip mbstring xml bcmath intl exif opcache \
+    && apk del --no-cache \
+        libpng-dev libjpeg-turbo-dev freetype-dev \
+        libzip-dev libexif-dev \
+        oniguruma-dev libxml2-dev icu-dev \
+    && apk add --no-cache \
+        libpng libjpeg-turbo freetype \
+        libzip libexif \
+        oniguruma libxml2 icu-libs \
     && rm -rf /var/cache/apk/*
 
-# Configuration optimisée PHP pour production
-COPY --from=composer /usr/bin/composer /usr/bin/composer
-RUN echo "memory_limit = 512M" > /usr/local/etc/php/conf.d/memory-limit.ini && \
-    echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/upload.ini && \
-    echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/upload.ini && \
-    echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/upload.ini
+# Config PHP optimisée
+RUN echo "memory_limit = 512M" > /usr/local/etc/php/conf.d/docker-php-memlimit.ini \
+    && echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/docker-php-upload.ini \
+    && echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/docker-php-upload.ini \
+    && echo "opcache.enable_cli=1" > /usr/local/etc/php/conf.d/docker-php-opcache.ini
 
-# Créer utilisateur non-root pour la sécurité
-RUN addgroup -g 1000 -S www && \
-    adduser -u 1000 -S www -G www
+# Créer un utilisateur pour la sécurité
+RUN addgroup -g 1000 -S www && adduser -u 1000 -S www -G www
 
 WORKDIR /var/www/html
 
-# Copier les dépendances depuis le stage composer
-COPY --from=composer /app/vendor ./vendor
-COPY --from=node-builder /app/public ./public
+# Récupérer le binaire composer pour le dump-autoload final
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copier le code source Laravel
+# Récupération des fichiers depuis les stages précédents
+COPY --from=php-builder /app/vendor ./vendor
+COPY --from=node-builder /app/public ./public
 COPY --chown=www:www . .
 
-# Finaliser l'installation Composer avec autoloader optimisé
-RUN composer dump-autoload --no-dev --optimize && \
-    composer clear-cache
-
-# Créer les dossiers de cache et logs avec bonnes permissions
-RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache && \
+# Finalisation : Autoload optimisé
+RUN /usr/bin/composer dump-autoload --no-dev --optimize && \
+    mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache && \
     chown -R www:www /var/www/html && \
-    chmod -R 755 /var/www/html/storage
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Variables d'environnement pour Browsershot (utilisé par spatie/browsershot)
+# Variables d'environnement pour Browsershot
 ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/bin/chromium-browser \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-# Cache des configurations Laravel pour performance
-RUN php artisan config:cache 2>/dev/null || true && \
-    php artisan route:cache 2>/dev/null || true && \
-    php artisan view:cache 2>/dev/null || true
-
-# Healthcheck Laravel
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
-    CMD php artisan about --no-ansi || exit 1
-
 USER www
 
-EXPOSE 8000
+EXPOSE 9000
 
-# Serveur Laravel intégré (pour développement/test) ou PHP-FPM
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# En production avec php-fpm, le CMD par défaut de l'image de base suffit
+CMD ["php-fpm"]
