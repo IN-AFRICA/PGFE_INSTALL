@@ -4,16 +4,20 @@ FROM node:22-alpine AS builder
 # Installer pnpm directement (plus fiable que corepack en Docker)
 # --network=host : utilise le réseau de l'hôte pour éviter les timeouts Docker bridge
 ENV COREPACK_ENABLE_STRICT=0
-# Augmenter les timeouts pour connexions lentes
+# Augmenter les timeouts pour connexions lentes (npm)
 ENV NPM_CONFIG_FETCH_TIMEOUT=600000
 ENV NPM_CONFIG_FETCH_RETRIES=5
 RUN --network=host npm install -g pnpm@10.11.1
 
 WORKDIR /app
 
+# Configurer les timeouts pnpm via .npmrc (pnpm ne supporte pas --network-timeout en CLI)
+RUN echo "network-timeout=600000" > .npmrc && \
+    echo "fetch-retries=5" >> .npmrc
+
 # Copier les fichiers de dépendances en premier (cache Docker optimal)
 COPY package.json pnpm-lock.yaml ./
-RUN --network=host pnpm install --frozen-lockfile --network-timeout 600000
+RUN --network=host pnpm install --frozen-lockfile
 
 # Copier le code source et builder
 COPY . .
