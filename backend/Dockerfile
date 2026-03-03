@@ -1,17 +1,19 @@
 # ── Stage 1 : Installation des dépendances PHP ──
 # PHP 8.3 requis par maennchen/zipstream-php 3.2.0 (php-64bit ^8.3)
-# On évite composer:2 qui embarque PHP 8.5 (incompatible avec sabberworm/php-css-parser ~8.4.0)
+# On évite composer:2 comme base car il embarque PHP 8.5 (incompatible)
 FROM php:8.3-alpine AS composer
 
-# Installer Composer + extensions requises par les packages (gd, exif, zip)
+# Copier le binaire Composer depuis l'image officielle (plus fiable que curl sur réseau lent)
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+# Installer les extensions PHP requises par les packages (gd, exif, zip)
 RUN --network=host apk add --no-cache \
         libpng-dev libjpeg-turbo-dev freetype-dev \
         libexif-dev \
         libzip-dev \
-        unzip curl \
+        unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd exif zip \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    && docker-php-ext-install -j$(nproc) gd exif zip
 
 WORKDIR /app
 COPY composer.json composer.lock ./
