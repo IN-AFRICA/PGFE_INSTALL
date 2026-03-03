@@ -99,6 +99,8 @@ services:
     image: mysql:8.0
     container_name: pgfe-database
     restart: unless-stopped
+    # Désactiver SSL (inutile en réseau Docker LAN interne)
+    command: --default-authentication-plugin=mysql_native_password --skip-ssl
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-pgfe_root_secret}
       MYSQL_DATABASE: ${DB_DATABASE:-pgfe_db}
@@ -110,7 +112,7 @@ services:
     networks:
       - pgfe-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-pgfe_root_secret}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-pgfe_root_secret}", "--skip-ssl"]
       interval: 10s
       timeout: 5s
       retries: 10
