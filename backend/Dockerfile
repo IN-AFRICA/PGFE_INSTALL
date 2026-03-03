@@ -4,7 +4,7 @@
 FROM php:8.2-alpine AS composer
 
 # Installer Composer + extensions requises par les packages (gd, exif)
-RUN apk add --no-cache \
+RUN --network=host apk add --no-cache \
         libpng-dev libjpeg-turbo-dev freetype-dev \
         libexif-dev \
         unzip curl \
@@ -14,15 +14,19 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-autoloader --no-scripts --no-progress
+RUN --network=host composer install --no-dev --no-autoloader --no-scripts --no-progress
 
 
 # ── Stage 2 : Build des assets frontend (si nécessaire) ──
 FROM node:22-alpine AS node-builder
 
+# Augmenter les timeouts pour connexions lentes
+ENV NPM_CONFIG_FETCH_TIMEOUT=600000
+ENV NPM_CONFIG_FETCH_RETRIES=5
+
 WORKDIR /app
 COPY package*.json ./
-RUN --network=host npm ci --only=production
+RUN --network=host npm ci --omit=dev
 
 COPY . .
 RUN npm run build 2>/dev/null || echo "No npm build script found"
