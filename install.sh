@@ -2,8 +2,8 @@
 set -e
 
 
-REPO_URL="https://github.com/IN-AFRICA/PGFE_INSTALL"
-DOWNLOAD_URL="${REPO_URL}/archive/refs/heads/main.zip"
+REPO_OWNER="IN-AFRICA"
+REPO_NAME="PGFE_INSTALL"
 INSTALL_DIR="pgfe"
 DB_NAME="pgfe_db"
 DB_USER="pgfe_user"
@@ -29,43 +29,45 @@ print_error() { echo -e "${RED}✗ $1${NC}"; exit 1; }
 print_warning() { echo -e "${YELLOW}⚠ $1${NC}"; }
 print_info() { echo -e "${BLUE}ℹ $1${NC}"; }
 
-check_ubuntu() {
-    print_header "Vérification du système"
-    
-    if [ ! -f /etc/os-release ]; then
-        print_error "Impossible de détecter l'OS"
-    fi
-    
-    . /etc/os-release
-    print_info "OS détecté: $NAME $VERSION"
-    
-    if [[ ! "$ID" =~ ^(ubuntu|debian)$ ]]; then
-        print_warning "Ce script est optimisé pour Ubuntu/Debian"
-        read -p "Continuer quand même? (o/n) " -n 1 -r
-        echo
-        [[ ! $REPLY =~ ^[Oo]$ ]] && exit 0
+# Spinner : run_spinner "message" commande args...
+run_spinner() {
+    local msg="$1"; shift
+    local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    "$@" &
+    local pid=$!
+    echo -ne "${BLUE}  ${spin:0:1} ${msg}...${NC}"
+    while kill -0 "$pid" 2>/dev/null; do
+        i=$(( (i+1) % ${#spin} ))
+        echo -ne "\r${BLUE}  ${spin:$i:1} ${msg}...${NC}"
+        sleep 0.1
+    done
+    wait "$pid"
+    local code=$?
+    if [ $code -eq 0 ]; then
+        echo -e "\r${GREEN}  ✓ ${msg}${NC}          "
+    else
+        echo -e "\r${RED}  ✗ ${msg} (erreur)${NC}"
+        exit $code
     fi
 }
 
+TOTAL_STEPS=6
+print_step() { echo -e "\n${BLUE}[▶ Étape $1/$TOTAL_STEPS]${NC} $2"; }
+
 install_prerequisites() {
+    print_step 1 "Installation des prérequis"
     print_header "Installation des prérequis"
     
-    print_info "Mise à jour des paquets..."
-    sudo apt update -qq
+    run_spinner "Mise à jour des paquets" sudo apt update -qq
     
-    print_info "Installation des outils de base..."
-    sudo apt install -y -qq curl wget unzip git ca-certificates gnupg lsb-release > /dev/null 2>&1
+    run_spinner "Installation des outils de base" sudo apt install -y -qq curl wget unzip git ca-certificates gnupg lsb-release
     
     # PHP
     print_info "Vérification de PHP..."
     if ! command -v php &> /dev/null; then
-        print_info "Installation de PHP 8.2..."
-        sudo apt install -y -qq software-properties-common
-        sudo add-apt-repository -y ppa:ondrej/php > /dev/null 2>&1
-        sudo apt update -qq
-        sudo apt install -y -qq php8.2 php8.2-cli php8.2-fpm php8.2-mysql \
-            php8.2-mbstring php8.2-xml php8.2-curl php8.2-zip php8.2-gd \
-            php8.2-intl php8.2-bcmath php8.2-tokenizer > /dev/null 2>&1
+        run_spinner "Ajout du dépôt PHP (ondrej/php)" bash -c 'sudo apt install -y -qq software-properties-common && sudo add-apt-repository -y ppa:ondrej/php > /dev/null 2>&1 && sudo apt update -qq'
+        run_spinner "Installation de PHP 8.2" sudo apt install -y -qq php8.2 php8.2-cli php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl php8.2-zip php8.2-gd php8.2-intl php8.2-bcmath php8.2-tokenizer
     fi
     PHP_VERSION=$(php -r 'echo PHP_VERSION;')
     print_success "PHP installé: $PHP_VERSION"
@@ -73,35 +75,28 @@ install_prerequisites() {
     # Composer
     print_info "Vérification de Composer..."
     if ! command -v composer &> /dev/null; then
-        print_info "Installation de Composer..."
-        curl -sS https://getcomposer.org/installer | php > /dev/null 2>&1
-        sudo mv composer.phar /usr/local/bin/composer
-        sudo chmod +x /usr/local/bin/composer
+        run_spinner "Installation de Composer" bash -c 'curl -sS https://getcomposer.org/installer | php > /dev/null 2>&1 && sudo mv composer.phar /usr/local/bin/composer && sudo chmod +x /usr/local/bin/composer'
     fi
     print_success "Composer installé: $(composer --version --no-ansi | head -1 | cut -d' ' -f3)"
     
     # Node
     print_info "Vérification de Node.js..."
     if ! command -v node &> /dev/null; then
-        print_info "Installation de Node.js 20..."
-        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - > /dev/null 2>&1
-        sudo apt install -y -qq nodejs > /dev/null 2>&1
+        run_spinner "Installation de Node.js 20" bash -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - > /dev/null 2>&1 && sudo apt install -y -qq nodejs > /dev/null 2>&1'
     fi
     print_success "Node.js installé: $(node -v)"
     
     # pnpm
     print_info "Vérification de pnpm..."
     if ! command -v pnpm &> /dev/null; then
-        print_info "Installation de pnpm..."
-        sudo npm install -g pnpm > /dev/null 2>&1
+        run_spinner "Installation de pnpm" sudo npm install -g pnpm
     fi
     print_success "pnpm installé: $(pnpm -v)"
     
     # MariaDB
     print_info "Vérification de MariaDB..."
     if ! command -v mysql &> /dev/null && ! command -v mariadb &> /dev/null; then
-        print_info "Installation de MariaDB..."
-        sudo apt install -y -qq mariadb-server mariadb-client > /dev/null 2>&1
+        run_spinner "Installation de MariaDB" sudo apt install -y -qq mariadb-server mariadb-client
         sudo systemctl start mariadb
         sudo systemctl enable mariadb > /dev/null 2>&1
         print_success "MariaDB installé"
@@ -111,6 +106,7 @@ install_prerequisites() {
 }
 
 download_and_extract() {
+    print_step 2 "Téléchargement de PGFE"
     print_header "Téléchargement de PGFE"
     
     if [ -d "$INSTALL_DIR" ]; then
@@ -124,6 +120,22 @@ download_and_extract() {
         fi
     fi
     
+    # Détection automatique de la dernière release
+    print_info "Détection de la dernière version (Dépôt: $REPO_OWNER/$REPO_NAME)..."
+    LATEST_REL_JSON=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases?per_page=1")
+    DOWNLOAD_URL=$(echo "$LATEST_REL_JSON" | grep -o 'browser_download_url": *"[^"]*"' | grep '\.zip"' | head -n 1 | cut -d '"' -f 3)
+    
+    if [[ -z "$DOWNLOAD_URL" ]]; then
+        # Fallback: utiliser zipball_url de la release
+        DOWNLOAD_URL=$(echo "$LATEST_REL_JSON" | grep -o '"zipball_url": *"[^"]*"' | head -n 1 | cut -d '"' -f 4)
+    fi
+    
+    if [[ -z "$DOWNLOAD_URL" ]]; then
+        print_error "Impossible de détecter la dernière release. Vérifiez qu'une release existe sur le dépôt."
+    fi
+    
+    print_info "Dernière release trouvée: $DOWNLOAD_URL"
+    
     print_info "Téléchargement depuis GitHub..."
     TMP_ZIP="/tmp/pgfe_$(date +%s).zip"
     
@@ -136,27 +148,28 @@ download_and_extract() {
     print_info "Extraction..."
     unzip -q "$TMP_ZIP" -d /tmp/pgfe_extract
     
-
     EXTRACTED=$(find /tmp/pgfe_extract -mindepth 1 -maxdepth 1 -type d | head -1)
     mv "$EXTRACTED" "$INSTALL_DIR"
     
-
     rm -rf "$TMP_ZIP" /tmp/pgfe_extract
     
     print_success "Extraction terminée dans $INSTALL_DIR"
 }
 
 install_backend() {
+    print_step 3 "Installation du Backend (Laravel)"
     print_header "Installation du Backend (Laravel)"
     
     cd "$INSTALL_DIR/backend"
     
-    print_info "Installation des dépendances Composer (peut prendre quelques minutes)..."
-    composer install --no-interaction --prefer-dist --optimize-autoloader --quiet
+    run_spinner "Installation des dépendances Composer" composer install --no-interaction --prefer-dist --optimize-autoloader --quiet
     print_success "Dépendances Composer installées"
     
 
     if [ ! -f ".env" ]; then
+        if [ ! -f ".env.example" ]; then
+            print_error "Fichier .env.example manquant dans le backend"
+        fi
         print_info "Création du fichier .env..."
         cp .env.example .env
         
@@ -186,18 +199,19 @@ install_backend() {
 }
 
 install_frontend() {
+    print_step 4 "Installation du Frontend (Vue.js)"
     print_header "Installation du Frontend (Vue.js)"
     
     cd "$INSTALL_DIR/frontend"
     
-    print_info "Installation des dépendances pnpm (peut prendre quelques minutes)..."
-    pnpm install --silent > /dev/null 2>&1
+    run_spinner "Installation des dépendances frontend" pnpm install --silent
     print_success "Dépendances frontend installées"
     
     cd ../..
 }
 
 setup_database() {
+    print_step 5 "Configuration de la base de données"
     print_header "Configuration de la base de données"
     
     print_info "Création de la base de données MariaDB..."
@@ -230,18 +244,11 @@ EOF
     php artisan migrate --force
     print_success "Migrations exécutées"
     
-    read -p "Exécuter les seeders (données de test)? (o/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Oo]$ ]]; then
-        print_info "Exécution des seeders..."
-        php artisan db:seed --force
-        print_success "Base de données peuplée"
-    fi
-    
     cd ../..
 }
 
 create_start_scripts() {
+    print_step 6 "Création des scripts de démarrage"
     print_header "Création des scripts de démarrage"
     
 
@@ -266,7 +273,7 @@ echo "   URL: http://localhost:8000"
 # Frontend
 echo "📦 Démarrage du frontend..."
 cd "$SCRIPT_DIR/frontend"
-pnpm dev --host > /tmp/pgfe-frontend.log 2>&1 &
+pnpm dev --host --open > /tmp/pgfe-frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo $FRONTEND_PID > /tmp/pgfe-frontend.pid
 echo "   Frontend démarré (PID: $FRONTEND_PID)"
@@ -282,11 +289,8 @@ echo "   Frontend: http://localhost:5173"
 echo "   Backend:  http://localhost:8000"
 echo "   API Docs: http://localhost:8000/docs/api"
 echo ""
-echo "🔑 Connexion par défaut:"
-echo "   Email: admin@example.com"
-echo "   Mot de passe: password"
-echo ""
-echo "🛑 Pour arrêter: ./stop.sh"
+echo "� Pour arrêter: ./stop.sh"
+
 EOFSTART
     
 
@@ -354,15 +358,11 @@ create_info_file() {
    Backend:  http://localhost:$APP_PORT
    API Docs: http://localhost:$APP_PORT/docs/api
 
-🔑 Compte par défaut (après seeding):
-   Email: admin@example.com
-   Mot de passe: password
-
-📝 Commandes utiles:
+� Commandes utiles:
 
    # Réinitialiser la base
    cd $INSTALL_DIR/backend
-   php artisan migrate:fresh --seed
+   php artisan migrate:fresh
 
    # Vider les caches
    php artisan cache:clear
@@ -399,14 +399,10 @@ main() {
 ║   ██║     ╚██████╔╝██║     ███████╗                          ║
 ║   ╚═╝      ╚═════╝ ╚═╝     ╚══════╝                          ║
 ║                                                               ║
-║   Installation simplifiée pour Ubuntu Server                 ║
-║   Sans Docker | MariaDB                                      ║
-║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 EOF
     echo -e "${NC}"
     
-    check_ubuntu
     install_prerequisites
     download_and_extract
     install_backend

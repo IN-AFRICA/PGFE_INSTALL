@@ -89,12 +89,8 @@ const schemaForm = z.object({
   birth_date: z.string({ required_error: 'Veuillez saisir la date de naissance' }),
   birth_place: z.string({ required_error: 'Veuillez saisir le lieu de naissance' }).min(2).max(100),
   identity_card: z.string().min(2).max(100).optional(),
-  phone_number: z
-    .string({ required_error: 'Veuillez saisir le numéro de téléphone' })
-    .min(2)
-    .max(30)
-    .nullable(),
-  email: z.string({ required_error: "Veuillez saisir l'email" }).email('Email invalide').nullable(),
+  phone_number: z.string().min(2).max(30).nullable().optional(),
+  email: z.string().email('Email invalide').nullable().optional(),
   image: z.string().optional(),
   note: z.string().optional(),
   // Champs d'inscription (optionnels) - à confirmer côté backend
@@ -436,6 +432,11 @@ watch(parents_id_3, (val) => {
     email_3.value = ''
   }
 })
+
+// Auto-fill téléphone/email depuis le parent 1 sélectionné
+function handleParent1Selected(parent: any) {
+  if (parent?.phone_number) phone_number.value = parent.phone_number
+}
 </script>
 <template>
   <DashFormLayout
@@ -601,7 +602,7 @@ watch(parents_id_3, (val) => {
       >
         <!-- Parent 1 (requis) -->
         <InputWrapper :error="parentIdError">
-          <ListParents v-model="parents_id" />
+          <ListParents v-model="parents_id" @parent-selected="handleParent1Selected" />
           <span v-if="parentIdError" class="text-xs text-red-500">{{ parentIdError }}</span>
         </InputWrapper>
 

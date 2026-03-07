@@ -34,7 +34,7 @@
 
         <SelectGroup>
           <SelectItem v-for="mother in filteredData" :key="mother.id" :value="String(mother.id)">
-            {{ mother.name }}
+            {{ mother.name }} {{ mother.lastname }} {{ mother.firstname }}
           </SelectItem>
           <div v-if="filteredData.length === 0" class="p-2 text-gray-500 text-xs text-center">
             Aucun parent trouvé
@@ -69,7 +69,7 @@ const props = defineProps({
   // Exclure certains IDs déjà sélectionnés (prévention de doublons)
   excludeIds: { type: Array as () => Array<string | number>, default: () => [] },
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'parent-selected'])
 
 const showModal = ref(false)
 const parentSearch = ref('')
@@ -84,7 +84,12 @@ const filteredData = computed(() => {
 
   if (parentSearch.value) {
     const search = parentSearch.value.toLowerCase()
-    list = list.filter((p: any) => p.name.toLowerCase().includes(search))
+    list = list.filter(
+      (p: any) =>
+        p.name?.toLowerCase().includes(search) ||
+        p.lastname?.toLowerCase().includes(search) ||
+        p.firstname?.toLowerCase().includes(search),
+    )
   }
 
   return list
@@ -92,6 +97,8 @@ const filteredData = computed(() => {
 
 function updateValue(value: string) {
   emit('update:modelValue', value)
+  const selected = (data.value || []).find((p: any) => String(p.id) === String(value))
+  if (selected) emit('parent-selected', selected)
 }
 
 async function handleParentCreated(newParent: any) {
