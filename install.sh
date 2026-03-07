@@ -42,7 +42,7 @@ run_spinner() {
     local msg="$1"; shift
     local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
     local i=0
-    "$@" &
+    "$@" >/dev/null 2>&1 &
     local pid=$!
     echo -ne "${BLUE}  ${spin:0:1} ${msg}...${NC}"
     while kill -0 "$pid" 2>/dev/null; do
@@ -50,12 +50,17 @@ run_spinner() {
         echo -ne "\r${BLUE}  ${spin:$i:1} ${msg}...${NC}"
         sleep 0.1
     done
+
+    # Désactivation temporaire de set -e pour capturer le code d'erreur
+    set +e
     wait "$pid"
     local code=$?
+    set -e
+
     if [ $code -eq 0 ]; then
         echo -e "\r${GREEN}  ✓ ${msg}${NC}          "
     else
-        echo -e "\r${RED}  ✗ ${msg} (erreur)${NC}"
+        echo -e "\r${RED}  ✗ ${msg} (erreur)${NC}          "
         exit $code
     fi
 }
@@ -72,18 +77,18 @@ install_prerequisites() {
     run_spinner "Installation des outils de base" sudo apt install -y -qq curl wget unzip git ca-certificates gnupg lsb-release
 
     if ! command -v php &> /dev/null; then
-        run_spinner "Ajout du dépôt PHP (ondrej/php)" bash -c 'sudo apt install -y -qq software-properties-common && sudo add-apt-repository -y ppa:ondrej/php > /dev/null 2>&1 && sudo apt update -qq'
+        run_spinner "Ajout du dépôt PHP (ondrej/php)" bash -c 'sudo apt install -y -qq software-properties-common && sudo add-apt-repository -y ppa:ondrej/php && sudo apt update -qq'
         run_spinner "Installation de PHP 8.2" sudo apt install -y -qq php8.2 php8.2-cli php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl php8.2-zip php8.2-gd php8.2-intl php8.2-bcmath php8.2-tokenizer
     fi
     print_success "PHP installé: $(php -r 'echo PHP_VERSION;')"
 
     if ! command -v composer &> /dev/null; then
-        run_spinner "Installation de Composer" bash -c 'curl -sS https://getcomposer.org/installer | php > /dev/null 2>&1 && sudo mv composer.phar /usr/local/bin/composer && sudo chmod +x /usr/local/bin/composer'
+        run_spinner "Installation de Composer" bash -c 'curl -sS https://getcomposer.org/installer | php && sudo mv composer.phar /usr/local/bin/composer && sudo chmod +x /usr/local/bin/composer'
     fi
     print_success "Composer installé: $(composer --version --no-ansi | head -1 | cut -d' ' -f3)"
 
     if ! command -v node &> /dev/null; then
-        run_spinner "Installation de Node.js 20" bash -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - > /dev/null 2>&1 && sudo apt install -y -qq nodejs > /dev/null 2>&1'
+        run_spinner "Installation de Node.js 20" bash -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt install -y -qq nodejs'
     fi
     print_success "Node.js installé: $(node -v)"
 
@@ -121,11 +126,12 @@ download_and_extract() {
     # Récupération de la dernière release via l'API GitHub
     print_info "Détection de la dernière version (Dépôt: $REPO_OWNER/$REPO_NAME)..."
     LATEST_REL_JSON=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases?per_page=1")
-    DOWNLOAD_URL=$(echo "$LATEST_REL_JSON" | grep -o 'browser_download_url": *"[^"]*"' | grep '\.zip"' | head -n 1 | cut -d '"' -f 3)
+    # Utilisation de || true pour éviter le crash avec set -e si grep ne trouve rien
+    DOWNLOAD_URL=$(echo "$LATEST_REL_JSON" | grep -o 'browser_download_url": *"[^"]*"' | grep '\.zip"' | head -n 1 | cut -d '"' -f 3 || true)
 
     # Fallback sur zipball_url si aucun asset .zip attaché
     if [[ -z "$DOWNLOAD_URL" ]]; then
-        DOWNLOAD_URL=$(echo "$LATEST_REL_JSON" | grep -o '"zipball_url": *"[^"]*"' | head -n 1 | cut -d '"' -f 4)
+        DOWNLOAD_URL=$(echo "$LATEST_REL_JSON" | grep -o '"zipball_url": *"[^"]*"' | head -n 1 | cut -d '"' -f 4 || true)
     fi
 
     [[ -z "$DOWNLOAD_URL" ]] && print_error "Impossible de détecter la dernière release. Vérifiez qu'une release existe sur le dépôt."
@@ -141,9 +147,17 @@ download_and_extract() {
     fi
 
     print_info "Extraction..."
+    rm -rf /tmp/pgfe_extract
     unzip -q "$TMP_ZIP" -d /tmp/pgfe_extract
-    EXTRACTED=$(find /tmp/pgfe_extract -mindepth 1 -maxdepth 1 -type d | head -1)
-    mv "$EXTRACTED" "$INSTALL_DIR"
+
+    # Vérifie si le zip contient un dossier racine unique ou directement les fichiers
+    EXTRACTED=$(find /tmp/pgfe_extract -mindepth 1 -maxdepth 1 -type d | head -1 || true)
+    if [ -n "$EXTRACTED" ]; then
+        mv "$EXTRACTED" "$INSTALL_DIR"
+    else
+        mv /tmp/pgfe_extract "$INSTALL_DIR"
+    fi
+
     rm -rf "$TMP_ZIP" /tmp/pgfe_extract
 
     print_success "Extraction terminée dans $INSTALL_DIR"
