@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\StockInventory;
+use App\Models\StockArticle;
+// use Illuminate\Support\Facades\Response; // inutile, on utilise le helper response()
 
 class StockInventoryController extends Controller
 {
@@ -12,7 +15,7 @@ class StockInventoryController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = \App\Models\StockInventory::where('school_id', $user->school_id);
+        $query = StockInventory::where('school_id', $user->school_id);
 
         if ($search = trim((string) $request->input('search'))) {
             $query->where('note', 'like', "%$search%") ;
@@ -24,12 +27,20 @@ class StockInventoryController extends Controller
             $query->where('inventory_date', '<=', $request->input('to'));
         }
         $perPage = (int) $request->input('per_page', 15);
-        $inventories = $query->orderByDesc('inventory_date')->paginate($perPage)->withQueryString();
+        $inventories = $query->orderByDesc('inventory_date')->with(['user', 'school'])->paginate($perPage)->withQueryString();
+
+        // Charger les articles liés à chaque inventaire
+        $data = $inventories->map(function ($inventory) {
+            $articles = StockArticle::where('school_id', $inventory->school_id)->get();
+            return array_merge($inventory->toArray(), [
+                'articles' => $articles,
+            ]);
+        });
 
         return response()->json([
             'status' => true,
             'message' => 'Liste des inventaires récupérée avec succès.',
-            'data' => $inventories->items(),
+            'data' => $data,
             'pagination' => [
                 'current_page' => $inventories->currentPage(),
                 'last_page' => $inventories->lastPage(),
@@ -50,7 +61,7 @@ class StockInventoryController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $inventory = \App\Models\StockInventory::create([
+        $inventory = StockInventory::create([
             ...$validated,
             'school_id' => $user->school_id,
             'user_id' => $user->id,
@@ -65,7 +76,7 @@ class StockInventoryController extends Controller
     public function show(Request $request, string $id)
     {
         $user = $request->user();
-        $inventory = \App\Models\StockInventory::where('school_id', $user->school_id)->findOrFail($id);
+        $inventory = StockInventory::where('school_id', $user->school_id)->findOrFail($id);
         return response()->json($inventory);
     }
 
@@ -75,7 +86,7 @@ class StockInventoryController extends Controller
     public function update(Request $request, string $id)
     {
         $user = $request->user();
-        $inventory = \App\Models\StockInventory::where('school_id', $user->school_id)->findOrFail($id);
+        $inventory = StockInventory::where('school_id', $user->school_id)->findOrFail($id);
         $validated = $request->validate([
             'inventory_date' => 'sometimes|date',
             'note' => 'sometimes|nullable|string',
@@ -90,7 +101,7 @@ class StockInventoryController extends Controller
     public function destroy(Request $request, string $id)
     {
         $user = $request->user();
-        $inventory = \App\Models\StockInventory::where('school_id', $user->school_id)->findOrFail($id);
+        $inventory = StockInventory::where('school_id', $user->school_id)->findOrFail($id);
         $inventory->delete();
         return response()->json(['message' => 'deleted']);
     }

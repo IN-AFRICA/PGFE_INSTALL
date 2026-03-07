@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')
     ->name('stock.')
     ->group(function () {
         Route::apiResource('articles', StockArticleController::class);
+        Route::post('inventories/{inventory}/articles', [\App\Http\Controllers\StockInventoryArticleController::class, 'store']);
         Route::apiResource('categories', StockCategoryController::class);
         Route::apiResource('providers', StockProviderController::class);
         Route::apiResource('entries', StockEntryController::class);

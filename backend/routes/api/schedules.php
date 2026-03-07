@@ -10,4 +10,7 @@ Route::middleware('auth:sanctum')
         Route::get('/', [ScheduleController::class, 'index'])->name('index');
         Route::post('/', [ScheduleController::class, 'store'])->name('store');
         Route::get('/available-teachers', [ScheduleController::class, 'availableTeachers'])->name('available-teachers');
+        Route::put('/{id}', [ScheduleController::class, 'update'])->name('update');
+        Route::patch('/{id}', [ScheduleController::class, 'update']);
+        Route::delete('/{id}', [ScheduleController::class, 'destroy'])->name('destroy');
     });

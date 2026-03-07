@@ -10,8 +10,8 @@ use App\Models\TeacherUnavailability;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ScheduleController extends Controller
-{
+class ScheduleController extends Controller{
+
     /**
      * Get list of available teachers for a specific time slot.
      */
@@ -150,7 +150,13 @@ class ScheduleController extends Controller
             ], 422);
         }
 
-        $schedule = Schedule::create(array_merge($validated, ['school_id' => $schoolId]));
+
+        // Ajout UUID automatique si non fourni (sécurité côté contrôleur)
+        $data = array_merge($validated, ['school_id' => $schoolId]);
+        if (empty($data['uuid'])) {
+            $data['uuid'] = (string) \Illuminate\Support\Str::uuid();
+        }
+        $schedule = Schedule::create($data);
 
         return response()->json([
             'success' => true,
@@ -176,6 +182,53 @@ class ScheduleController extends Controller
         return response()->json([
             'success' => true,
             'data' => $query->get(),
+        ]);
+    }
+    /**
+     * Update an existing schedule entry.
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year_id' => 'sometimes|required|exists:school_years,id',
+            'classroom_id' => 'sometimes|required|exists:classrooms,id',
+            'academic_personal_id' => 'sometimes|required|exists:academic_personals,id',
+            'course_id' => 'sometimes|required|exists:courses,id',
+            'day' => 'sometimes|required|string',
+            'start_time' => 'sometimes|required|date_format:H:i',
+            'end_time' => 'sometimes|required|date_format:H:i|after:start_time',
+            'week_number' => 'nullable|integer',
+        ]);
+
+        $schoolId = $request->user()->school_id;
+        $schedule = Schedule::where('school_id', $schoolId)->findOrFail($id);
+
+        // Ajout UUID automatique si non fourni (sécurité côté contrôleur)
+        $data = $validated;
+        if (empty($data['uuid'])) {
+            $data['uuid'] = $schedule->uuid ?? (string) \Illuminate\Support\Str::uuid();
+        }
+
+        $schedule->update($data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $schedule->fresh(),
+            'message' => 'Horaire modifié avec succès.',
+        ]);
+    }
+
+    /**
+     * Delete a schedule entry.
+     */
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $schoolId = $request->user()->school_id;
+        $schedule = Schedule::where('school_id', $schoolId)->findOrFail($id);
+        $schedule->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Horaire supprimé avec succès.',
         ]);
     }
 }

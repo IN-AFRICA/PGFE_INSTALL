@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Students;
 
+use const n;
+
+use App\Exports\StudentsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StudentRequest;
 use App\Models\Classroom;
@@ -16,9 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Throwable;
-use App\Exports\StudentsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
 final class StudentController extends Controller
 {
@@ -27,37 +29,40 @@ final class StudentController extends Controller
      */
     public function export(Request $request)
     {
-        $fileName = 'students_' . now()->format('Ymd_His') . '.xlsx';
+        $fileName = 'students_'.now()->format('Ymd_His').'.xlsx';
+
         return Excel::download(new StudentsExport(), $fileName);
     }
-        /**
-         * Export students as PDF file.
-         */
-        public function exportPdf(Request $request)
-        {
-            $query = Student::query();
-            if ($request->filled('classroom_id')) {
-                $query->whereHas('registrations', function($q) use ($request) {
-                    $q->where('classroom_id', $request->input('classroom_id'));
-                });
-            }
-            $students = $query->get();
 
-            $html = view('exports.students', [
-                'students' => $students
-            ])->render();
-
-            $dompdf = new \Dompdf\Dompdf();
-            $dompdf->loadHtml($html);
-            $dompdf->setPaper('A4', 'landscape');
-            $dompdf->render();
-
-            $filename = 'students_' . now()->format('Ymd_His') . '.pdf';
-
-            return response($dompdf->output(), 200)
-                ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    /**
+     * Export students as PDF file.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Student::query();
+        if ($request->filled('classroom_id')) {
+            $query->whereHas('registrations', function ($q) use ($request) {
+                $q->where('classroom_id', $request->input('classroom_id'));
+            });
         }
+        $students = $query->get();
+
+        $html = view('exports.students', [
+            'students' => $students,
+        ])->render();
+
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'students_'.now()->format('Ymd_His').'.pdf';
+
+        return response($dompdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    }
+
     public function index(Request $request): JsonResponse
     {
         /** @var \App\Models\User|null $user */
@@ -129,8 +134,27 @@ final class StudentController extends Controller
 
             // Gestion upload image
             if ($request->hasFile('image')) {
+
                 $path = $request->file('image')->store('students', 'public');
                 $data['image'] = $path;
+
+            } elseif (! empty($data['image']) && str_contains($data['image'], 'base64')) {
+
+                $image = $data['image'];
+
+                // récupérer le type d'image
+                preg_match('/data:image\/(\w+);base64,/', $image, $type);
+
+                $image = mb_substr($image, mb_strpos($image, ',') + 1);
+                $image = base64_decode($image);
+
+                $extension = $type[1] ?? 'png';
+
+                $fileName = 'students/'.uniqid().'.'.$extension;
+
+                Storage::disk('public')->put($fileName, $image);
+
+                $data['image'] = $fileName;
             }
 
             /** @var \App\Models\User|null $user */
@@ -409,7 +433,7 @@ final class StudentController extends Controller
                 // Récupérer ou créer l'inscription pour l'année scolaire active
                 $activeYear = SchoolYear::active((int) $schoolId);
                 if (! $activeYear) {
-                    return response()->json([\n+                        'success' => false,
+                    return response()->json([n + 'success' => false,
                         'message' => "Aucune année scolaire active pour cette école. Impossible de mettre à jour l'inscription.",
                     ], 422);
                 }

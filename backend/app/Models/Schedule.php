@@ -22,7 +22,18 @@ class Schedule extends Model
         'start_time',
         'end_time',
         'week_number',
+        'uuid',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
 
     public function academicPersonal(): BelongsTo
     {

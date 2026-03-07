@@ -10,19 +10,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Throwable;
 
-// Assure-toi que le modèle correspond à ta structure
 
 final class RegisterController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     */
     public function __invoke(RegisterRequest $request)
     {
         $validatedData = $request->validated();
 
-        // Si l'inscription est faite par un utilisateur authentifié,
-        // on hérite de sa school_id pour rattacher le nouvel user à la même école.
         /** @var User|null $creator */
         $creator = auth()->user();
         $creatorSchoolId = $creator?->school_id ?? null;
@@ -39,7 +33,6 @@ final class RegisterController extends Controller
 
         $user = User::query()->create($payload);
 
-        // Attribution auto du rôle tiers si disponible
         if (method_exists($user, 'assignRole')) {
             try {
                 if (! $user->hasRole('tiers')) {
@@ -53,9 +46,10 @@ final class RegisterController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'User registered successfully',
+            'success' => true,
+            'message' => 'utilisateur cree avec succees ',
             'user' => $user,
             'token' => $token,
-        ], 201);
+        ], Response::HTTP_CREATED);
     }
 }
