@@ -10,44 +10,53 @@ Application web full-stack pour la gestion multi-établissements scolaires inclu
 
 ---
 
-## 🚀 Installation rapide (Recommandé)
+## 🚀 Installation rapide
 
-### Ubuntu Server (Sans Docker) - **Le plus simple !**
+Le script télécharge automatiquement la dernière release, installe les prérequis, configure la base de données et génère les scripts de démarrage.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/IN-AFRICA/PGFE_INSTALL/main/install-ubuntu.sh | bash
-```
-
-✅ **Avantages** : Installation complète en 5 minutes, tout automatique, optimisé pour les performances
-
-📖 **Documentation complète** : [UBUNTU-INSTALL.md](UBUNTU-INSTALL.md)
-
----
-
-## 📦 Installation avec Docker (Alternative)
-
-Si vous préférez Docker pour l'isolation :
+### Linux (Debian/Ubuntu)
 
 ```bash
-git clone https://github.com/IN-AFRICA/PGFE_INSTALL.git
-cd PGFE_INSTALL
-cp .env.example .env
-docker compose up -d
-docker compose exec backend php artisan migrate --seed
+curl -fsSL https://raw.githubusercontent.com/IN-AFRICA/PGFE_INSTALL/main/install.sh -o install.sh
+chmod +x install.sh
+./install.sh
 ```
 
-📖 **Documentation Docker** : [DOCKER-README.md](DOCKER-README.md)
+### Windows
 
----
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/IN-AFRICA/PGFE_INSTALL/main/install.cmd" -OutFile "install.cmd"
+.\install.cmd
+```
 
-## 📚 Documentation
+> **Note :** Le script Windows nécessite les droits administrateur et utilise `winget` pour installer les dépendances.
 
-| Document | Description |
-|----------|-------------|
-| **[README.md](README.md)** | Ce fichier - Vue d'ensemble et installation |
-| **[UBUNTU-INSTALL.md](UBUNTU-INSTALL.md)** | 📖 Guide d'installation complet pour Ubuntu Server |
-| **[DOCKER-README.md](DOCKER-README.md)** | 🐳 Installation alternative avec Docker |
-| **backend/README.md** | 📦 Documentation backend Laravel |
+### Ce que fait le script
+
+| Étape | Description |
+|-------|-------------|
+| 1 | Installe les prérequis (PHP 8.2, Composer, Node.js 20, pnpm, MariaDB) |
+| 2 | Télécharge et extrait la dernière release depuis GitHub |
+| 3 | Installe les dépendances backend (Composer) et configure le `.env` |
+| 4 | Installe les dépendances frontend (pnpm) |
+| 5 | Crée la base de données et exécute les migrations |
+| 6 | Génère les scripts `start` et `stop` |
+
+### Après l'installation
+
+```bash
+cd pgfe
+./start.sh        # Linux
+# ou
+start.cmd          # Windows
+```
+
+| Service  | URL                       |
+|----------|---------------------------|
+| Frontend | http://localhost:5173      |
+| Backend  | http://localhost:8000      |
+
+Les identifiants de la base de données sont sauvegardés dans `pgfe/INSTALLATION_INFO.txt`.
 
 ---
 
@@ -120,7 +129,7 @@ cp .env.example .env
 php artisan key:generate
 
 # Base de données
-php artisan migrate --seed
+php artisan migrate
 
 # Démarrer le serveur
 php artisan serve
@@ -136,23 +145,12 @@ cd frontend
 pnpm install
 
 # Développement
-pnpm dev
+pnpm dev --host --open
 # → http://localhost:5173
 
 # Build de production
 pnpm build
 ```
-
----
-
-## 🔑 Connexion par défaut
-
-Après avoir exécuté les seeders :
-
-- **Email** : `admin@example.com`
-- **Mot de passe** : `password`
-
-⚠️ **Changez ces identifiants en production !**
 
 ---
 
@@ -197,18 +195,6 @@ pnpm test:unit
 
 ## 🚀 Déploiement en production
 
-### Option 1 : Installation native (recommandé)
-Voir [UBUNTU-INSTALL.md](UBUNTU-INSTALL.md) et [INSTALL-README.md](INSTALL-README.md)
-
-### Option 2 : Docker
-Voir [DOCKER-README.md](DOCKER-README.md)
-
-### Configuration serveur web
-
-**Nginx** - Configuration recommandée dans [INSTALL-README.md](INSTALL-README.md)
-
-**Apache** - Configuration avec mod_rewrite dans [INSTALL-README.md](INSTALL-README.md)
-
 ### Optimisations Laravel
 
 ```bash
@@ -223,14 +209,9 @@ composer install --optimize-autoloader --no-dev
 
 ## 📞 Support
 
-### Documentation
-- [Guide d'installation Ubuntu](UBUNTU-INSTALL.md)
-- [Docker](DOCKER-README.md)
-- [API Documentation](http://localhost:8000/docs) (après installation)
-
-### Communauté
 - **Issues** : [GitHub Issues](https://github.com/IN-AFRICA/PGFE_INSTALL/issues)
 - **Discussions** : [GitHub Discussions](https://github.com/IN-AFRICA/PGFE_INSTALL/discussions)
+- **API Documentation** : http://localhost:8000/docs (après installation)
 
 ---
 
@@ -249,16 +230,6 @@ Les contributions sont les bienvenues ! Veuillez :
 ## 📝 Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
----
-
-## 🙏 Remerciements
-
-- [Laravel](https://laravel.com)
-- [Vue.js](https://vuejs.org)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Spatie](https://spatie.be/open-source)
-- Tous les contributeurs
 
 ---
 
