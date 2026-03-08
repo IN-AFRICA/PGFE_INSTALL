@@ -11,12 +11,11 @@ set -e
 # ── Configuration ────────────────────────────────────────────
 REPO_OWNER="IN-AFRICA"
 REPO_NAME="PGFE_INSTALL"
-INSTALL_DIR="pgfe"
+INSTALL_DIR="/opt/pgfe"
 DB_NAME="pgfe_db"
 DB_USER="pgfe_user"
 DB_PASSWORD="pgfe_$(openssl rand -hex 8)"
 APP_PORT=8000
-FRONTEND_PORT=5173
 
 # ── Couleurs et affichage ────────────────────────────────────
 RED='\033[0;31m'
@@ -68,6 +67,16 @@ run_spinner() {
 TOTAL_STEPS=6
 print_step() { echo -e "\n${BLUE}[▶ Étape $1/$TOTAL_STEPS]${NC} $2"; }
 
+# Demande le mot de passe sudo une seule fois au début
+request_sudo() {
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "${YELLOW}Ce script nécessite des privilèges sudo.${NC}"
+        sudo -v || print_error "Privilèges sudo requis"
+        # Maintient le sudo actif en arrière-plan
+        while true; do sudo -n true; sleep 50; kill -0 "$$" || exit; done 2>/dev/null &
+    fi
+}
+
 # ── Étape 1 : Prérequis système ─────────────────────────────
 install_prerequisites() {
     print_step 1 "Installation des prérequis"
@@ -117,7 +126,7 @@ download_and_extract() {
         read -p "Supprimer et continuer? (o/n) " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Oo]$ ]]; then
-            rm -rf "$INSTALL_DIR"
+            sudo rm -rf "$INSTALL_DIR"
         else
             print_error "Installation annulée"
         fi
@@ -148,15 +157,23 @@ download_and_extract() {
 
     print_info "Extraction..."
     rm -rf /tmp/pgfe_extract
-    unzip -q "$TMP_ZIP" -d /tmp/pgfe_extract
+    unzip -q "$TMP_ZIP" -d /tmp/pgfe_extract || print_error "Échec de l'extraction"
 
-    # Vérifie si le zip contient un dossier racine unique ou directement les fichiers
-    EXTRACTED=$(find /tmp/pgfe_extract -mindepth 1 -maxdepth 1 -type d | head -1 || true)
-    if [ -n "$EXTRACTED" ]; then
-        mv "$EXTRACTED" "$INSTALL_DIR"
+    # Crée le dossier cible puis déplace le contenu
+    sudo mkdir -p "$INSTALL_DIR"
+    sudo chown "$USER:$USER" "$INSTALL_DIR"
+    num_top=$(find /tmp/pgfe_extract -maxdepth 1 -mindepth 1 -type d | wc -l)
+    if [ "$num_top" -eq 1 ]; then
+        # ZIP avec un dossier racine unique (ex: zipball GitHub) → on déplace son contenu
+        topdir=$(find /tmp/pgfe_extract -maxdepth 1 -mindepth 1 -type d -printf "%P\n")
+        mv /tmp/pgfe_extract/"$topdir"/* "$INSTALL_DIR"/
     else
-        mv /tmp/pgfe_extract "$INSTALL_DIR"
+        # ZIP à plat (fichiers directement à la racine) → on déplace tout
+        mv /tmp/pgfe_extract/* "$INSTALL_DIR"/
     fi
+
+    # S'assurer que l'utilisateur courant a les droits sur tout
+    sudo chown -R "$USER:$USER" "$INSTALL_DIR"
 
     rm -rf "$TMP_ZIP" /tmp/pgfe_extract
 
@@ -256,13 +273,16 @@ echo ""
 
 cd "$SCRIPT_DIR/backend"
 php artisan serve --host=0.0.0.0 --port=8000 > /tmp/pgfe-backend.log 2>&1 &
-echo $! > /tmp/pgfe-backend.pid
-echo "   Backend démarré (PID: $!) — http://localhost:8000"
+BACKEND_PID=$!
+echo $BACKEND_PID > /tmp/pgfe-backend.pid
+echo "   Backend démarré (PID: $BACKEND_PID) — http://localhost:8000"
 
 cd "$SCRIPT_DIR/frontend"
 pnpm dev --host --open > /tmp/pgfe-frontend.log 2>&1 &
-echo $! > /tmp/pgfe-frontend.pid
-echo "   Frontend démarré (PID: $!) — http://localhost:5173"
+FRONTEND_PID=$!
+echo $FRONTEND_PID > /tmp/pgfe-frontend.pid
+echo "   Frontend démarré (PID: $FRONTEND_PID)"
+echo "   Le navigateur s'ouvrira automatiquement sur le bon port."
 
 cd "$SCRIPT_DIR"
 
@@ -270,27 +290,38 @@ echo ""
 echo "✅ PGFE est démarré!"
 echo ""
 echo "📊 Accès:"
-echo "   Frontend: http://localhost:5173"
-echo "   Backend:  http://localhost:8000"
+echo "   Backend API: http://localhost:8000"
+echo "   Frontend:    Voir le navigateur (port dynamique)"
 echo ""
 echo "🛑 Pour arrêter: ./stop.sh"
 EOFSTART
 
-    cat > "$INSTALL_DIR/stop.sh" << 'EOFSTOP'
+    cat > "$INSTALL_DIR/stop.sh" << EOFSTOP
 #!/bin/bash
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+
 echo "🛑 Arrêt de PGFE..."
 
+# Arrêt propre via les fichiers PID
 for pidfile in /tmp/pgfe-backend.pid /tmp/pgfe-frontend.pid; do
-    if [ -f "$pidfile" ]; then
-        pid=$(cat "$pidfile")
-        ps -p "$pid" > /dev/null 2>&1 && kill "$pid"
-        rm -f "$pidfile"
+    if [ -f "\$pidfile" ]; then
+        pid=\$(cat "\$pidfile")
+        if ps -p "\$pid" > /dev/null 2>&1; then
+            # Tue le processus et ses enfants
+            pkill -TERM -P "\$pid" 2>/dev/null || true
+            kill -TERM "\$pid" 2>/dev/null || true
+            sleep 0.5
+            # Force kill si toujours actif
+            kill -9 "\$pid" 2>/dev/null || true
+        fi
+        rm -f "\$pidfile"
     fi
 done
 
-# Nettoyage des processus orphelins
-pkill -f "php artisan serve" 2>/dev/null || true
-pkill -f "vite.*pgfe" 2>/dev/null || true
+# Nettoyage spécifique aux processus PGFE (utilise le chemin pour éviter de tuer d'autres projets)
+pkill -9 -f "artisan serve.*--port=8000" 2>/dev/null || true
+pkill -9 -f "\$SCRIPT_DIR/frontend.*vite" 2>/dev/null || true
+pkill -9 -f "node.*\$SCRIPT_DIR" 2>/dev/null || true
 
 echo "✅ PGFE arrêté"
 EOFSTOP
@@ -307,7 +338,7 @@ create_info_file() {
   Date: $(date '+%Y-%m-%d %H:%M:%S')
 ═══════════════════════════════════════════════════════════════
 
-📁 Répertoire: $(pwd)/$INSTALL_DIR
+📁 Répertoire: $INSTALL_DIR
 
 🗄️ Base de données:
    Nom:            $DB_NAME
@@ -319,8 +350,8 @@ create_info_file() {
 🛑 Arrêt:         cd $INSTALL_DIR && ./stop.sh
 
 📊 URLs:
-   Frontend:  http://localhost:$FRONTEND_PORT
    Backend:   http://localhost:$APP_PORT
+   Frontend:  Le navigateur s'ouvre automatiquement
 
 📝 Commandes utiles:
    php artisan migrate:fresh    # Réinitialiser les tables
@@ -356,6 +387,7 @@ main() {
 EOF
     echo -e "${NC}"
 
+    request_sudo
     install_prerequisites
     download_and_extract
     install_backend
@@ -367,11 +399,10 @@ EOF
     print_header "✅ Installation terminée!"
 
     echo -e "${GREEN}PGFE a été installé avec succès!${NC}\n"
-    echo "📁 Répertoire: $(pwd)/$INSTALL_DIR"
+    echo "📁 Répertoire: $INSTALL_DIR"
     echo ""
     echo "🚀 Pour démarrer PGFE:"
-    echo -e "   ${BLUE}cd $INSTALL_DIR${NC}"
-    echo -e "   ${BLUE}./start.sh${NC}"
+    echo -e "   ${BLUE}cd $INSTALL_DIR && ./start.sh${NC}"
     echo ""
     echo -e "${YELLOW}⚠️  Sauvegardez vos identifiants de base de données:${NC}"
     echo "   Base: $DB_NAME"

@@ -13,11 +13,10 @@ setlocal enabledelayedexpansion
 :: ── Configuration ────────────────────────────────────────────
 set "REPO_OWNER=IN-AFRICA"
 set "REPO_NAME=PGFE_INSTALL"
-set "INSTALL_DIR=pgfe"
+set "INSTALL_DIR=C:\pgfe"
 set "DB_NAME=pgfe_db"
 set "DB_USER=pgfe_user"
 set "APP_PORT=8000"
-set "FRONTEND_PORT=5173"
 
 :: Génération d'un mot de passe aléatoire
 for /f %%i in ('powershell -NoProfile -Command "[System.Guid]::NewGuid().ToString('N').Substring(0,16)"') do set "DB_PASSWORD=pgfe_%%i"
@@ -69,10 +68,10 @@ echo ━━━━━━━━━━━━━━━━━━━━━━━━━
 echo.
 echo   PGFE a ete installe avec succes!
 echo.
-echo   Repertoire: %CD%\%INSTALL_DIR%
+echo   Repertoire: %INSTALL_DIR%
 echo.
 echo   Pour demarrer PGFE:
-echo     cd %INSTALL_DIR%
+echo     cd /d %INSTALL_DIR%
 echo     start.cmd
 echo.
 echo   Sauvegardez vos identifiants de base de donnees:
@@ -275,10 +274,18 @@ if %errorlevel% neq 0 (
     goto :eof
 )
 
-:: Déplacer le sous-dossier extrait vers INSTALL_DIR
-for /d %%d in ("%TMP_EXTRACT%\*") do (
-    move "%%d" "%INSTALL_DIR%" >nul
-    goto :extract_done
+:: Déplacer le contenu extrait vers INSTALL_DIR
+for /f %%c in ('dir /b /a:d "%TMP_EXTRACT%" 2^>nul ^| find /c /v ""') do set "NUM_DIRS=%%c"
+if "%NUM_DIRS%"=="1" (
+    :: ZIP avec un dossier racine unique → déplacer son contenu
+    for /d %%d in ("%TMP_EXTRACT%\*") do (
+        mkdir "%INSTALL_DIR%" >nul 2>&1
+        xcopy "%%d\*" "%INSTALL_DIR%\" /e /i /q /y >nul
+    )
+) else (
+    :: ZIP à plat → déplacer tout le contenu
+    mkdir "%INSTALL_DIR%" >nul 2>&1
+    xcopy "%TMP_EXTRACT%\*" "%INSTALL_DIR%\" /e /i /q /y >nul
 )
 :extract_done
 
@@ -423,21 +430,21 @@ echo echo.
 echo.
 echo echo Demarrage du backend...
 echo cd /d "%%SCRIPT_DIR%%backend"
-echo start /b "" php artisan serve --host=0.0.0.0 --port=8000 ^> "%%TEMP%%\pgfe-backend.log" 2^>^&1
-echo echo    Backend demarre — http://localhost:8000
+echo start /b "" php artisan serve --host=0.0.0.0 --port=8000 ^^^> "%%TEMP%%\pgfe-backend.log" 2^^^>^^^&1
+echo echo    Backend demarre - http://localhost:8000
 echo.
 echo echo Demarrage du frontend...
 echo cd /d "%%SCRIPT_DIR%%frontend"
-echo start /b "" cmd /c "pnpm dev --host --open ^> "%%TEMP%%\pgfe-frontend.log" 2^>^&1"
-echo echo    Frontend demarre — http://localhost:5173
+echo start /b "" cmd /c "pnpm dev --host --open ^^^> "%%TEMP%%\pgfe-frontend.log" 2^^^>^^^&1"
+echo echo    Frontend demarre - Le navigateur s'ouvrira automatiquement
 echo.
 echo cd /d "%%SCRIPT_DIR%%"
 echo echo.
 echo echo PGFE est demarre!
 echo echo.
 echo echo Acces:
-echo echo    Frontend: http://localhost:5173
-echo echo    Backend:  http://localhost:8000
+echo echo    Backend API: http://localhost:8000
+echo echo    Frontend:    Voir le navigateur ^(port dynamique^)
 echo echo.
 echo echo Pour arreter: stop.cmd
 echo.
@@ -447,14 +454,20 @@ echo pause
 :: stop.cmd
 (
 echo @echo off
+echo setlocal enabledelayedexpansion
+echo set "SCRIPT_DIR=%%~dp0"
+echo.
 echo echo Arret de PGFE...
+echo echo.
 echo.
-echo taskkill /f /fi "WINDOWTITLE eq php artisan serve*" ^>nul 2^>^&1
-echo taskkill /f /im "php.exe" /fi "WINDOWTITLE eq *artisan*" ^>nul 2^>^&1
+echo :: Arret du backend PHP specifique a ce dossier
+echo for /f "tokens=2 delims=," %%%%p in ^('wmic process where "CommandLine like '%%%%SCRIPT_DIR%%%%backend%%%%' and CommandLine like '%%%%artisan%%%%'" get ProcessId /format:csv 2^^^>nul ^| findstr /r "[0-9]"'^) do ^(
+echo     taskkill /f /pid %%%%p ^^^>nul 2^^^>^^^&1
+echo ^)
 echo.
-echo :: Arrêt de tous les processus node liés à Vite/PGFE
-echo for /f "tokens=2" %%%%p in ^('tasklist /fi "IMAGENAME eq node.exe" /fo csv /nh 2^^^>nul'^) do ^(
-echo     wmic process where "ProcessId=%%%%~p" get CommandLine 2^^^>nul ^| findstr /i "vite" ^^^>nul ^&^& taskkill /f /pid %%%%~p ^^^>nul 2^^^>^&1
+echo :: Arret du frontend Node specifique a ce dossier
+echo for /f "tokens=2 delims=," %%%%p in ^('wmic process where "CommandLine like '%%%%SCRIPT_DIR%%%%frontend%%%%'" get ProcessId /format:csv 2^^^>nul ^| findstr /r "[0-9]"'^) do ^(
+echo     taskkill /f /pid %%%%p ^^^>nul 2^^^>^^^&1
 echo ^)
 echo.
 echo echo PGFE arrete
@@ -472,7 +485,7 @@ echo   PGFE — Informations d'installation
 echo   Date: %date% %time:~0,8%
 echo ═══════════════════════════════════════════════════════════════
 echo.
-echo   Repertoire: %CD%\%INSTALL_DIR%
+echo   Repertoire: %INSTALL_DIR%
 echo.
 echo   Base de donnees:
 echo     Nom:            %DB_NAME%
@@ -480,12 +493,12 @@ echo     Utilisateur:    %DB_USER%
 echo     Mot de passe:   %DB_PASSWORD%
 echo     Host:           127.0.0.1:3306
 echo.
-echo   Demarrage:     cd %INSTALL_DIR% ^& start.cmd
-echo   Arret:         cd %INSTALL_DIR% ^& stop.cmd
+echo   Demarrage:     cd /d %INSTALL_DIR% ^& start.cmd
+echo   Arret:         cd /d %INSTALL_DIR% ^& stop.cmd
 echo.
 echo   URLs:
-echo     Frontend:  http://localhost:%FRONTEND_PORT%
 echo     Backend:   http://localhost:%APP_PORT%
+echo     Frontend:  Le navigateur s'ouvre automatiquement
 echo.
 echo   Commandes utiles:
 echo     php artisan migrate:fresh    - Reinitialiser les tables
