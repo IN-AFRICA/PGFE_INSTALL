@@ -1,69 +1,103 @@
 name: deploy
+
 on:
   push:
     branches:
       - main
+
 jobs:
   audit:
     uses: './.github/workflows/audit.yaml'
+
   deploy:
     name: Deploy to Production
     needs: [audit]
     runs-on: ubuntu-latest
+
     steps:
       - name: execute ssh command
-        uses : appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-#          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+
           script: |
-            cd ~/enabel.inafrica.tech
 
-            # Sauvegarder les fichiers/dossiers à préserver (copie, pas déplacement)
-            cp -r config /tmp/config_backup || true
-            cp -r storage /tmp/storage_backup || true
-            cp -r public /tmp/public_backup || true
+            deploy_project () {
 
-            # Afficher l'état du dépôt avant pull
-            echo '--- AVANT PULL ---'
-            git status
-            ls -l
+              echo "==============================="
+              echo "🚀 Deploying $1"
+              echo "==============================="
 
-            git reset --hard
-            git clean -fd
-            git pull origin main --rebase
+              cd ~/$1
 
-            # Afficher l'état du dépôt après pull
-            echo '--- APRES PULL ---'
-            git status
-            ls -l
+              # Sauvegarder les fichiers/dossiers à préserver
+              cp -r config /tmp/config_backup || true
+              cp -r storage /tmp/storage_backup || true
+              cp -r public /tmp/public_backup || true
 
-            # Supprimer le package rapids/rapids si présent (évite l'erreur de rapidModels)
-            if grep -q 'rapids/rapids' composer.json; then
-              composer remove rapids/rapids || true
-            fi
+              echo '--- AVANT PULL ---'
+              git status
+              ls -l
 
-            # Fusionner/restaurer le contenu sauvegardé dans les dossiers correspondants
-            rsync -a /tmp/config_backup/ config/ || true
-            rsync -a /tmp/storage_backup/ storage/ || true
-            rsync -a /tmp/public_backup/ public/ || true
+              git reset --hard
+              git clean -fd
+              git pull origin main --rebase
 
-            # Nettoyer les sauvegardes temporaires
-            rm -rf /tmp/config_backup /tmp/storage_backup /tmp/public_backup
+              echo '--- APRES PULL ---'
+              git status
+              ls -l
 
-            # Installer les dépendances prod
-            composer install
+              # Supprimer rapids si présent
+              if grep -q 'rapids/rapids' composer.json; then
+                composer remove rapids/rapids || true
+              fi
 
-            # Migrations et cache Laravel
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:clear
-            php artisan view:cache
-            php artisan cache:clear
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
+              # Restaurer les fichiers sauvegardés
+              rsync -a /tmp/config_backup/ config/ || true
+              rsync -a /tmp/storage_backup/ storage/ || true
+              rsync -a /tmp/public_backup/ public/ || true
+
+              rm -rf /tmp/config_backup /tmp/storage_backup /tmp/public_backup
+
+              # Installer dépendances production
+              composer install --no-dev --optimize-autoloader
+
+              # Laravel
+              php artisan migrate --force
+
+              php artisan config:cache
+              php artisan route:cache
+
+              php artisan view:clear
+              php artisan view:cache
+
+              php artisan cache:clear
+              php artisan config:clear
+              php artisan route:clear
+              php artisan view:clear
+
+              echo "✅ Deployment finished for $1"
+
+            }
+
+            deploy_project "enabel.inafrica.tech"
+            deploy_project "pgfe-back.inafrica.tech"
+
+      - name: Notify Telegram
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d text="🚀 Deployment SUCCESS
+
+          Repo: ${{ github.repository }}
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+
+          Domains deployed:
+          ✅ enabel.inafrica.tech
+          ✅ pgfe-back.inafrica.tech
+
+          Time: $(date)"

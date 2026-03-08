@@ -135,6 +135,7 @@ export const API_ROUTES = {
 
   //c cycle
   GET_CYCLES: 'academic/cycles',
+  CREATE_CYCLE: 'academic/cycles',
 
   EXPORT_STUDENT_PRESENCE_EXCEL: 'presence/presences/export',
   EXPORT_STUDENT_PRESENCE_PDF: 'presence/presences/export-pdf',

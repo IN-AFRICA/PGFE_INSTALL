@@ -1,0 +1,133 @@
+====================================================================
+INSTRUCTIONS BACKEND - Création automatique des cycles à la création
+                        d'une filière (section)
+====================================================================
+
+
+--------------------------------------------------------------------
+1. CORRIGER LA VALIDATION DES CYCLES (CycleRequest.php)
+--------------------------------------------------------------------
+
+L'unicité du nom de cycle doit être composite (name + filiaire_id + school_id),
+pas globale sur le nom seul.
+
+// app/Http/Requests/CycleRequest.php
+
+use Illuminate\Validation\Rule;
+
+'name' => [
+    'required',
+    Rule::unique('cycles', 'name')
+        ->where('filiaire_id', $request->filiaire_id)
+        ->where('school_id', auth()->user()->school_id)
+        ->ignore($this->cycle) // uniquement pour update
+],
+
+
+--------------------------------------------------------------------
+2. MODIFIER FiliaireController@store
+--------------------------------------------------------------------
+
+Après création de la filière, créer automatiquement dans une transaction :
+  - Cycle "Long"  + 6 niveaux : 1er, 2nd, 3eme, 4eme, 5eme, 6eme
+  - Cycle "Court" + 4 niveaux : 1er, 2n, 3em, 4eme
+
+// app/Http/Controllers/FiliaireController.php
+
+use Illuminate\Support\Facades\DB;
+
+public function store(FiliaireRequest $request)
+{
+    $filiaire = DB::transaction(function () use ($request) {
+
+        $filiaire = Filiaire::create([
+            'school_id' => auth()->user()->school_id,
+            'name'      => $request->name,
+            'code'      => $request->code,
+        ]);
+
+        $cycles = [
+            'Long'  => ['1er', '2nd', '3eme', '4eme', '5eme', '6eme'],
+            'Court' => ['1er', '2n',  '3em',  '4eme'],
+        ];
+
+        foreach ($cycles as $cycleName => $levels) {
+            $cycle = Cycle::create([
+                'school_id'   => $filiaire->school_id,
+                'filiaire_id' => $filiaire->id,
+                'name'        => $cycleName,
+            ]);
+
+            foreach ($levels as $levelName) {
+                AcademicLevel::create([
+                    'school_id' => $filiaire->school_id,
+                    'cycle_id'  => $cycle->id,
+                    'name'      => $levelName,
+                ]);
+            }
+        }
+
+        return $filiaire;
+    });
+
+    return response()->json([
+        'data'    => $filiaire->load('cycles.academicLevels'),
+        'message' => 'Section créée avec succès',
+    ], 201);
+}
+
+
+--------------------------------------------------------------------
+3. VÉRIFIER LES $fillable DES MODÈLES
+--------------------------------------------------------------------
+
+// app/Models/Cycle.php
+protected $fillable = ['school_id', 'filiaire_id', 'name'];
+
+// app/Models/AcademicLevel.php
+protected $fillable = ['school_id', 'cycle_id', 'name'];
+
+
+--------------------------------------------------------------------
+RÉSULTAT ATTENDU
+--------------------------------------------------------------------
+
+1 seul POST /school/filiaires/store
+  → Filière créée
+  → Cycle "Long"  créé  (6 niveaux : 1er / 2nd / 3eme / 4eme / 5eme / 6eme)
+  → Cycle "Court" créé  (4 niveaux : 1er / 2n  / 3em  / 4eme)
+
+Si une étape échoue → rollback complet (DB::transaction).
+
+
+--------------------------------------------------------------------
+4. VÉRIFIER LE EAGER LOADING DE academic/levels
+--------------------------------------------------------------------
+
+Le frontend filtre les niveaux par section via l.cycle?.filiaire_id.
+Si la relation 'cycle' n'est pas chargée, le filtre ne fonctionne pas
+et aucun niveau ne s'affiche lors de la sélection d'une section.
+
+// app/Http/Controllers/AcademicLevelController.php
+
+public function index()
+{
+    $levels = AcademicLevel::with('cycle')->get();
+
+    return response()->json([
+        'data'    => $levels,
+        'message' => 'Niveaux récupérés avec succès',
+    ]);
+}
+
+Chaque niveau doit avoir la structure suivante dans la réponse :
+{
+    "id": 1,
+    "name": "1er",
+    "cycle_id": 1,
+    "cycle": {
+        "id": 1,
+        "name": "Long",
+        "filiaire_id": 73   ← indispensable pour le filtre frontend
+    }
+}

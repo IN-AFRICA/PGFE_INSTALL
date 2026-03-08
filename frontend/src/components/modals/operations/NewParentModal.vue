@@ -75,8 +75,6 @@ const onSubmit = handleSubmit(async (values) => {
     ...values,
     email: emailVal,
   }
-  console.log('📧 email.value:', email.value)
-  console.log('📦 payload envoyé:', JSON.stringify(payload))
   await postData(API_ROUTES.CREATE_PARENT, payload)
 
   if (success.value) {

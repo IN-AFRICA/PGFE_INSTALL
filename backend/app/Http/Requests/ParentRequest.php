@@ -20,12 +20,20 @@ final class ParentRequest extends FormRequest
             'firstname' => ['required', 'string', 'max:255'],
             'lastname' => ['required', 'string', 'max:255'],
             'genre' => ['required', 'string', 'in:Masculin,Féminin,Non spécifié'],
+            'identity_card' => ['nullable', 'string', 'max:255'],
             'phone_number' => [
                 'required',
                 'string',
                 'max:255',
                 'regex:/^\+243[0-9]{9}$/',
                 'unique:parents,phone_number,'.$this->parent?->id,
+            ],
+
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                'unique:parents,email,'.$this->parent?->id,
             ],
         ];
     }
