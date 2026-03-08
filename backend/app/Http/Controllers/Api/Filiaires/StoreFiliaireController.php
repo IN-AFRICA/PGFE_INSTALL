@@ -18,7 +18,7 @@ final class StoreFiliaireController extends Controller
         // Forcer l'école depuis l'utilisateur connecté
         $user = $request->user();
         $schoolId = $user?->school_id;
-        if (!$schoolId) {
+        if (! $schoolId) {
             return response()->json([
                 'message' => "Impossible de déterminer l'école de l'utilisateur connecté.",
                 'success' => false,
@@ -27,7 +27,6 @@ final class StoreFiliaireController extends Controller
         $validated['school_id'] = $schoolId;
 
         $filiaire = Filiaire::query()->create($validated);
-
 
         return response()->json([
             'data' => $filiaire->load('cycles.academicLevels'),

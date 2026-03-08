@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\AcademicLevels;
@@ -19,9 +20,11 @@ final class AcademicLevelController extends Controller
      */
     public function export(Request $request)
     {
-        $fileName = 'academic_levels_' . now()->format('Ymd_His') . '.xlsx';
+        $fileName = 'academic_levels_'.now()->format('Ymd_His').'.xlsx';
+
         return Excel::download(new AcademicLevelsExport(), $fileName);
     }
+
     public function index(Request $request): JsonResponse
     {
         /** @var \App\Models\User|null $user */
@@ -40,9 +43,9 @@ final class AcademicLevelController extends Controller
             $search = mb_strtolower(mb_trim($request->input('search')));
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                  ->orWhereHas('cycle', function ($q2) use ($search) {
-                      $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
-                  });
+                    ->orWhereHas('cycle', function ($q2) use ($search) {
+                        $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+                    });
             });
         }
 

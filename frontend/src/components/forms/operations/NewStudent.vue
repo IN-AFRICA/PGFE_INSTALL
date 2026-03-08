@@ -436,6 +436,7 @@ watch(parents_id_3, (val) => {
 // Auto-fill téléphone/email depuis le parent 1 sélectionné
 function handleParent1Selected(parent: any) {
   if (parent?.phone_number) phone_number.value = parent.phone_number
+  if (parent?.email) email.value = parent.email
 }
 </script>
 <template>

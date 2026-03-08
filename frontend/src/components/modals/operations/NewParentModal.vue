@@ -55,6 +55,7 @@ const schemaForm = z.object({
     .string({ required_error: 'Le numéro de téléphone est requis' })
     .min(2)
     .max(30),
+  email: z.string().email('Adresse email invalide').max(255).optional().or(z.literal('')),
 })
 
 const { handleSubmit, resetForm } = useForm({
@@ -66,9 +67,17 @@ const { value: firstname, errorMessage: firstnameError } = useField<string>('fir
 const { value: lastname, errorMessage: lastnameError } = useField<string>('lastname')
 const { value: genre, errorMessage: genreError } = useField<string>('genre')
 const { value: phone_number, errorMessage: phoneError } = useField<string>('phone_number')
+const { value: email, errorMessage: emailError } = useField<string>('email')
 
 const onSubmit = handleSubmit(async (values) => {
-  await postData(API_ROUTES.CREATE_PARENT, values)
+  const emailVal = email.value && typeof email.value === 'string' && email.value.trim() !== '' ? email.value.trim() : null
+  const payload = {
+    ...values,
+    email: emailVal,
+  }
+  console.log('📧 email.value:', email.value)
+  console.log('📦 payload envoyé:', JSON.stringify(payload))
+  await postData(API_ROUTES.CREATE_PARENT, payload)
 
   if (success.value) {
     showCustomToast({
@@ -167,6 +176,19 @@ const handleCancel = () => {
               class="h-10 border border-gray-200/40 bg-white transition-all"
             />
             <span v-if="phoneError" class="text-xs text-red-500">{{ phoneError }}</span>
+          </div>
+
+          <!-- Email -->
+          <div class="flex flex-col space-y-1.5">
+            <Label for="email" class="text-sm font-medium"> Email </Label>
+            <Input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="Ex: parent@example.com"
+              class="h-10 border border-gray-200/40 bg-white transition-all"
+            />
+            <span v-if="emailError" class="text-xs text-red-500">{{ emailError }}</span>
           </div>
         </div>
 

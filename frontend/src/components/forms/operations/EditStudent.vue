@@ -250,7 +250,11 @@ const fetchStudentById = async () => {
     }
 
     if (student.image) {
-      previewUrl.value = student.image
+      // Si c'est un chemin relatif, construire l'URL complète avec le storage backend
+      const imgUrl = student.image.startsWith('http') || student.image.startsWith('data:')
+        ? student.image
+        : `https://pgfe-back.inafrica.tech/storage/${student.image}`
+      previewUrl.value = imgUrl
       image.value = student.image
     }
 
@@ -549,9 +553,10 @@ watch(parents_id_3, (val) => {
   }
 })
 
-// Auto-fill téléphone depuis le parent 1 sélectionné
+// Auto-fill téléphone/email depuis le parent 1 sélectionné
 function handleParent1Selected(parent: any) {
   if (parent?.phone_number) phone_number.value = parent.phone_number
+  if (parent?.email) email.value = parent.email
 }
 </script>
 <template>
