@@ -81,6 +81,7 @@ COPY --from=php-builder /app/vendor ./vendor
 COPY --from=node-builder /app/public ./public
 COPY --chown=www:www . .
 
+
 # Finalisation : Autoload optimisé
 RUN /usr/bin/composer dump-autoload --no-dev --optimize && \
     mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache && \
