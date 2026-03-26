@@ -53,14 +53,14 @@ final class FirstYearElectronicsStudentsSeeder extends Seeder
         ]);
 
         // 5) Vérifier dépendances pour Registration (optionnel)
-        $schoolYear = SchoolYear::active($school->id) ?? SchoolYear::query()->where('school_id', $school->id)->latest('id')->first();
+        $schoolYear = SchoolYear::active() ?? SchoolYear::query()->first();
         $personal = AcademicPersonal::query()->where('school_id', $school->id)->first();
         $type = Type::query()->first();
         $canRegister = $schoolYear && $personal && $type;
 
-        // 6) Créer 200 élèves et (si possible) les inscrire dans la classe
+        // 6) Créer 20 élèves et (si possible) les inscrire dans la classe
         DB::transaction(function () use ($school, $filiaire, $cycle, $level, $classroom, $schoolYear, $personal, $type, $canRegister) {
-            $students = Student::factory()->count(200)->create([
+            $students = Student::factory()->count(20)->create([
                 'school_id' => $school->id,
             ]);
             if ($canRegister) {
@@ -69,7 +69,7 @@ final class FirstYearElectronicsStudentsSeeder extends Seeder
                         'student_id' => $student->id,
                         'school_id' => $school->id,
                         'filiaire_id' => $filiaire->id,
-                        'cycle_id' => $cycle->id,
+                        // 'cycle_id' => $cycle->id, // colonne absente
                         'academic_level_id' => $level->id,
                         'classroom_id' => $classroom->id,
                         'school_year_id' => $schoolYear->id,
@@ -83,6 +83,6 @@ final class FirstYearElectronicsStudentsSeeder extends Seeder
             }
         });
 
-        $this->command?->info('Seeder: 200 élèves créés pour la 1ère Électronique'.($canRegister ? ' + inscriptions' : ' (inscriptions non créées: dépendances manquantes)'));
+        $this->command?->info('Seeder: 20 élèves créés pour la 1ère Électronique'.($canRegister ? ' + inscriptions' : ' (inscriptions non créées: dépendances manquantes)'));
     }
 }

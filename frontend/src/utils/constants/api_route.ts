@@ -1,7 +1,8 @@
+
 const getApiConfig = () => {
   return {
-    API_BASE: 'https://pgfe-back.inafrica.tech/api/v1/',
-    SANCTUM_BASE: 'https://pgfe-back.inafrica.tech/',
+    API_BASE: 'http://localhost:8000/api/v1/',
+    SANCTUM_BASE: 'http://localhost:8000/',
   }
 }
 
@@ -135,6 +136,7 @@ export const API_ROUTES = {
 
   //c cycle
   GET_CYCLES: 'academic/cycles',
+  CREATE_CYCLE: 'academic/cycles',
 
   EXPORT_STUDENT_PRESENCE_EXCEL: 'presence/presences/export',
   EXPORT_STUDENT_PRESENCE_PDF: 'presence/presences/export-pdf',
@@ -548,6 +550,9 @@ export const API_ROUTES = {
   GET_SCHEDULE: (id: number | string) => `schedules/${id}`,
   UPDATE_SCHEDULE: (id: number | string) => `schedules/${id}`,
   DELETE_SCHEDULE: (id: number | string) => `schedules/${id}`,
+
+      // Calendar weeks (semaines d'un mois pour une année scolaire)
+  GET_CALENDAR_WEEKS: 'calendar/weeks',
 
   // === MODULE INSERTION ===
   // Applications

@@ -1,0 +1,1 @@
+import{d as o,x as a,b as t,c as n,o as r}from"./index-D2Tshtwy.js";const u=o({__name:"MainLocationPrealables",setup(s){const e=t();return a(()=>{e.replace("/location/prealables/projects")}),(c,l)=>(r(),n("div"))}});export{u as default};

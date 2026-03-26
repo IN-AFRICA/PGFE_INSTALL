@@ -1,271 +1,129 @@
-<x-layouts.modules-layout>
-    <!-- Welcome Section -->
-    <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-10 shadow-2xl shadow-indigo-500/20 mb-10">
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-            <div class="text-white">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-black uppercase tracking-widest mb-4">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    Système Live
-                </div>
-                <h1 class="text-4xl font-black tracking-tight md:text-5xl">
-                    Salut, {{ explode(' ', auth()->user()->name)[0] }} !
-                </h1>
-                <p class="mt-3 text-indigo-100 text-lg font-medium opacity-90 max-w-xl">
-                    @if($selected_school_id)
-                        Supervision active pour : <span class="font-black text-white px-2 py-1 rounded-lg bg-white/10">{{ $schools->firstWhere('id', $selected_school_id)?->name }}</span>
-                    @else
-                        Bienvenue dans votre centre de contrôle scolaire. Prêt pour une nouvelle journée de gestion ?
-                    @endif
-                </p>
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="max-w-7xl mx-auto py-10 px-6 space-y-10">
+
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-8">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Tableau de bord</h1>
+                <p class="text-zinc-500 text-sm mt-1">Gérez vos établissements, effectifs et flux financiers depuis une interface centralisée.</p>
             </div>
+
             @if($selected_school_id)
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('admin.dashboard', ['school_id' => '']) }}" class="group inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-black text-indigo-600 shadow-xl hover:bg-indigo-50 transition-all active:scale-95">
-                        <iconify-icon icon="lucide:arrow-left" width="20" class="transition-transform group-hover:-translate-x-1"></iconify-icon>
-                        VUE GLOBALE
+                <div class="flex items-center gap-3 bg-zinc-50 border border-zinc-200 p-1 pr-4 rounded-md shadow-sm">
+                    <div class="bg-zinc-900 text-white p-2 rounded-[4px]">
+                        <iconify-icon icon="lucide:school" class="text-lg"></iconify-icon>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-zinc-400 leading-none">École active</span>
+                        <span class="text-sm font-semibold text-zinc-900">{{ $schools->firstWhere('id', $selected_school_id)?->name }}</span>
+                    </div>
+                    <a href="{{ route('admin.dashboard', ['school_id' => '']) }}" class="ml-2 text-zinc-400 hover:text-zinc-900 transition-colors">
+                        <iconify-icon icon="lucide:x-circle"></iconify-icon>
                     </a>
                 </div>
             @endif
-        </div>
-        <!-- Abstract Shapes -->
-        <div class="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl"></div>
-        <div class="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-indigo-400/20 blur-3xl"></div>
-    </div>
+        </header>
 
-    <!-- Sélection des modules principaux (vue type "portail" comme sur le frontend) -->
-    <div class="mb-12">
-        <div class="flex flex-col items-center mb-8">
-            <p class="text-[11px] font-black text-gray-400 tracking-[0.3em] uppercase mb-2">Sélectionnez le module</p>
-            <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white">Choisissez un espace de gestion</h2>
-        </div>
-
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <!-- Ressources Humaines -->
-            <a href="{{ route('admin.personnels.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 p-4">
-                    <iconify-icon icon="lucide:users" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Ressources</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Humaines</p>
-            </a>
-
-            <!-- Insertion Professionnelle -->
-            <a href="{{ route('admin.activities.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 p-4">
-                    <iconify-icon icon="lucide:briefcase" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Insertion</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Professionnelle</p>
-            </a>
-
-            <!-- Infrastructures & Équipements -->
-            <a href="{{ route('admin.infra.dashboard', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300 p-4">
-                    <iconify-icon icon="lucide:building-2" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Infrastructures</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Équipements</p>
-            </a>
-
-            <!-- Gestion Élèves -->
-            <a href="{{ route('admin.students.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300 p-4">
-                    <iconify-icon icon="lucide:graduation-cap" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Gestion</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Élèves</p>
-            </a>
-
-            <!-- Gestion Stock -->
-            <a href="{{ route('admin.stock-articles.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 p-4">
-                    <iconify-icon icon="lucide:boxes" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Gestion</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Stock</p>
-            </a>
-
-            <!-- Comptabilité simplifiée -->
-            <a href="{{ route('admin.accounting.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-lime-50 dark:bg-lime-900/30 text-lime-600 dark:text-lime-300 p-4">
-                    <iconify-icon icon="lucide:banknote" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Comptabilité</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Simplifiée</p>
-            </a>
-
-            <!-- Administration -->
-            <a href="{{ route('admin.users.index') }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-300 p-4">
-                    <iconify-icon icon="lucide:settings" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Administration</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Utilisateurs & rôles</p>
-            </a>
-
-            <!-- Synchroniser -->
-            <a href="{{ route('admin.sync.monitoring') }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-300 p-4">
-                    <iconify-icon icon="lucide:refresh-cw" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Synchroniser</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Terminaux & écoles</p>
-            </a>
-
-            <!-- Horaire (planification) -->
-            <a href="{{ route('admin.planning.index', array_filter(['school_id' => $selected_school_id])) }}" class="group flex flex-col items-center justify-center rounded-3xl bg-white/80 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 py-10 px-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
-                <div class="mb-4 rounded-2xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 p-4">
-                    <iconify-icon icon="lucide:calendar-clock" width="32"></iconify-icon>
-                </div>
-                <p class="text-xs font-black text-gray-400 tracking-[0.2em] uppercase mb-1 text-center">Horaire</p>
-                <p class="text-sm font-black text-gray-800 dark:text-white text-center">Planification des cours</p>
-            </a>
-        </div>
-    </div>
-
-    @if(auth()->user()?->hasRole('super-admin'))
-        <!-- Super Admin Quick Controls -->
-        <div class="mb-12">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="h-1 w-12 rounded-full bg-violet-600"></div>
-                <h2 class="text-sm font-black text-gray-400 uppercase tracking-[0.2em]">Outils de Supervision</h2>
-            </div>
-            <div class="grid gap-6 sm:grid-cols-3">
-                <a href="{{ route('admin.search') }}" class="group relative flex flex-col p-8 rounded-[2rem] bg-white dark:bg-gray-900 border border-transparent hover:border-violet-500/30 hover:shadow-2xl hover:shadow-violet-500/10 transition-all">
-                    <div class="bg-violet-50 dark:bg-violet-900/20 text-violet-600 p-4 rounded-2xl w-fit mb-6 group-hover:bg-violet-600 group-hover:text-white transition-all transform group-hover:rotate-6">
-                        <iconify-icon icon="lucide:search" width="32"></iconify-icon>
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            @foreach([
+                ['label' => 'Total Écoles', 'value' => $count_schools, 'icon' => 'lucide:network', 'sub' => 'Réseau global'],
+                ['label' => 'Élèves inscrits', 'value' => $count_students, 'icon' => 'lucide:users', 'sub' => '+2.5% ce mois'],
+                ['label' => 'Classes actives', 'value' => $count_classrooms, 'icon' => 'lucide:layout', 'sub' => 'Taux d\'occupation 94%'],
+                ['label' => 'Personnel RH', 'value' => $count_personnels, 'icon' => 'lucide:contact-2', 'sub' => 'Contrats actifs'],
+            ] as $stat)
+                <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                    <div class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <h3 class="text-sm font-medium text-zinc-900">{{ $stat['label'] }}</h3>
+                        <iconify-icon icon="{{ $stat['icon'] }}" class="text-zinc-400 text-lg"></iconify-icon>
                     </div>
-                    <h3 class="font-black text-xl text-gray-800 dark:text-white">Recherche Globale</h3>
-                    <p class="text-sm text-gray-500 mt-2 font-medium">Localisez n'importe quel profil à travers le réseau complet.</p>
-                </a>
-                <a href="{{ route('admin.sync.monitoring') }}" class="group relative flex flex-col p-8 rounded-[2rem] bg-white dark:bg-gray-900 border border-transparent hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 transition-all">
-                    <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 p-4 rounded-2xl w-fit mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all transform group-hover:rotate-6">
-                        <iconify-icon icon="lucide:refresh-cw" width="32"></iconify-icon>
+                    <div>
+                        <div class="text-2xl font-bold text-zinc-900">{{ number_format($stat['value'], 0, ',', ' ') }}</div>
+                        <p class="text-xs text-zinc-500 mt-1">{{ $stat['sub'] }}</p>
                     </div>
-                    <h3 class="font-black text-xl text-gray-800 dark:text-white">Flux Sync</h3>
-                    <p class="text-sm text-gray-500 mt-2 font-medium">Monitorage en temps réel de l'état des terminaux distants.</p>
-                </a>
-                <a href="{{ route('admin.export-roles-pdf') }}" target="_blank" class="group relative flex flex-col p-8 rounded-[2rem] bg-white dark:bg-gray-900 border border-transparent hover:border-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/10 transition-all">
-                    <div class="bg-rose-50 dark:bg-rose-900/20 text-rose-600 p-4 rounded-2xl w-fit mb-6 group-hover:bg-rose-600 group-hover:text-white transition-all transform group-hover:rotate-6">
-                        <iconify-icon icon="lucide:file-text" width="32"></iconify-icon>
-                    </div>
-                    <h3 class="font-black text-xl text-gray-800 dark:text-white">Audit Accès</h3>
-                    <p class="text-sm text-gray-500 mt-2 font-medium">Exportation sécurisée de la matrice des permissions globales.</p>
-                </a>
-            </div>
-        </div>
-    @endif
-
-    <div class="space-y-12">
-        <!-- Main Stats Panel -->
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <!-- Schools -->
-            <div class="group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-sm border border-gray-100 dark:bg-gray-900 dark:border-gray-800 hover:shadow-xl transition-all">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="p-4 rounded-2xl bg-violet-50 text-violet-600 dark:bg-violet-900/20">
-                        <iconify-icon icon="mdi:school" width="28"></iconify-icon>
-                    </div>
-                    <span class="text-[10px] font-black text-violet-500 uppercase tracking-[0.2em]">Écoles</span>
                 </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-black text-gray-800 dark:text-white">{{ $count_schools }}</span>
-                </div>
-                <a href="{{ route('admin.schools.index') }}" class="mt-6 flex items-center gap-2 text-xs font-black text-violet-600 group-hover:translate-x-1 transition-transform">
-                    VOIR LE RÉSEAU <iconify-icon icon="lucide:chevron-right" width="16"></iconify-icon>
-                </a>
-            </div>
-
-            <!-- Classes -->
-            <div class="group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-sm border border-gray-100 dark:bg-gray-900 dark:border-gray-800 hover:shadow-xl transition-all">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="p-4 rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20">
-                        <iconify-icon icon="lucide:layers" width="28"></iconify-icon>
-                    </div>
-                    <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">Classes</span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-black text-gray-800 dark:text-white">{{ $count_classrooms }}</span>
-                </div>
-                @if($canManageSchoolScopedCheck)
-                    <a href="{{ route('admin.classrooms.index', array_filter(['school_id'=>$selected_school_id])) }}" class="mt-6 flex items-center gap-2 text-xs font-black text-indigo-600 group-hover:translate-x-1 transition-transform">
-                        DÉTAILS STRUCTURE <iconify-icon icon="lucide:chevron-right" width="16"></iconify-icon>
-                    </a>
-                @else
-                    <span class="mt-6 block text-[10px] font-black text-gray-400 uppercase tracking-widest italic opacity-50">SÉLECTION REQUISE</span>
-                @endif
-            </div>
-
-            <!-- Students -->
-            <div class="group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-sm border border-gray-100 dark:bg-gray-900 dark:border-gray-800 hover:shadow-xl transition-all">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="p-4 rounded-2xl bg-pink-50 text-pink-600 dark:bg-pink-900/20">
-                        <iconify-icon icon="lucide:users" width="28"></iconify-icon>
-                    </div>
-                    <span class="text-[10px] font-black text-pink-500 uppercase tracking-[0.2em]">Élèves</span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-black text-gray-800 dark:text-white">{{ $count_students }}</span>
-                </div>
-                @if($canManageSchoolScopedCheck)
-                    <a href="{{ route('admin.students.index', array_filter(['school_id'=>$selected_school_id])) }}" class="mt-6 flex items-center gap-2 text-xs font-black text-pink-600 group-hover:translate-x-1 transition-transform">
-                        EFFECTIFS LIVE <iconify-icon icon="lucide:chevron-right" width="16"></iconify-icon>
-                    </a>
-                @else
-                    <span class="mt-6 block text-[10px] font-black text-gray-400 uppercase tracking-widest italic opacity-50">SÉLECTION REQUISE</span>
-                @endif
-            </div>
-
-            <!-- Staff -->
-            <div class="group relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-sm border border-gray-100 dark:bg-gray-900 dark:border-gray-800 hover:shadow-xl transition-all">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="p-4 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">
-                        <iconify-icon icon="lucide:id-card" width="28"></iconify-icon>
-                    </div>
-                    <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Agents</span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-black text-gray-800 dark:text-white">{{ $count_personnels }}</span>
-                </div>
-                <a href="{{ route('admin.personnels.index', array_filter(['school_id'=>$selected_school_id])) }}" class="mt-6 flex items-center gap-2 text-xs font-black text-emerald-600 group-hover:translate-x-1 transition-transform">
-                    GÉRER LES RH <iconify-icon icon="lucide:chevron-right" width="16"></iconify-icon>
-                </a>
-            </div>
+            @endforeach
         </div>
 
-        @if($selected_school_id)
-            <!-- Specialized Modules (Specific School Context) -->
-            <div class="rounded-[2rem] bg-amber-500 p-8 shadow-2xl shadow-amber-500/30">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div class="flex items-center gap-6 text-white">
-                        <div class="h-16 w-16 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
-                            <iconify-icon icon="lucide:banknote" width="36"></iconify-icon>
+        <div class="space-y-4">
+            <h2 class="text-lg font-semibold tracking-tight text-zinc-900 px-1">Modules de gestion</h2>
+
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                @php
+                    $modules = [
+                        ['n' => 'Ressources Humaines', 'i' => 'lucide:user-cog', 'r' => 'admin.personnels.index', 'd' => 'Gestion des agents, paie et contrats.'],
+                        ['n' => 'Gestion Élèves', 'i' => 'lucide:graduation-cap', 'r' => 'admin.students.index', 'd' => 'Inscriptions, dossiers et suivi académique.'],
+                        ['n' => 'Horaires & Planning', 'i' => 'lucide:calendar', 'r' => 'admin.planning.index', 'd' => 'Emplois du temps et salles de classe.'],
+                        ['n' => 'Stocks & Matériel', 'i' => 'lucide:package', 'r' => 'admin.stock-articles.index', 'd' => 'Inventaire, consommables et logistique.'],
+                        ['n' => 'Infrastructures', 'i' => 'lucide:building', 'r' => 'admin.infra.dashboard', 'd' => 'Maintenance des bâtiments et équipements.'],
+                        ['n' => 'Insertion Pro', 'i' => 'lucide:briefcase', 'r' => 'admin.activities.index', 'd' => 'Stages, alternance et suivi carrières.'],
+                        ['n' => 'Synchronisation', 'i' => 'lucide:refresh-cw', 'r' => 'admin.sync.monitoring', 'd' => 'Monitoring des flux de données distants.'],
+                        ['n' => 'Administration', 'i' => 'lucide:shield-check', 'r' => 'admin.users.index', 'd' => 'Rôles, permissions et sécurité système.'],
+                    ];
+                @endphp
+
+                @foreach($modules as $module)
+                    <a href="{{ route($module['r'], array_filter(['school_id' => $selected_school_id])) }}"
+                       class="group relative flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm hover:bg-zinc-50 hover:border-zinc-300 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 group-hover:bg-white transition-colors">
+                                <iconify-icon icon="{{ $module['i'] }}" class="text-lg text-zinc-600 group-hover:text-zinc-900"></iconify-icon>
+                            </div>
+                            <h3 class="font-bold text-zinc-900">{{ $module['n'] }}</h3>
                         </div>
-                        <div>
-                            <p class="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Gouvernance Financière</p>
-                            <h2 class="text-2xl font-black">Accéder à la Comptabilité Digitale</h2>
+                        <p class="text-sm text-zinc-500 leading-relaxed">{{ $module['d'] }}</p>
+                    </a>
+                @endforeach
+
+                <div class="md:col-span-2 lg:col-span-1 rounded-xl border border-zinc-900 bg-zinc-900 p-6 shadow-lg flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-white">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-zinc-800 p-2 rounded-lg">
+                                <iconify-icon icon="lucide:banknote" class="text-xl"></iconify-icon>
+                            </div>
+                            <h3 class="font-bold tracking-tight">Comptabilité</h3>
                         </div>
+                        <iconify-icon icon="lucide:lock" class="text-zinc-500 {{ $selected_school_id ? 'hidden' : '' }}"></iconify-icon>
                     </div>
-                    <a href="{{ route('admin.accounting.index') }}" class="inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-black text-amber-600 shadow-xl hover:bg-amber-50 transition-all active:scale-95">
-                        OUVRIR LE MODULE <iconify-icon icon="lucide:lock-open" width="20"></iconify-icon>
+
+                    <p class="text-zinc-400 text-sm mt-4 leading-relaxed">
+                        Gestion des frais de scolarité, grand livre et rapports financiers.
+                    </p>
+
+                    <a href="{{ route('admin.accounting.index') }}"
+                       class="mt-6 inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-200 transition-colors">
+                        Accéder au module
                     </a>
                 </div>
             </div>
-        @else
-           <div class="rounded-[2.5rem] border-4 border-dashed border-gray-100 dark:border-gray-800 p-16 text-center">
-                <div class="max-w-md mx-auto">
-                    <iconify-icon icon="lucide:layers" class="text-gray-200 mb-6" width="64"></iconify-icon>
-                    <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-3 tracking-tight">Prêt à plonger plus loin ?</h3>
-                    <p class="text-gray-500 font-medium mb-8">Sélectionnez une école pour débloquer les modules de gestion locale (Mois, Stock, Infrastructures, Comptabilité).</p>
-                    <a href="{{ route('admin.schools.index') }}" class="inline-flex items-center gap-2 text-violet-600 font-black uppercase text-xs tracking-[0.2em] border-b-2 border-violet-200 pb-1 hover:border-violet-600 transition-all">
-                        COMMENCER L'EXPLORATION <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
-                    </a>
-                </div>
-           </div>
-        @endif
+        </div>
+
+        <footer class="mt-12 pt-6 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+            {{ config('app.name') }}
+        </span>
+        <span class="h-1 w-1 rounded-full bg-zinc-200"></span>
+        <span class="text-[10px] font-medium text-zinc-300 uppercase tracking-widest italic">
+            Powered by INAFRICA
+        </span>
     </div>
 
-</x-layouts.modules-layout>
-
+    <div class="flex items-center gap-6">
+        <div class="flex items-center gap-4 border-r border-zinc-100 pr-6">
+            <a href="https://github.com/IN-AFRICA" target="_blank" class="text-zinc-400 hover:text-zinc-900 transition-colors">
+                <iconify-icon icon="lucide:github" width="16"></iconify-icon>
+            </a>
+            <a href="#" class="text-zinc-400 hover:text-zinc-900 transition-colors" title="Centre d'aide">
+                <iconify-icon icon="lucide:help-circle" width="16"></iconify-icon>
+            </a>
+        </div>
+        
+        <div class="flex items-center gap-1.5">
+            <div class="h-1.5 w-1.5 rounded-full bg-emerald-500/80"></div>
+            <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter italic">Progiciel</span>
+        </div>
+    </div>
+</footer>
+    </div>
+@endsection

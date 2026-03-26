@@ -1,0 +1,1 @@
+import{d as s,z as t,j as n,ab as r,af as l,w as c,a5 as p,o as i}from"./index-D2Tshtwy.js";const f=s({__name:"DialogClose",props:{asChild:{type:Boolean},as:{type:[String,Object,Function]}},setup(a){const e=a;return(o,_)=>(i(),t(n(r),l({"data-slot":"dialog-close"},e),{default:c(()=>[p(o.$slots,"default")]),_:3},16))}});export{f as _};

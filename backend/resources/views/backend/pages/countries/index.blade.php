@@ -1,31 +1,76 @@
-<x-layouts.backend-layout :breadcrumbs="[['title'=>'Pays']]">
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-lg font-semibold">Pays</h1>
-        <a href="{{ route('admin.countries.create') }}" class="inline-flex items-center gap-1 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700">
-            <iconify-icon icon="lucide:plus" width="16" height="16"></iconify-icon>Créer
-        </a>
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')]]" current="Gestion des Pays" />
+    <div class="space-y-6">
+        <!-- Floating Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700">
+            <div>
+                <h1 class="text-3xl font-black text-gray-800 dark:text-white flex items-center gap-3 tracking-tighter">
+                    <div class="h-12 w-12 rounded-2xl bg-violet-600 flex items-center justify-center text-white shadow-lg">
+                        <iconify-icon icon="lucide:globe" width="28"></iconify-icon>
+                    </div>
+                    Gestion des Pays
+                </h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">Configurez les pays disponibles dans le système.</p>
+            </div>
+            <a href="{{ route('admin.countries.create') }}" class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-8 py-4 text-sm font-black text-white hover:bg-violet-700 shadow-xl shadow-violet-600/20 transition-all hover:-translate-y-1">
+                <iconify-icon icon="lucide:plus-circle" width="20"></iconify-icon>
+                AJOUTER UN PAYS
+            </a>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white dark:bg-gray-800 rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gray-50/50 dark:bg-gray-950/50 border-b border-gray-100 dark:border-gray-700">
+                            <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">ID</th>
+                            <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Nom du Pays</th>
+                            <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @forelse($countries as $c)
+                            <tr class="group hover:bg-violet-50/20 dark:hover:bg-violet-900/10 transition-colors">
+                                <td class="px-8 py-6 text-sm font-bold text-gray-400 italic">#{{ $c->id }}</td>
+                                <td class="px-8 py-6">
+                                    <span class="font-black text-gray-800 dark:text-white group-hover:text-violet-600 transition-colors uppercase tracking-tight">{{ $c->name }}</span>
+                                </td>
+                                <td class="px-8 py-6 text-right">
+                                    <div class="flex justify-end items-center gap-3">
+                                        <a href="{{ route('admin.countries.edit', $c) }}" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-violet-600 hover:text-white transition-all shadow-sm">
+                                            <iconify-icon icon="lucide:pen-line" width="20"></iconify-icon>
+                                        </a>
+                                        <form action="{{ route('admin.countries.destroy', $c) }}" method="POST" onsubmit="return confirm('Supprimer ce pays ?')" class="inline-block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
+                                                <iconify-icon icon="lucide:trash-2" width="20"></iconify-icon>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-8 py-20 text-center">
+                                    <div class="flex flex-col items-center gap-4">
+                                        <iconify-icon icon="lucide:globe" class="text-gray-200" width="80"></iconify-icon>
+                                        <p class="text-gray-400 font-bold">Aucun pays enregistré.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($countries->hasPages())
+                <div class="px-8 py-6 bg-gray-50/50 dark:bg-gray-950/50 border-t border-gray-100 dark:border-gray-700">
+                    {{ $countries->links() }}
+                </div>
+            @endif
+        </div>
     </div>
-    <div class="overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
-                <tr>
-                    <th class="px-3 py-2 text-left">ID</th>
-                    <th class="px-3 py-2 text-left">Nom</th>
-                    <th class="px-3 py-2 text-left w-px">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                @forelse($countries as $c)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                        <td class="px-3 py-2">{{ $c->id }}</td>
-                        <td class="px-3 py-2 font-medium">{{ $c->name }}</td>
-                        <td class="px-3 py-2"><x-ui.action-buttons :edit-url="route('admin.countries.edit',$c)" :delete-url="route('admin.countries.destroy',$c)" /></td>
-                    </tr>
-                @empty
-                    <tr><td colspan="3" class="px-3 py-6 text-center text-gray-500">Aucun pays.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    <div class="mt-4">{{ $countries->links() }}</div>
-</x-layouts.backend-layout>
+@endsection

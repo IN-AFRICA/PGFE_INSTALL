@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://pgfe-back.inafrica.tech/api"
+      "url": "http://pgfe-back.inafrica.tech/api"
     }
   ],
   "paths": {
@@ -25161,7 +25161,6 @@
     "/v1/auth/register": {
       "post": {
         "operationId": "v1.auth.register",
-        "summary": "Handle the incoming request",
         "tags": [
           "Register"
         ],
@@ -25176,31 +25175,12 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "enum": [
-                        "User registered successfully"
-                      ]
-                    },
-                    "user": {
-                      "type": "string"
-                    },
-                    "token": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "user",
-                    "token"
-                  ]
+                  "type": "string"
                 }
               }
             }
@@ -29910,6 +29890,96 @@
         }
       }
     },
+    "/v1/stock/inventories/{inventoryId}/articles": {
+      "post": {
+        "operationId": "stockInventoryArticle.store",
+        "summary": "Ajoute un ou plusieurs articles à un inventaire.\nPOST /api/v1/stock/inventories/{inventory}/articles\nBody: { \"items\": [ { \"stock_article_id\": 1, \"quantity\": 5, \"note\": \"Observation\" }, ... ] }",
+        "tags": [
+          "StockInventoryArticle"
+        ],
+        "parameters": [
+          {
+            "name": "inventoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "stock_article_id": {
+                          "type": "integer"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "stock_article_id",
+                        "quantity"
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
     "/v1/stock/operations": {
       "get": {
         "operationId": "v1.stock.operations.index",
@@ -30687,12 +30757,19 @@
                     "success": {
                       "type": "boolean"
                     },
+                    "message": {
+                      "type": "string",
+                      "enum": [
+                        "Etudiant Recuperer avec success"
+                      ]
+                    },
                     "students": {
                       "type": "object"
                     }
                   },
                   "required": [
                     "success",
+                    "message",
                     "students"
                   ]
                 }
@@ -30746,155 +30823,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        },
-                        "student": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string",
-                          "enum": [
-                            "Opération terminée."
-                          ]
-                        }
-                      },
-                      "required": [
-                        "success",
-                        "student",
-                        "message"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        },
-                        "duplicate": {
-                          "type": "boolean"
-                        },
-                        "student": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string",
-                          "enum": [
-                            "Étudiant déjà existant (données d'inscription incomplètes).",
-                            "Étudiant déjà existant (aucune nouvelle inscription créée)."
-                          ]
-                        }
-                      },
-                      "required": [
-                        "success",
-                        "duplicate",
-                        "student",
-                        "message"
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        },
-                        "duplicate": {
-                          "type": "boolean"
-                        },
-                        "student": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string",
-                          "enum": [
-                            "Étudiant créé sans inscription (données d'inscription incomplètes).",
-                            "Étudiant créé sans inscription (classe non fournie)."
-                          ]
-                        }
-                      },
-                      "required": [
-                        "success",
-                        "duplicate",
-                        "student",
-                        "message"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        },
-                        "duplicate": {
-                          "type": "boolean"
-                        },
-                        "student": {
-                          "type": "string"
-                        },
-                        "registration": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string",
-                          "enum": [
-                            "Étudiant et inscription créés avec succès."
-                          ]
-                        }
-                      },
-                      "required": [
-                        "success",
-                        "duplicate",
-                        "student",
-                        "registration",
-                        "message"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "success": {
-                          "type": "boolean"
-                        },
-                        "duplicate": {
-                          "type": "boolean"
-                        },
-                        "student": {
-                          "type": "string"
-                        },
-                        "registration": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string",
-                          "enum": [
-                            "Étudiant déjà existant; inscription créée avec succès."
-                          ]
-                        }
-                      },
-                      "required": [
-                        "success",
-                        "duplicate",
-                        "student",
-                        "registration",
-                        "message"
-                      ]
-                    }
-                  ]
+                  "type": "string"
                 }
               }
             }
@@ -37889,8 +37818,23 @@
               "Non spécifié"
             ]
           },
+          "identity_card": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
           "phone_number": {
             "type": "string",
+            "maxLength": 255
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email",
             "maxLength": 255
           }
         },
@@ -37917,6 +37861,12 @@
           },
           "name": {
             "type": "string"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "firstname": {
             "type": "string"
@@ -37968,6 +37918,7 @@
           "id",
           "uuid",
           "name",
+          "email",
           "firstname",
           "lastname",
           "genre",
@@ -39982,6 +39933,9 @@
           },
           "country_id": {
             "type": "integer"
+          },
+          "image_url": {
+            "type": "string"
           }
         },
         "required": [
@@ -40009,7 +39963,8 @@
           "created_at",
           "updated_at",
           "school_id",
-          "country_id"
+          "country_id",
+          "image_url"
         ],
         "title": "Student"
       },

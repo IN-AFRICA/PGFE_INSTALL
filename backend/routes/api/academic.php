@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 // Academic routes
 
 use App\Http\Controllers\Api\AcademicLevels\AcademicLevelController;
@@ -22,8 +24,8 @@ Route::middleware('auth:sanctum')
                 ->parameters(['' => 'deliberation'])
                 ->names('main');
             Route::prefix('general')->name('general.')->group(function () {
-            Route::get('students/{student}', [GeneralDeliberationController::class, 'showForStudent'])->whereNumber('student')->name('students.show');
-            Route::post('students/{student}/validate', [GeneralDeliberationController::class, 'validateForStudent'])->whereNumber('student')->name('students.validate');
+                Route::get('students/{student}', [GeneralDeliberationController::class, 'showForStudent'])->whereNumber('student')->name('students.show');
+                Route::post('students/{student}/validate', [GeneralDeliberationController::class, 'validateForStudent'])->whereNumber('student')->name('students.validate');
             });
         });
         // Fiche de cotation

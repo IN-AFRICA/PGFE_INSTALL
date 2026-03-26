@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import DashLayout from '@/components/templates/DashLayout.vue';
 import DashPageHeader from '@/components/templates/DashPageHeader.vue';
 import BoxPanelWrapper from '@/components/atoms/BoxPanelWrapper.vue';
@@ -38,6 +39,10 @@ import IconifySpinner from '@/components/ui/spinner/IconifySpinner.vue';
 import { showCustomToast } from '@/utils/widgets/custom_toast';
 
 const route = useRoute();
+const authStore = useAuthStore();
+const isScheduleAdmin = computed(() => authStore.can('schedule.manage'));
+const isTeacher = computed(() => authStore.can('schedule.view') && !isScheduleAdmin.value);
+
 const breadcrumbItems = {
   items: [
     { label: 'Accueil', href: '/', icon: 'hugeicons--home-01' },
@@ -52,6 +57,7 @@ const activeTagName = computed(() => activeTab.value);
 // ======================
 // FILTERS
 // ======================
+//const getMonths = new DAte
 const MONTHS = [
   { value: '1', label: 'Janvier' },
   { value: '2', label: 'Février' },
@@ -67,8 +73,38 @@ const MONTHS = [
   { value: '12', label: 'Décembre' },
 ];
 
+// Filters state (doit être déclaré AVANT tout usage)
+const filterParams = reactive({
+  yearId: '',
+  month: '',
+  week: '',
+});
+
+// Correction : Consommer l’API calendar/weeks
+const { data: calendarWeeksRaw, fetchData: fetchCalendarWeeks } = useGetApi(API_ROUTES.GET_CALENDAR_WEEKS);
+// useGetApi unwrappe automatiquement response.data.data
+// Donc calendarWeeksRaw.value = { weeks: [...], current_week: "13", ... }
+const weeksInMonth = computed(() => {
+  if (!calendarWeeksRaw.value) return [];
+  const arr = calendarWeeksRaw.value.weeks || [];
+  if (!Array.isArray(arr)) return [];
+  return arr.map((w: any) => ({
+    ...w,
+    start: w.start_date ? new Date(w.start_date) : undefined,
+    end: w.end_date ? new Date(w.end_date) : undefined,
+  }));
+});
+
+// Appel API pour les semaines
+watch([() => filterParams.yearId, () => filterParams.month], ([yearId, month]) => {
+  if (yearId && month) {
+    fetchCalendarWeeks({ school_year_id: yearId, month });
+  }
+}, { immediate: true });
+
 // Fetch school years
 const { data: rawYears, fetchData: fetchYears } = useGetApi(API_ROUTES.GET_SCHOOL_YEARS);
+
 const schoolYears = computed(() => {
   if (!rawYears.value) return [];
   if (Array.isArray(rawYears.value)) return rawYears.value;
@@ -76,17 +112,21 @@ const schoolYears = computed(() => {
   return (rawYears.value as any).data || [];
 });
 
-// Filters state
-const filterParams = reactive({
-  yearId: '',
-  month: '',
-  week: '',
-});
-
-// Auto-select active year
+// Sélection intelligente de l'année scolaire :
+// 1. Prend l'année active spécifique à l'école si elle existe
+// 2. Sinon, prend l'année globale (school_id == null)
 watch(schoolYears, (years) => {
   if (years.length > 0 && !filterParams.yearId) {
-    const activeYear = years.find((y: any) => y.is_active === '1' || y.is_active === 1);
+    // Cherche d'abord une année active spécifique à l'école
+    let activeYear = years.find((y: any) => (y.is_active === '1' || y.is_active === 1) && y.school_id);
+    // Sinon, prend l'année globale active
+    if (!activeYear) {
+      activeYear = years.find((y: any) => (y.is_active === '1' || y.is_active === 1) && (y.school_id === null || y.school_id === undefined));
+    }
+    // Si aucune active, prend la première globale
+    if (!activeYear) {
+      activeYear = years.find((y: any) => y.school_id === null || y.school_id === undefined);
+    }
     if (activeYear) {
       filterParams.yearId = String(activeYear.id);
     }
@@ -119,10 +159,15 @@ const customLabels = {
   week: (value: any) => {
     const week = weeksInMonth.value.find((w: any) => String(w.value) === String(value));
     if (week) {
-        const dateRange = week.label.match(/\((.*?)\)/);
-        return `Semaine ${week.value} ${dateRange ? dateRange[0] : ''}`;
+      // Extract interval from label (e.g., "Semaine 2 (03/02/2024 - 09/02/2024)")
+      const dateRange = week.label.match(/\((.*?)\)/);
+      if (dateRange && dateRange[1]) {
+        return `Semaine du ${dateRange[1]}`;
+      }
+      // Fallback: show full label if no interval found
+      return week.label;
     }
-    return `Semaine ${value}`;
+    return `Semaine`;
   },
 };
 
@@ -132,78 +177,43 @@ const removeFilter = (key: string) => {
   if (key === 'week') filterParams.week = '';
 };
 
-// Compute weeks for the selected month
-const weeksInMonth = computed(() => {
-  if (!filterParams.month) return [];
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = Number(filterParams.month) - 1;
+// ======================
+// SEMAINE COURANTE — Synchronisation avec l'API
+// ======================
+// On écoute uniquement calendarWeeksRaw pour éviter les race conditions
+// avec le computed weeksInMonth qui se déclenche en cascade.
+watch(calendarWeeksRaw, (val) => {
+  if (!val) return;
+  // useGetApi unwrappe response.data.data → val = { weeks:[...], current_week:"13", ... }
+  const rawWeeks: any[] = val?.weeks || [];
+  if (!Array.isArray(rawWeeks) || rawWeeks.length === 0) return;
 
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
+  const currentWeek = val?.current_week; // ex: "13"
+  const weekValues = rawWeeks.map((w: any) => String(w.value));
 
-  const weeks: { value: string; label: string; start: Date; end: Date }[] = [];
-  let weekStart = new Date(firstDay);
-
-  const getISOWeekNumber = (d: Date) => {
-    const date = new Date(d.getTime());
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-    const week1 = new Date(date.getFullYear(), 0, 4);
-    return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-  };
-
-  // Go to Monday of the first week
-  const dayOfWeek = weekStart.getDay();
-  // In JS, getDay() returns 0 for Sunday, 1 for Monday.
-  // We want to force the week to start on Monday.
-  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  weekStart.setDate(weekStart.getDate() + diffToMonday);
-
-  while (weekStart <= lastDay) {
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 4); // Friday
-
-    const startStr = `${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}`;
-    const endStr = `${String(weekEnd.getDate()).padStart(2, '0')}/${String(weekEnd.getMonth() + 1).padStart(2, '0')}`;
-    
-    const isoWeekNum = getISOWeekNumber(weekStart);
-
-    weeks.push({
-      value: String(isoWeekNum),
-      label: `Semaine ${isoWeekNum} (${startStr} - ${endStr})`,
-      start: new Date(weekStart),
-      end: new Date(weekEnd),
-    });
-
-    weekStart = new Date(weekStart);
-    weekStart.setDate(weekStart.getDate() + 7);
+  // Si la semaine sélectionnée existe toujours dans le nouveau mois, on la garde
+  if (filterParams.week && weekValues.includes(String(filterParams.week))) {
+    return;
   }
 
-  return weeks;
-});
-
-// Auto-select first week when month changes
-watch(() => filterParams.month, () => {
-  if (weeksInMonth.value.length > 0) {
-    // Try to select the current week
-    const now = new Date();
-    const currentWeek = weeksInMonth.value.find(w => now >= w.start && now <= w.end);
-    filterParams.week = currentWeek ? currentWeek.value : weeksInMonth.value[0].value;
+  // Sinon : priorité à la semaine courante, puis première semaine
+  if (currentWeek && weekValues.includes(String(currentWeek))) {
+    filterParams.week = String(currentWeek);
   } else {
-    filterParams.week = '';
+    filterParams.week = String(rawWeeks[0].value);
   }
-});
+}, { immediate: true });
 
 // Current week data
 const currentWeekData = computed(() => {
-  return weeksInMonth.value.find(w => w.value === filterParams.week);
+  return weeksInMonth.value.find(w => String(w.value) === String(filterParams.week));
 });
 
 // Date display for title
 const weekDateLabel = computed(() => {
   if (!currentWeekData.value) return '';
   const d = currentWeekData.value.start;
+  if (!d) return '';
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 });
 
@@ -212,26 +222,30 @@ const filtersReady = computed(() => {
   return !!filterParams.yearId && !!filterParams.month && !!filterParams.week;
 });
 
-// Week pagination
+// ======================
+// WEEK PAGINATION — Navigation par index dans weeksInMonth
+// ======================
+const currentWeekIndex = computed(() => {
+  return weeksInMonth.value.findIndex(w => String(w.value) === String(filterParams.week));
+});
+
 const canGoPrev = computed(() => {
-  if (!filterParams.week || weeksInMonth.value.length === 0) return false;
-  return Number(filterParams.week) > 1;
+  return currentWeekIndex.value > 0;
 });
 
 const canGoNext = computed(() => {
-  if (!filterParams.week || weeksInMonth.value.length === 0) return false;
-  return Number(filterParams.week) < weeksInMonth.value.length;
+  return currentWeekIndex.value !== -1 && currentWeekIndex.value < weeksInMonth.value.length - 1;
 });
 
 const prevWeek = () => {
   if (canGoPrev.value) {
-    filterParams.week = String(Number(filterParams.week) - 1);
+    filterParams.week = String(weeksInMonth.value[currentWeekIndex.value - 1].value);
   }
 };
 
 const nextWeek = () => {
   if (canGoNext.value) {
-    filterParams.week = String(Number(filterParams.week) + 1);
+    filterParams.week = String(weeksInMonth.value[currentWeekIndex.value + 1].value);
   }
 };
 
@@ -259,7 +273,7 @@ const { deleteItem, deleting: deletingApi, success: deleteSuccess, errorDelete }
 const allEntries = computed<ScheduleEntry[]>(() => {
   if (!rawSchedules.value) return [];
   const list = Array.isArray(rawSchedules.value) ? rawSchedules.value : (rawSchedules.value as any).data || [];
-  
+
   return list.map((item: any) => ({
     id: String(item.id),
     day: item.day as Day,
@@ -300,10 +314,14 @@ watch([() => filterParams.yearId, () => filterParams.month, () => filterParams.w
 const formOpen = ref(false);
 
 const handleAddClick = () => {
+  if (!isScheduleAdmin.value) {
+    showCustomToast({ message: "Vous n'avez pas les droits pour ajouter un cours.", type: 'error' });
+    return;
+  }
   if (!filtersReady.value) {
-    showCustomToast({ 
-      message: "Veuillez d'abord sélectionner l'année scolaire, le mois et la semaine avant d'ajouter un cours.", 
-      type: 'error' 
+    showCustomToast({
+      message: "Veuillez d'abord sélectionner l'année scolaire, le mois et la semaine avant d'ajouter un cours.",
+      type: 'error'
     });
     return;
   }
@@ -329,9 +347,9 @@ const getSpan = (entry: ScheduleEntry) => {
 };
 
 const handleCellClick = (day: Day, time: string) => {
+  if (!isScheduleAdmin.value) return;
   const existing = getEntry(day, time);
   if (existing) {
-    // For now editEntry might need more fields if we want to prefill everything properly
     editEntry.value = existing;
     formOpen.value = true;
   } else {
@@ -351,10 +369,14 @@ const handleSaved = () => {
 };
 
 const confirmDelete = async () => {
+  if (!isScheduleAdmin.value) {
+    showCustomToast({ message: "Vous n'avez pas les droits pour supprimer ce cours.", type: 'error' });
+    return;
+  }
   if (deleteId.value) {
     const url = API_ROUTES.DELETE_SCHEDULE(deleteId.value);
     await deleteItem(url);
-    
+
     if (deleteSuccess.value) {
       showCustomToast({
         message: 'Cours supprimé avec succès',
@@ -398,7 +420,7 @@ const confirmDelete = async () => {
         <div class="flex items-center gap-3 justify-between mb-4">
           <div class="flex flex-1 items-center gap-2">
             <h2 class="text-xl font-semibold text-foreground mr-4">Horaire du {{ weekDateLabel }}</h2>
-            
+
             <Popover>
               <PopoverTrigger as-child>
                 <Button variant="outline" size="sm" class="h-10 rounded-md bg-white border">
@@ -474,11 +496,10 @@ const confirmDelete = async () => {
           </div>
 
           <div class="ml-auto">
-            <!-- Intercepting the click with a capture on a wrapper if the button is fully disabled, 
-                 or we just style the button to look disabled but keep it clickable to show the error -->
-            <Button 
-              @click="handleAddClick" 
-              size="md" 
+            <Button
+              v-if="isScheduleAdmin"
+              @click="handleAddClick"
+              size="md"
               class="rounded-md transition-all duration-200"
               :class="{ 'opacity-50 cursor-not-allowed bg-gray-300 hover:bg-gray-300 text-gray-500 border-none': !filtersReady }"
             >
@@ -495,7 +516,7 @@ const confirmDelete = async () => {
             <span class="iconify animate-spin hugeicons--loading-03 text-2xl"></span>
             <span>Chargement de l'horaire...</span>
           </div>
-          
+
           <div v-else-if="entries.length > 0" class="overflow-x-auto rounded-lg border bg-white shadow-sm">
             <table class="w-full border-collapse min-w-[1000px] table-fixed">
               <thead class="[&_tr]:border-b [&_th]:bg-gray-200 text-foreground-title">
@@ -520,10 +541,11 @@ const confirmDelete = async () => {
                       >
                         <div
                           v-bind:class="cn(
-                            'absolute inset-0 border-l-4 p-2 cursor-pointer transition-all hover:shadow-md group flex flex-col justify-start overflow-hidden',
+                            'absolute inset-0 border-l-4 p-2',
+                            isScheduleAdmin ? 'cursor-pointer transition-all hover:shadow-md group flex flex-col justify-start overflow-hidden' : 'cursor-default',
                             getSubjectColor(getEntry(day, time)!.subject)
                           )"
-                          @click="handleCellClick(day, time)"
+                          @click="isScheduleAdmin && handleCellClick(day, time)"
                         >
                           <div class="font-bold text-sm truncate">{{ getEntry(day, time)!.subject }}</div>
                           <div v-if="getEntry(day, time)!.teacher" class="text-xs opacity-90 mt-0.5 truncate">
@@ -535,8 +557,7 @@ const confirmDelete = async () => {
                           <div class="text-[10px] opacity-70 mt-auto">
                              {{ getEntry(day, time)!.startTime }} - {{ getEntry(day, time)!.endTime }}
                           </div>
-                          
-                          <div class="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div v-if="isScheduleAdmin" class="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               @click.stop="deleteId = getEntry(day, time)!.id"
                               class="size-9 flex items-center justify-center rounded-md bg-white/90 hover:bg-red-50 text-red-600 shadow-sm"
@@ -550,8 +571,8 @@ const confirmDelete = async () => {
 
                     <td
                       v-else
-                      class="border-b border-r last:border-r-0 p-1 cursor-pointer hover:bg-gray-400 group transition-colors"
-                      @click="handleCellClick(day, time)"
+                      :class="['border-b border-r last:border-r-0 p-1', isScheduleAdmin ? 'cursor-pointer hover:bg-gray-400 group transition-colors' : 'cursor-default']"
+                      @click="isScheduleAdmin && handleCellClick(day, time)"
                     >
                       <div class="h-full rounded flex items-center justify-center min-h-[60px]">
                         <span class="iconify hugeicons--plus-sign text-muted-foreground/30 group-hover:text-white size-4 transition-colors"></span>
@@ -570,7 +591,7 @@ const confirmDelete = async () => {
             <p class="text-sm text-muted-foreground/70 mt-1">
               Aucun horaire n'a été trouvé pour cette période.
             </p>
-            <Button @click="editEntry = null; formOpen = true" variant="outline" size="sm" class="mt-4">
+            <Button v-if="isScheduleAdmin" @click="editEntry = null; formOpen = true" variant="outline" size="sm" class="mt-4">
               Ajouter le premier cours
             </Button>
           </div>
@@ -595,11 +616,11 @@ const confirmDelete = async () => {
             >
               Précédent
             </button>
-            
+
             <div class="flex items-center justify-center px-4 h-9 text-sm font-medium border border-primary bg-primary rounded-lg text-white min-w-[120px]">
               {{ currentWeekData?.label?.split('(')[0] || 'Semaine' }}
             </div>
-            
+
             <button
               @click="nextWeek"
               :disabled="!canGoNext"

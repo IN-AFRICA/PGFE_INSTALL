@@ -294,7 +294,7 @@ const deleteSelectedCurrencies = async () => {
   if (selectedCurrencies.value.length === 0) {
     showCustomToast({
       message: 'Aucune devise sélectionnée',
-      type: 'warning',
+      type: 'error',
     })
     return
   }

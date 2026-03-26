@@ -1,4 +1,9 @@
-<x-layouts.backend-layout :breadcrumbs="[['title' => 'Filières']]">
+@extends('backend.layouts.app')
+
+
+@section('admin-content')
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')]]" current="Gestion des Filières" />
+
     <div class="space-y-10">
         <!-- Premium Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800">
@@ -76,4 +81,4 @@
             @endif
         </div>
     </div>
-</x-layouts.backend-layout>
+@endsection

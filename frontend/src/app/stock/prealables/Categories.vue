@@ -118,7 +118,7 @@ const openEditModal = (item: any) => {
 
 const handleSubmit = async () => {
   if (!formData.value.name.trim()) {
-    showCustomToast({ message: 'Le nom est obligatoire', type: 'warning' })
+    showCustomToast({ message: 'Le nom est obligatoire', type: 'error' })
     return
   }
 

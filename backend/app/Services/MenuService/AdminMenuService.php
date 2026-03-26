@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\MenuService;
 
+use Exception;
 use Illuminate\Support\Facades\Request;
 
 final class AdminMenuService
@@ -55,11 +56,60 @@ final class AdminMenuService
                 'route' => $this->getRouteWithContext('admin.roles.index'),
                 'active' => $this->isCurrentRoutePrefixed('admin.roles.'),
             ]),
+            new AdminMenuItem([
+                'id' => 'school-years',
+                'label' => 'Années scolaires',
+                'icon' => 'lucide:calendar-days',
+                'route' => $this->getRouteWithContext('admin.school-years.index'),
+                'active' => $this->isCurrentRoutePrefixed('admin.school-years.'),
+            ]),
+            new AdminMenuItem([
+                'id' => 'classrooms',
+                'label' => 'Classes',
+                'icon' => 'lucide:layers',
+                'route' => $this->getRouteWithContext('admin.classrooms.index'),
+                'active' => $this->isCurrentRoutePrefixed('admin.classrooms.'),
+            ]),
+            new AdminMenuItem([
+                'id' => 'academic-levels',
+                'label' => 'Niveaux',
+                'icon' => 'lucide:layers-3',
+                'route' => $this->getRouteWithContext('admin.academic-levels.index'),
+                'active' => $this->isCurrentRoutePrefixed('admin.academic-levels.'),
+            ]),
+            new AdminMenuItem([
+                'id' => 'semesters',
+                'label' => 'Semestres',
+                'icon' => 'lucide:calendar-range',
+                'route' => $this->getRouteWithContext('admin.semesters.index'),
+                'active' => $this->isCurrentRoutePrefixed('admin.semesters.'),
+            ]),
+            new AdminMenuItem([
+                'id' => 'mois',
+                'label' => 'Mois',
+                'icon' => 'lucide:calendar-days',
+                'route' => $this->getRouteWithContext('admin.mois.index'),
+                'active' => $this->isCurrentRoutePrefixed('admin.mois.'),
+            ]),
+            new AdminMenuItem([
+                'id' => 'cycles',
+                'label' => 'Cycles',
+                'icon' => 'lucide:repeat',
+                'route' => $this->getRouteWithContext('admin.cycles.index'),
+                'active' => $this->isCurrentRoutePrefixed('admin.cycles.'),
+            ]),
+            new AdminMenuItem([
+                'id' => 'filieres',
+                'label' => 'Filières',
+                'icon' => 'lucide:git-branch',
+                'route' => $this->getRouteWithContext('admin.filiaires.index'),
+                'active' => $this->isCurrentRoutePrefixed('admin.filiaires.'),
+            ]),
         ];
 
         // Menus contextuels, affichés si une école est sélectionnée OU pour le super-admin
         if ($selectedSchoolId || ($user && $user->hasRole('super-admin'))) {
-            // Groupe Mois, Infrastructures, Stock (refactorisé)
+            // Groupe Mois (stock = groupe dédié)
             $groups['Gestion'] = [
                 new AdminMenuItem([
                     'id' => 'mois',
@@ -68,137 +118,129 @@ final class AdminMenuService
                     'route' => $this->getRouteWithContext('admin.mois.index'),
                     'active' => $this->isCurrentRoutePrefixed('admin.mois.'),
                 ]),
+            ];
+
+            $groups['Stock'] = [
                 new AdminMenuItem([
-                    'id' => 'infrastructures',
-                    'label' => 'Infrastructures',
-                    'icon' => 'lucide:building',
-                    'route' => $this->getRouteWithContext('admin.infra-infrastructures.index'),
-                    'active' => $this->isCurrentRoutePrefixed('admin.infra-'),
-                    'children' => [
-                        new AdminMenuItem([
-                            'id' => 'infra-dashboard',
-                            'label' => 'Tableau de bord',
-                            'icon' => 'lucide:layout-dashboard',
-                            'route' => $this->getRouteWithContext('admin.infra.dashboard'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra.dashboard'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'infra-categories',
-                            'label' => 'Catégories',
-                            'icon' => 'lucide:tag',
-                            'route' => $this->getRouteWithContext('admin.infra-categories.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra-categories.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'infra-bailleurs',
-                            'label' => 'Bailleurs',
-                            'icon' => 'lucide:handshake',
-                            'route' => $this->getRouteWithContext('admin.infra-bailleurs.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra-bailleurs.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'infra-infrastructures',
-                            'label' => 'Infrastructures',
-                            'icon' => 'lucide:building-2',
-                            'route' => $this->getRouteWithContext('admin.infra-infrastructures.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra-infrastructures.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'infra-infrastructure-inventaires',
-                            'label' => 'Suivi Bâtiments',
-                            'icon' => 'lucide:clipboard-check',
-                            'route' => $this->getRouteWithContext('admin.infra-infrastructure-inventaires.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra-infrastructure-inventaires.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'infra-equipements',
-                            'label' => 'Équipements',
-                            'icon' => 'lucide:cpu',
-                            'route' => $this->getRouteWithContext('admin.infra-equipements.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra-equipements.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'infra-inventaires',
-                            'label' => 'Suivi Équipements',
-                            'icon' => 'lucide:clipboard-list',
-                            'route' => $this->getRouteWithContext('admin.infra-inventaires.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra-inventaires.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'infra-etats',
-                            'label' => 'Signalements',
-                            'icon' => 'lucide:alert-triangle',
-                            'route' => $this->getRouteWithContext('admin.infra-etats.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.infra-etats.'),
-                        ]),
-                    ],
+                    'id' => 'stock-articles',
+                    'label' => 'Articles',
+                    'icon' => 'lucide:package',
+                    'route' => $this->getRouteWithContext('admin.stock-articles.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.stock-articles.'),
                 ]),
                 new AdminMenuItem([
-                    'id' => 'stock',
-                    'label' => 'Stock',
-                    'icon' => 'lucide:boxes',
-                    'route' => $this->getRouteWithContext('admin.stock-articles.index'),
-                    'active' => $this->isCurrentRoutePrefixed('admin.stock-'),
-                    'children' => [
-                        new AdminMenuItem([
-                            'id' => 'stock-articles',
-                            'label' => 'Articles',
-                            'icon' => 'lucide:package',
-                            'route' => $this->getRouteWithContext('admin.stock-articles.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.stock-articles.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'stock-categories',
-                            'label' => 'Catégories',
-                            'icon' => 'lucide:tag',
-                            'route' => $this->getRouteWithContext('admin.stock-categories.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.stock-categories.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'stock-providers',
-                            'label' => 'Fournisseurs',
-                            'icon' => 'lucide:truck',
-                            'route' => $this->getRouteWithContext('admin.stock-providers.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.stock-providers.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'stock-entries',
-                            'label' => 'Entrées',
-                            'icon' => 'lucide:arrow-down-circle',
-                            'route' => $this->getRouteWithContext('admin.stock-entries.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.stock-entries.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'stock-exits',
-                            'label' => 'Sorties',
-                            'icon' => 'lucide:arrow-up-circle',
-                            'route' => $this->getRouteWithContext('admin.stock-exits.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.stock-exits.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'stock-states',
-                            'label' => 'États',
-                            'icon' => 'lucide:check-square',
-                            'route' => $this->getRouteWithContext('admin.stock-states.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.stock-states.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'stock-inventories',
-                            'label' => 'Inventaires',
-                            'icon' => 'lucide:clipboard-list',
-                            'route' => $this->getRouteWithContext('admin.stock-inventories.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.stock-inventories.'),
-                        ]),
-                    ],
+                    'id' => 'stock-categories',
+                    'label' => 'Catégories',
+                    'icon' => 'lucide:tag',
+                    'route' => $this->getRouteWithContext('admin.stock-categories.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.stock-categories.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'stock-providers',
+                    'label' => 'Fournisseurs',
+                    'icon' => 'lucide:truck',
+                    'route' => $this->getRouteWithContext('admin.stock-providers.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.stock-providers.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'stock-entries',
+                    'label' => 'Entrées',
+                    'icon' => 'lucide:arrow-down-circle',
+                    'route' => $this->getRouteWithContext('admin.stock-entries.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.stock-entries.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'stock-exits',
+                    'label' => 'Sorties',
+                    'icon' => 'lucide:arrow-up-circle',
+                    'route' => $this->getRouteWithContext('admin.stock-exits.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.stock-exits.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'stock-states',
+                    'label' => 'États',
+                    'icon' => 'lucide:check-square',
+                    'route' => $this->getRouteWithContext('admin.stock-states.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.stock-states.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'stock-inventories',
+                    'label' => 'Inventaires',
+                    'icon' => 'lucide:clipboard-list',
+                    'route' => $this->getRouteWithContext('admin.stock-inventories.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.stock-inventories.'),
                 ]),
             ];
+
+            $groups['Infrastructures'] = [
+                new AdminMenuItem([
+                    'id' => 'infra-dashboard',
+                    'label' => 'Tableau de bord',
+                    'icon' => 'lucide:layout-dashboard',
+                    'route' => $this->getRouteWithContext('admin.infra.dashboard'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra.dashboard'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'infra-categories',
+                    'label' => 'Catégories',
+                    'icon' => 'lucide:tag',
+                    'route' => $this->getRouteWithContext('admin.infra-categories.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra-categories.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'infra-bailleurs',
+                    'label' => 'Bailleurs',
+                    'icon' => 'lucide:handshake',
+                    'route' => $this->getRouteWithContext('admin.infra-bailleurs.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra-bailleurs.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'infra-infrastructures',
+                    'label' => 'Bâtiments & ouvrages',
+                    'icon' => 'lucide:building-2',
+                    'route' => $this->getRouteWithContext('admin.infra-infrastructures.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra-infrastructures.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'infra-infrastructure-inventaires',
+                    'label' => 'Suivi bâtiments',
+                    'icon' => 'lucide:clipboard-check',
+                    'route' => $this->getRouteWithContext('admin.infra-infrastructure-inventaires.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra-infrastructure-inventaires.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'infra-equipements',
+                    'label' => 'Équipements',
+                    'icon' => 'lucide:cpu',
+                    'route' => $this->getRouteWithContext('admin.infra-equipements.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra-equipements.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'infra-inventaires',
+                    'label' => 'Suivi équipements',
+                    'icon' => 'lucide:clipboard-list',
+                    'route' => $this->getRouteWithContext('admin.infra-inventaires.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra-inventaires.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'infra-etats',
+                    'label' => 'Signalements',
+                    'icon' => 'lucide:alert-triangle',
+                    'route' => $this->getRouteWithContext('admin.infra-etats.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.infra-etats.'),
+                ]),
+            ];
+
             $groups['Écoles'] = [
                 new AdminMenuItem([
                     'id' => 'schools',
                     'label' => 'Écoles',
                     'icon' => 'mdi:school',
                     'route' => $this->getRouteWithContext('admin.schools.index'),
-                    'active' => $this->isCurrentRoutePrefixed('admin.schools.'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.schools.')
+                        || $this->isCurrentRoutePrefixed('admin.filiaires.')
+                        || $this->isCurrentRoutePrefixed('admin.academic-levels.')
+                        || $this->isCurrentRoutePrefixed('admin.classrooms.'),
                     'children' => [
                         new AdminMenuItem([
                             'id' => 'filieres',
@@ -226,115 +268,137 @@ final class AdminMenuService
             ];
             $groups['Élèves'] = [
                 new AdminMenuItem([
-                    'id' => 'students',
-                    'label' => 'Élèves',
-                    'icon' => 'lucide:users',
-                    'route' => $this->getRouteWithContext('admin.students.index'),
-                    'active' => $this->isCurrentRoutePrefixed('admin.students.')
-                        || $this->isCurrentRoutePrefixed('admin.presences.')
-                        || $this->isCurrentRoutePrefixed('admin.fiche-cotations.')
-                        || $this->isCurrentRoutePrefixed('admin.deliberations.')
-                        || $this->isCurrentRoutePrefixed('admin.student-exits.')
-                        || $this->isCurrentRoutePrefixed('admin.visits.'),
-                    'children' => [
-                        new AdminMenuItem([
-                            'id' => 'students-directory',
-                            'label' => 'Annuaire des élèves',
-                            'icon' => 'lucide:list',
-                            'route' => $this->getRouteWithContext('admin.students.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.students.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'students-presences',
-                            'label' => 'Présences',
-                            'icon' => 'lucide:calendar-check',
-                            'route' => $this->getRouteWithContext('admin.presences.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.presences.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'students-fiche-cotation',
-                            'label' => 'Fiches de cotation',
-                            'icon' => 'lucide:clipboard-list',
-                            'route' => $this->getRouteWithContext('admin.fiche-cotations.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.fiche-cotations.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'students-deliberations',
-                            'label' => 'Délibérations',
-                            'icon' => 'lucide:scale',
-                            'route' => $this->getRouteWithContext('admin.deliberations.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.deliberations.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'students-exits',
-                            'label' => 'Sorties élèves',
-                            'icon' => 'lucide:log-out',
-                            'route' => $this->getRouteWithContext('admin.student-exits.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.student-exits.'),
-                        ]),
-                        new AdminMenuItem([
-                            'id' => 'students-visits',
-                            'label' => 'Visites de classe',
-                            'icon' => 'lucide:eye',
-                            'route' => $this->getRouteWithContext('admin.visits.index'),
-                            'active' => $this->isCurrentRoutePrefixed('admin.visits.'),
-                        ]),
-                    ],
+                    'id' => 'students-visits',
+                    'label' => 'Visites de classe',
+                    'icon' => 'lucide:eye',
+                    'route' => $this->getRouteWithContext('admin.visits.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.visits.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'students-fiche-cotation',
+                    'label' => 'Fiches de cotation',
+                    'icon' => 'lucide:clipboard-list',
+                    'route' => $this->getRouteWithContext('admin.fiche-cotations.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.fiche-cotations.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'students-deliberations',
+                    'label' => 'Délibérations',
+                    'icon' => 'lucide:scale',
+                    'route' => $this->getRouteWithContext('admin.deliberations.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.deliberations.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'students-exits',
+                    'label' => 'Sorties de classe',
+                    'icon' => 'lucide:log-out',
+                    'route' => $this->getRouteWithContext('admin.student-exits.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.student-exits.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'students-inscriptions',
+                    'label' => 'Inscriptions',
+                    'icon' => 'lucide:edit-3',
+                    'route' => $this->getRouteWithContext('admin.registrations.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.registrations.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'students-presences',
+                    'label' => 'Présences',
+                    'icon' => 'lucide:calendar-check',
+                    'route' => $this->getRouteWithContext('admin.presences.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.presences.'),
                 ]),
             ];
 
-            // Groupe Comptabilité — accès aux principaux modules de compta (aligné avec les APIs)
-            $groups['Comptabilité'] = [
+            $groups['Ressources Humaines'] = [
                 new AdminMenuItem([
-                    'id' => 'accounting',
-                    'label' => 'Comptabilité',
-                    'icon' => 'lucide:banknote',
-                    'route' => $this->getRouteWithContext('admin.accounting.index'),
-                    'active' => $this->isCurrentRoutePrefixed('admin.accounting.'),
-                    'children' => [
+                    'id' => 'rh-personnels',
+                    'label' => 'Personnels',
+                    'icon' => 'lucide:id-card',
+                    'route' => $this->getRouteWithContext('admin.personnels.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.personnels.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'rh-roles',
+                    'label' => 'Rôles & assignation',
+                    'icon' => 'lucide:shield-check',
+                    'route' => $this->getRouteWithContext('admin.roles.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.roles.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'rh-personnel-presences',
+                    'label' => 'Présences personnel',
+                    'icon' => 'lucide:calendar-check-2',
+                    'route' => $this->getRouteWithContext('admin.personnel-presences.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.personnel-presences.'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'rh-affectations',
+                    'label' => 'Affectations',
+                    'icon' => 'lucide:map-pin',
+                    'route' => $this->getRouteWithContext('admin.person-affectations.index'),
+                    'active' => $this->isCurrentRoutePrefixed('admin.person-affectations.'),
+                ]),
+            ];
+
+            // Groupe Comptabilité — entrées plates (comme Infrastructure / RH)
+            $groups['Comptabilité'] = [
                         new AdminMenuItem([
                             'id' => 'accounting-dashboard',
                             'label' => 'Tableau de bord',
                             'icon' => 'lucide:layout-dashboard',
                             'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'dashboard']),
-                            'active' => $this->isCurrentRoutePrefixed('admin.accounting.'),
+                    'active' => $this->isAccountingSection('dashboard'),
                         ]),
                         new AdminMenuItem([
                             'id' => 'account-plans',
                             'label' => 'Plan comptable',
                             'icon' => 'lucide:list-ordered',
                             'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'account-plans']),
-                            'active' => $this->isCurrentRoutePrefixed('admin.accounting.'),
+                    'active' => $this->isAccountingSection('account-plans'),
                         ]),
                         new AdminMenuItem([
                             'id' => 'sub-account-plans',
                             'label' => 'Sous-comptes',
                             'icon' => 'lucide:list-tree',
                             'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'sub-account-plans']),
-                            'active' => $this->isCurrentRoutePrefixed('admin.accounting.'),
+                    'active' => $this->isAccountingSection('sub-account-plans'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'accounting-journal',
+                    'label' => 'Journal',
+                    'icon' => 'lucide:file-edit',
+                    'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'journal']),
+                    'active' => $this->isAccountingSection('journal'),
                         ]),
                         new AdminMenuItem([
                             'id' => 'fees',
                             'label' => 'Frais & produits',
-                            'icon' => 'lucide:receipt-euro',
+                    'icon' => 'lucide:receipt',
                             'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'fees']),
-                            'active' => $this->isCurrentRoutePrefixed('admin.accounting.'),
+                    'active' => $this->isAccountingSection('fees'),
                         ]),
                         new AdminMenuItem([
                             'id' => 'currencies',
                             'label' => 'Monnaies & taux',
                             'icon' => 'lucide:coins',
                             'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'currencies']),
-                            'active' => $this->isCurrentRoutePrefixed('admin.accounting.'),
+                    'active' => $this->isAccountingSection('currencies'),
                         ]),
                         new AdminMenuItem([
                             'id' => 'payments',
                             'label' => 'Paiements',
                             'icon' => 'lucide:credit-card',
                             'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'payments']),
-                            'active' => $this->isCurrentRoutePrefixed('admin.accounting.'),
-                        ]),
-                    ],
+                    'active' => $this->isAccountingSection('payments'),
+                ]),
+                new AdminMenuItem([
+                    'id' => 'accounting-reports',
+                    'label' => 'États & rapports',
+                    'icon' => 'lucide:bar-chart-big',
+                    'route' => $this->getRouteWithContext('admin.accounting.index', ['section' => 'reports']),
+                    'active' => $this->isAccountingSection('reports'),
                 ]),
             ];
 
@@ -415,6 +479,15 @@ final class AdminMenuService
             ) {
                 $groups = array_intersect_key($groups, array_flip(['Élèves']));
             }
+            // Module Ressources Humaines (personnels, rôles, présences agents, affectations)
+            elseif (
+                str_starts_with($current, 'admin.personnels.') ||
+                str_starts_with($current, 'admin.roles.') ||
+                str_starts_with($current, 'admin.personnel-presences.') ||
+                str_starts_with($current, 'admin.person-affectations.')
+            ) {
+                $groups = array_intersect_key($groups, array_flip(['Ressources Humaines']));
+            }
             // Module Écoles (écoles, filières, niveaux, classes)
             elseif (
                 str_starts_with($current, 'admin.schools.') ||
@@ -435,38 +508,32 @@ final class AdminMenuService
             ) {
                 $groups = array_intersect_key($groups, array_flip(['Pédagogie']));
             }
-            // Module Année scolaire (année, semestres, périodes, mois)
+            // Module Année scolaire (année, semestres, périodes — mois = groupe Gestion)
             elseif (
                 str_starts_with($current, 'admin.school-years.') ||
                 str_starts_with($current, 'admin.semesters.') ||
-                str_starts_with($current, 'admin.periods.') ||
-                str_starts_with($current, 'admin.mois.')
+                str_starts_with($current, 'admin.periods.')
             ) {
                 $groups = array_intersect_key($groups, array_flip(['Année scolaire']));
             }
-            // Module Infrastructures (namespace infra-*)
+            // Module Infrastructures (dashboard + infra-*)
             elseif (
                 str_starts_with($current, 'admin.infra.dashboard') ||
                 str_starts_with($current, 'admin.infra-')
             ) {
-                $groups = array_intersect_key($groups, array_flip(['Gestion']));
-                $restrictGestionRootId = 'infrastructures';
+                $groups = array_intersect_key($groups, array_flip(['Infrastructures']));
             }
-            // Module Stock (stock-*)
+            // Module Stock
             elseif (str_starts_with($current, 'admin.stock-')) {
-                $groups = array_intersect_key($groups, array_flip(['Gestion']));
-                $restrictGestionRootId = 'stock';
+                $groups = array_intersect_key($groups, array_flip(['Stock']));
             }
             // Module Mois / Horaire (mois index seul)
             elseif (str_starts_with($current, 'admin.mois.')) {
                 $groups = array_intersect_key($groups, array_flip(['Gestion']));
                 $restrictGestionRootId = 'mois';
             }
-            // Module Utilisateurs (users & rôles)
-            elseif (
-                str_starts_with($current, 'admin.users.') ||
-                str_starts_with($current, 'admin.roles.')
-            ) {
+            // Module Utilisateurs (comptes utilisateurs ; les rôles sont regroupés sous RH)
+            elseif (str_starts_with($current, 'admin.users.')) {
                 $groups = array_intersect_key($groups, array_flip(['Utilisateurs']));
             }
             // Module Pays (pays / provinces / communes / territoires)
@@ -481,8 +548,7 @@ final class AdminMenuService
             // Dashboard & autres: on garde le menu complet
         }
 
-        // Si on est dans un sous-module de "Gestion", on restreint ce groupe
-        // au bloc concerné (Mois, Infrastructures ou Stock).
+        // Si on est dans un sous-module de "Gestion", on restreint au Mois.
         if ($restrictGestionRootId !== null && isset($groups['Gestion'])) {
             $groups['Gestion'] = array_values(array_filter(
                 $groups['Gestion'],
@@ -528,13 +594,13 @@ final class AdminMenuService
     private function getRouteWithContext(string $name, array $params = []): string
     {
         $selectedSchoolId = session('selected_school_id');
-        if ($selectedSchoolId && !isset($params['school_id'])) {
+        if ($selectedSchoolId && ! isset($params['school_id'])) {
             $params['school_id'] = $selectedSchoolId;
         }
         
         try {
             return route($name, $params);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return '#';
         }
     }
@@ -544,5 +610,21 @@ final class AdminMenuService
         $current = Request::route()?->getName();
 
         return $current !== null && str_starts_with($current, $prefix);
+    }
+
+    /**
+     * Rubrique active du module Comptabilité (query ?section= sur admin.accounting.index).
+     */
+    private function isAccountingSection(string $section): bool
+    {
+        $name = Request::route()?->getName() ?? '';
+        if (! str_starts_with($name, 'admin.accounting')) {
+            return false;
+        }
+        if ($name === 'admin.accounting.index') {
+            return request()->query('section', 'dashboard') === $section;
+        }
+
+        return $section === 'dashboard';
     }
 }

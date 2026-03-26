@@ -1,5 +1,6 @@
 @extends('backend.layouts.app')
 @section('admin-content')
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Stock', 'url' => route('admin.stock-articles.index')]]" current="Modifier l'article" />
     <div class="max-w-xl mx-7">
         <h1 class="text-lg font-semibold mb-4">Modifier l'article du stock</h1>
         <form method="POST" action="{{ route('admin.stock.update', $stock->id) }}">

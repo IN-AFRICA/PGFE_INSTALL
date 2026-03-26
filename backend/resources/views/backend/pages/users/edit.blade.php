@@ -1,4 +1,9 @@
-<x-layouts.backend-layout :breadcrumbs="$breadcrumbs">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Utilisateurs', 'url' => route('admin.users.index')]]" current="Éditer un Utilisateur" />
+
     <div class="max-w-4xl mx-auto space-y-8">
         <!-- Premium Header -->
         <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800">
@@ -120,4 +125,4 @@
             </form>
         </div>
     </div>
-</x-layouts.backend-layout>
+@endsection

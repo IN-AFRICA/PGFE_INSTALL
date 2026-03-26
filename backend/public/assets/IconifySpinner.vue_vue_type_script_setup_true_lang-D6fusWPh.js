@@ -1,0 +1,1 @@
+import{d as a,q as o,c,J as i,o as l}from"./index-D2Tshtwy.js";const m=a({__name:"IconifySpinner",props:{size:{default:"md"}},setup(e){const s=e,n=o(()=>({sm:"text-base",md:"text-lg",lg:"text-xl",xl:"text-2xl"})[s.size]);return(t,r)=>(l(),c("span",{class:i(["iconify animate-spin hugeicons--loading-03",n.value])},null,2))}});export{m as _};

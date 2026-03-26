@@ -23,51 +23,7 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <!-- Column 1: Site Logo Full Lite and Dark -->
-            <div>
-                <div class="mt-2">
-                    <x-inputs.file-input
-                        name="site_logo_lite"
-                        id="site_logo_lite"
-                        label="{{ __('Site Logo Full (Lite Version)') }}"
-                        :existingAttachment="config('settings.site_logo_lite') !== '' && !empty(config('settings.site_logo_lite')) ? config('settings.site_logo_lite') : null"
-                        :existingAltText="''"
-                    />
-                </div>
-
-                <div class="mt-2">
-                    <x-inputs.file-input
-                        name="site_logo_dark"
-                        id="site_logo_dark"
-                        label="{{ __('Site Logo Full (Dark Version)') }}"
-                        :existingAttachment="config('settings.site_logo_dark') !== '' && !empty(config('settings.site_logo_dark')) ? config('settings.site_logo_dark') : null"
-                        :existingAltText="''"
-                    />
-                </div>
-            </div>
-
-            <!-- Column 2: Site Icon and Favicon -->
-            <div>
-                <div class="mt-2">
-                    <x-inputs.file-input
-                        name="site_icon"
-                        id="site_icon"
-                        label="{{ __('Site Icon') }}"
-                        :existingAttachment="config('settings.site_icon') !== '' && !empty(config('settings.site_icon')) ? config('settings.site_icon') : null"
-                        :existingAltText="''"
-                    />
-                </div>
-
-                <div class="mt-2">
-                    <x-inputs.file-input
-                        name="site_favicon"
-                        id="site_favicon"
-                        label="{{ __('Site Favicon') }}"
-                        :existingAttachment="config('settings.site_favicon') !== '' && !empty(config('settings.site_favicon')) ? config('settings.site_favicon') : null"
-                        :existingAltText="''"
-                    />
-                </div>
-            </div>
+            <!-- File input components removed: missing x-inputs.file-input -->
         </div>
     </div>
     {!! Hook::applyFilters(SettingFilterHook::SETTINGS_GENERAL_TAB_BEFORE_SECTION_END, '') !!}

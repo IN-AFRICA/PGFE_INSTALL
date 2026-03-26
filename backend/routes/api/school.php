@@ -1,14 +1,17 @@
 <?php
+
+declare(strict_types=1);
 // School config routes
 
-use App\Http\Controllers\Api\Schools\SchoolController;
 use App\Http\Controllers\Api\Classroom\ClassroomController;
-use App\Http\Controllers\Api\SchooYears\SchoolYearController;
+use App\Http\Controllers\Api\Courses\CourseController;
 use App\Http\Controllers\Api\Filiaires\ListsFiliaireController;
 use App\Http\Controllers\Api\Filiaires\StoreFiliaireController;
 use App\Http\Controllers\Api\Filiaires\UpdateFiliaireController;
-use App\Http\Controllers\Api\Students\StudentRegistrationController;
+use App\Http\Controllers\Api\Schools\SchoolController;
+use App\Http\Controllers\Api\SchooYears\SchoolYearController;
 use App\Http\Controllers\Api\Semester\SemesterController;
+use App\Http\Controllers\Api\Students\StudentRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')
@@ -17,7 +20,7 @@ Route::middleware('auth:sanctum')
     ->group(function () {
         Route::apiResource('schools', SchoolController::class);
         Route::apiResource('classrooms', ClassroomController::class);
-        Route::apiResource('courses', \App\Http\Controllers\Api\Courses\CourseController::class);
+        Route::apiResource('courses', CourseController::class);
         // Semesters
         Route::apiResource('semesters', SemesterController::class);
         Route::prefix('years')->group(function () {

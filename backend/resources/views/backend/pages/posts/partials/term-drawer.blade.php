@@ -109,15 +109,14 @@
 
             @if($taxonomy->hierarchical)
             @php $parentTerms = App\Models\Term::where('taxonomy', $taxonomyName)->orderBy('name', 'asc')->get(); @endphp
-            <div class="mt-2">
-                <x-posts.term-selector
-                    name="parent_term"
-                    :taxonomyModel="$taxonomy"
-                    :term="$term ?? null"
-                    :parentTerms="$parentTerms"
-                    :placeholder="__('Select Parent' . ' ' . $taxonomy->label_singular)"
-                    :label="__('Parent ' . $taxonomy->label_singular)"
-                />
+            <div class="mt-4">
+                <label for="term_parent_id" class="block text-sm font-semibold text-gray-700">{{ __('Parent') }}</label>
+                <select id="term_parent_id" name="parent_id" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">{{ __('Select Parent') }}</option>
+                    @foreach($parentTerms ?? [] as $parent)
+                        <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                    @endforeach
+                </select>
             </div>
             @endif
         </div>

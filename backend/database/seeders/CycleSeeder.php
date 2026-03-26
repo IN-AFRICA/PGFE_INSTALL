@@ -7,7 +7,6 @@ namespace Database\Seeders;
 use App\Models\AcademicLevel;
 use App\Models\Classroom;
 use App\Models\Cycle;
-use App\Models\Filiaire;
 use App\Models\School;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
@@ -36,7 +35,7 @@ final class CycleSeeder extends Seeder
                     'name' => $filName,
                     'school_id' => $school->id,
                 ], [
-                    'code' => substr($filName, 0, 3) . '-' . $school->id,
+                    'code' => mb_substr($filName, 0, 3).'-'.$school->id,
                     // Ensure uuid is set at insert time to satisfy NOT NULL constraint
                     'uuid' => (string) Str::uuid(),
                 ]);
@@ -51,13 +50,13 @@ final class CycleSeeder extends Seeder
                         // 3) Niveau académique rattaché au cycle
                         $level = AcademicLevel::query()->firstOrCreate([
                             'name' => $levelName,
-                            'cycle_id' => $cycle->id,
                         ]);
 
                         // 4) Une classe par combinaison (niveau)
                         $attributes = [
                             'name' => $levelName.' - '.$filName,
                             'academic_level_id' => $level->id,
+                            'filiaire_id' => $filiaire->id,
                         ];
                         if ($hasSchoolOnClassrooms) {
                             $attributes['school_id'] = $school->id;

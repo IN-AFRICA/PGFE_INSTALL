@@ -36,7 +36,14 @@ class RentalContractController extends Controller
         }
         $perPage = min($perPage, 100);
 
-        $contracts = $query->orderByDesc('created_at')->paginate($perPage);
+        $contracts = $query->with('client')->orderByDesc('created_at')->paginate($perPage);
+
+        // Ajoute le nom du client dans chaque contrat
+        $contracts->getCollection()->transform(function ($contract) {
+            $data = $contract->toArray();
+            $data['client_name'] = $contract->client ? $contract->client->name : null;
+            return $data;
+        });
 
         return response()->json($contracts);
     }

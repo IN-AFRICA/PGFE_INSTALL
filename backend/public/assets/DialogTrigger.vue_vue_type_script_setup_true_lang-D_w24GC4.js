@@ -1,0 +1,1 @@
+import{d as o,z as s,j as r,b2 as n,af as i,w as p,a5 as c,o as l}from"./index-D2Tshtwy.js";const f=o({__name:"DialogTrigger",props:{asChild:{type:Boolean},as:{type:[String,Object,Function]}},setup(a){const e=a;return(t,_)=>(l(),s(r(n),i({"data-slot":"dialog-trigger"},e),{default:p(()=>[c(t.$slots,"default")]),_:3},16))}});export{f as _};

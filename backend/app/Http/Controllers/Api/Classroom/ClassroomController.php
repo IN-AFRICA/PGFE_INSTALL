@@ -94,6 +94,8 @@ final class ClassroomController extends Controller
     public function store(ClassroomRequest $request): JsonResponse
     {
         $data = $request->validated();
+        // Toujours utiliser le school_id de l'utilisateur connecté
+        $data['school_id'] = $request->user()->school_id;
 
         // Vérifier que le niveau académique existe
         $academicLevel = \App\Models\AcademicLevel::query()

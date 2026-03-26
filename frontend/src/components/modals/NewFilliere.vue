@@ -47,7 +47,6 @@ const editingItem = ref(null)
 
 // Écouter l'événement d'édition
 eventBus.on('editFilliere', (item: any) => {
-  console.log('[NewFilliere] Edit event received:', item)
   isEditing.value = true
   editingItem.value = item
 
@@ -72,17 +71,13 @@ const { value: name, errorMessage: nameError } = useField<string>('name')
 const { value: code, errorMessage: codeError } = useField<string>('code')
 
 const onSubmit = handleSubmit(async (values) => {
-  console.log('[NewFilliere] onSubmit called with values:', values)
-
   try {
     if (isEditing.value && editingItem.value) {
       // Mode édition
-      console.log('[NewFilliere] Editing mode - calling putData')
       const url = API_ROUTES.UPDATE_FILLIERE.replace(':filiaire', String(editingItem.value.id))
       await putData(url, values)
 
       if (successPut.value) {
-        console.log('[NewFilliere] Put success - showing toast and closing modal')
         showCustomToast({
           message: responsePut.value?.message || 'Section modifiée avec succès',
           type: 'success',
@@ -94,11 +89,9 @@ const onSubmit = handleSubmit(async (values) => {
       }
     } else {
       // Mode création
-      console.log('[NewFilliere] Creation mode - calling postData')
       await postData(API_ROUTES.CREATE_FILLIERE, values)
 
       if (success.value) {
-        console.log('[NewFilliere] Post success - showing toast and closing modal')
         showCustomToast({
           message: response.value?.message || 'Section ajoutée avec succès',
           type: 'success',

@@ -1,14 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Insertion\CandidateController;
-use App\Http\Controllers\Insertion\CompanyController;
-use App\Http\Controllers\Insertion\JobOfferController;
-use App\Http\Controllers\Insertion\ApplicationController;
-use App\Http\Controllers\Insertion\ApplicationQueryController;
+declare(strict_types=1);
+
 use App\Http\Controllers\Academic\BulletinPrintController;
 use App\Http\Controllers\Admin\RoleExportController;
-
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('admin/export-roles-pdf', [RoleExportController::class, 'exportPdf']);
@@ -32,6 +28,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     require __DIR__.'/api/rental.php';
     require __DIR__.'/api/conduite.php';
     require __DIR__.'/api/schedules.php';
+    require __DIR__.'/api/calendar.php';
     require __DIR__.'/api/planning.php';
     require __DIR__.'/api/activities.php';
 });

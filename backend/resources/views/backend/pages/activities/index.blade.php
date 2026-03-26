@@ -1,144 +1,154 @@
-<x-layouts.modules-layout :breadcrumbs="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Activités scolaires', 'url' => '#']]">
-    <x-backend.pages.module-sidebar-layout 
-        logoIcon="lucide:party-popper"
-        :menuItems="[
-            ['label' => 'Tableau de bord', 'icon' => 'lucide:layout-grid', 'url' => route('admin.activities.index'), 'route_prefix' => 'admin.activities.index'],
-            ['label' => 'Saisie préalable', 'icon' => 'lucide:file-text', 'url' => '#', 'active' => false],
-            ['label' => 'Saisie des opérations', 'icon' => 'lucide:clipboard-list', 'url' => route('admin.activities.index'), 'active' => true],
-        ]"
-    >
-        <div class="space-y-6">
-            <!-- Premium Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')]]" current="Activités Scolaires" />
+
+    <div class="space-y-6 animate-in fade-in duration-500">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-zinc-200 pb-8">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-zinc-900 flex items-center justify-center text-white shadow-sm">
+                    <iconify-icon icon="lucide:party-popper" width="24"></iconify-icon>
+                </div>
                 <div>
-                    <h1 class="text-3xl font-black text-gray-800 dark:text-white flex items-center gap-2">
-                        <iconify-icon icon="lucide:party-popper" class="text-emerald-500" width="36"></iconify-icon>
-                        Activités Scolaires
-                    </h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">Planifiez et suivez les événements et activités de l'école.</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="hidden sm:flex flex-col items-end mr-4">
-                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Activités en cours</span>
-                        <span class="text-2xl font-black text-gray-800 dark:text-white">{{ number_format($stats['total']) }}</span>
-                    </div>
+                    <h1 class="text-2xl font-bold tracking-tighter text-zinc-950">Activités Scolaires</h1>
+                    <p class="text-xs text-zinc-500 font-medium">Planification des événements, sorties et célébrations de l'établissement.</p>
                 </div>
             </div>
 
-            <!-- Filter Section -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-sm">
-                <form method="GET" action="{{ route('admin.activities.index') }}" class="grid gap-4 md:grid-cols-12 items-end">
-                    <div class="md:col-span-12 flex flex-wrap gap-4">
-                        @if(!session('selected_school_id'))
-                            <div class="min-w-[250px] flex-1">
-                                <label class="text-[10px] font-black text-gray-400 uppercase mb-1 block">Établissement</label>
-                                <select name="school_id" class="w-full h-11 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-sm focus:ring-violet-500 focus:border-violet-500">
-                                    <option value="">Tous les établissements</option>
-                                    @foreach($schools as $sch)
-                                        <option value="{{ $sch->id }}" @selected(request('school_id') == $sch->id)>{{ $sch->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        @endif
-                        <div class="flex-1 min-w-[250px]">
-                            <label class="text-[10px] font-black text-gray-400 uppercase mb-1 block">Recherche</label>
-                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Titre, lieu, description..." class="w-full h-11 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-sm px-3 focus:ring-violet-500 focus:border-violet-500" />
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="submit" class="h-11 px-8 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors">
-                                Filtrer
-                            </button>
-                            @if(request()->hasAny(['school_id','q']))
-                                <a href="{{ route('admin.activities.index') }}" class="h-11 px-4 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-red-600 transition-colors" title="Vider les filtres">
-                                    <iconify-icon icon="lucide:refresh-cw" width="18"></iconify-icon>
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Table -->
-            <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div class="p-8 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                    <h2 class="text-xl font-black text-gray-800 dark:text-white">Liste des activités</h2>
-                    <a href="{{ route('admin.activities.create') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-700 hover:scale-105 active:scale-95">
-                        <iconify-icon icon="lucide:plus" width="20"></iconify-icon>
-                        Nouvelle activité
-                    </a>
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex flex-col items-end px-4 border-r border-zinc-200">
+                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Événements</span>
+                    <span class="text-xl font-black text-zinc-950 tracking-tighter">{{ number_format($stats['total']) }}</span>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
-                                <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Activité</th>
-                                <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Lieu & Période</th>
-                                <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Établissement</th>
-                                <th class="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                            @forelse($activities as $a)
-                                <tr class="group hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="h-10 w-10 flex items-center justify-center rounded-xl bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 font-black text-xs">
-                                                {{ mb_substr($a->label, 0, 2) }}
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-gray-800 dark:text-white">{{ $a->label }}</p>
-                                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-tight">{{ $a->type ?? 'Général' }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="space-y-1">
-                                            <div class="flex items-center gap-1 text-xs font-bold text-gray-600">
-                                                <iconify-icon icon="lucide:map-pin" class="text-orange-500"></iconify-icon>
-                                                {{ $a->place ?? 'Non spécifié' }}
-                                            </div>
-                                            <div class="flex items-center gap-1 text-[10px] text-gray-400 font-bold uppercase">
-                                                <iconify-icon icon="lucide:calendar" class="text-blue-500"></iconify-icon>
-                                                {{ optional($a->start_date)->format('d/m/Y') }} @if($a->end_date) - {{ $a->end_date->format('d/m/Y') }} @endif
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-1 text-xs font-bold text-gray-500 uppercase">
-                                            <iconify-icon icon="mdi:school" class="text-gray-300"></iconify-icon>
-                                            {{ $a->school->name ?? 'Tous' }}
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end items-center gap-2">
-                                            <a href="#" class="p-2 rounded-xl bg-gray-50 text-gray-400 hover:bg-violet-600 hover:text-white transition-all dark:bg-gray-700 dark:text-gray-300 shadow-sm border border-gray-100 dark:border-gray-600">
-                                                <iconify-icon icon="lucide:pen-line" width="18"></iconify-icon>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="px-6 py-20 text-center">
-                                        <div class="flex flex-col items-center gap-4 rounded-3xl p-12">
-                                            <iconify-icon icon="lucide:party-popper" class="text-gray-200" width="80"></iconify-icon>
-                                            <div class="text-center">
-                                                <p class="text-gray-500 font-bold text-lg">Aucune activité</p>
-                                                <p class="text-sm text-gray-400 mt-1">Aucune activité n'a été planifiée pour le moment.</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                @if($activities->hasPages())
-                    <div class="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/30">
-                        {{ $activities->links() }}
-                    </div>
-                @endif
+                <a href="{{ route('admin.activities.create') }}" 
+                   class="h-10 px-4 rounded-md bg-zinc-900 text-[11px] font-bold text-white uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 shadow-sm">
+                    <iconify-icon icon="lucide:calendar-plus" width="16"></iconify-icon>
+                    Nouvelle activité
+                </a>
             </div>
         </div>
-    </x-backend.pages.module-sidebar-layout>
-</x-layouts.modules-layout>
+
+        <div class="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+            <form method="GET" action="{{ route('admin.activities.index') }}" class="p-4 flex flex-wrap gap-4 items-end">
+                @if(!session('selected_school_id'))
+                    <div class="w-64">
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase mb-2 block px-1 text-center md:text-left">Établissement</label>
+                        <select name="school_id" class="w-full h-10 rounded-md border border-zinc-200 bg-white text-xs font-bold text-zinc-600 focus:ring-1 focus:ring-zinc-950 outline-none transition-all">
+                            <option value="">Tous les établissements</option>
+                            @foreach($schools as $sch)
+                                <option value="{{ $sch->id }}" @selected(request('school_id') == $sch->id)>{{ $sch->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
+                <div class="flex-1 min-w-[250px] relative group">
+                    <label class="text-[10px] font-bold text-zinc-400 uppercase mb-2 block px-1 text-center md:text-left">Recherche d'événement</label>
+                    <div class="relative">
+                        <iconify-icon icon="lucide:search" class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-300 group-focus-within:text-zinc-900 transition-colors" width="16"></iconify-icon>
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Nom, lieu ou mot-clé..." 
+                               class="w-full h-10 pl-10 pr-4 rounded-md border border-zinc-200 bg-white text-xs font-medium focus:ring-1 focus:ring-zinc-950 outline-none transition-all" />
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="h-10 px-6 rounded-md bg-zinc-100 text-zinc-900 text-xs font-bold hover:bg-zinc-200 transition-all">
+                        Filtrer
+                    </button>
+                    @if(request()->hasAny(['school_id','q']))
+                        <a href="{{ route('admin.activities.index') }}" class="h-10 w-10 flex items-center justify-center rounded-md border border-zinc-200 text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-all">
+                            <iconify-icon icon="lucide:refresh-ccw" width="16"></iconify-icon>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-zinc-50/50 border-b border-zinc-200">
+                            <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">Désignation de l'activité</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">Informations Logistiques</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">Affectation</th>
+                            <th class="px-6 py-4 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100">
+                        @forelse($activities as $a)
+                            <tr class="group hover:bg-zinc-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex flex-col items-center justify-center h-12 w-12 rounded border border-zinc-200 bg-zinc-50 leading-none">
+                                            <span class="text-[9px] font-bold text-zinc-400 uppercase">{{ optional($a->start_date)->format('M') }}</span>
+                                            <span class="text-lg font-black text-zinc-900">{{ optional($a->start_date)->format('d') }}</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-zinc-900 tracking-tight">{{ $a->label }}</p>
+                                            <span class="inline-flex px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest mt-1">
+                                                {{ $a->type ?? 'Général' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-1.5">
+                                        <div class="flex items-center gap-2 text-xs font-bold text-zinc-700">
+                                            <iconify-icon icon="lucide:map-pin" class="text-zinc-400" width="14"></iconify-icon>
+                                            {{ $a->place ?? 'Local de l\'école' }}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">
+                                            <iconify-icon icon="lucide:clock" class="text-zinc-300" width="12"></iconify-icon>
+                                            {{ optional($a->start_date)->format('d/m/Y') }} @if($a->end_date) → {{ $a->end_date->format('d/m/Y') }} @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-1.5 w-1.5 rounded-full bg-zinc-300"></div>
+                                        <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-tight">
+                                            {{ $a->school->name ?? 'Toutes les écoles' }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex justify-end gap-1">
+                                        <a href="{{ route('admin.activities.edit', $a) }}" class="h-8 w-8 flex items-center justify-center rounded text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all">
+                                            <iconify-icon icon="lucide:edit-3" width="14"></iconify-icon>
+                                        </a>
+                                        <form action="{{ route('admin.activities.destroy', $a) }}" method="POST" onsubmit="return confirm('Supprimer cet événement ?')" class="inline-block">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="h-8 w-8 flex items-center justify-center rounded text-zinc-300 hover:text-red-600 hover:bg-red-50 transition-all">
+                                                <iconify-icon icon="lucide:trash-2" width="14"></iconify-icon>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-24 text-center">
+                                    <div class="flex flex-col items-center max-w-xs mx-auto text-center">
+                                        <div class="h-16 w-16 rounded-full bg-zinc-50 flex items-center justify-center mb-4 border border-zinc-100 shadow-inner">
+                                            <iconify-icon icon="lucide:party-popper" class="text-zinc-200" width="32"></iconify-icon>
+                                        </div>
+                                        <h3 class="text-sm font-bold text-zinc-900 uppercase tracking-widest">Aucune activité</h3>
+                                        <p class="text-xs text-zinc-400 mt-2 leading-relaxed">Le calendrier est actuellement vide. Commencez à planifier les événements de l'année.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            
+            @if($activities->hasPages())
+                <div class="px-6 py-4 border-t border-zinc-100 bg-zinc-50/30">
+                    {{ $activities->links() }}
+                </div>
+            @endif
+        </div>
+    </div>
+@endsection

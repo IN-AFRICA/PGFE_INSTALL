@@ -94,7 +94,7 @@ const filteredInventories = computed(() => {
   )
 })
 
-const total = computed(() => meta.value?.total || (rawData.value as any)?.pagination?.total || filteredInventories.value.length)
+const total = computed(() => meta?.value?.total || (rawData.value as any)?.pagination?.total || filteredInventories.value.length)
 const page = ref(1)
 const perPageCount = ref(15)
 
@@ -106,6 +106,15 @@ const formData = ref({
   inventory_date: '',
   note: '', // Optional desc
 })
+
+// Details Modal State
+const isDetailsModalOpen = ref(false)
+const selectedInventory = ref<any>(null)
+
+const openDetailsModal = (item: any) => {
+  selectedInventory.value = item
+  isDetailsModalOpen.value = true
+}
 
 const resetForm = () => {
   formData.value = { inventory_date: new Date().toISOString().split('T')[0], note: '' }
@@ -130,12 +139,17 @@ const openEditModal = (item: any) => {
 
 const handleSubmit = async () => {
   if (!formData.value.inventory_date) {
-    showCustomToast({ message: 'La date est obligatoire', type: 'warning' })
+    showCustomToast({ message: 'La date est obligatoire', type: 'error' })
     return
   }
 
+  const payload = {
+    inventory_date: formData.value.inventory_date,
+    note: formData.value.note,
+  }
+
   if (isEditing.value && currentId.value) {
-    await updateInventory(API_ROUTES.UPDATE_STOCK_INVENTORY(currentId.value), formData.value)
+    await updateInventory(API_ROUTES.UPDATE_STOCK_INVENTORY(currentId.value), payload)
     if (updateSuccess.value) {
       showCustomToast({ message: 'Inventaire mis à jour avec succès', type: 'success' })
       isModalOpen.value = false
@@ -147,7 +161,7 @@ const handleSubmit = async () => {
       })
     }
   } else {
-    await createInventory(API_ROUTES.CREATE_STOCK_INVENTORY, formData.value)
+    await createInventory(API_ROUTES.CREATE_STOCK_INVENTORY, payload)
     if (createSuccess.value) {
       showCustomToast({ message: 'Inventaire créé avec succès', type: 'success' })
       isModalOpen.value = false
@@ -295,6 +309,7 @@ onMounted(() => {
                 <TableHead class="w-[20px]"><Checkbox class="bg-white scale-70" /></TableHead>
                 <TableHead>#</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead>Articles</TableHead>
                 <TableHead>Note</TableHead>
                 <TableHead class="text-right">Actions</TableHead>
               </TableRow>
@@ -302,8 +317,9 @@ onMounted(() => {
             <TableBody>
               <TableRow v-for="(item, index) in filteredInventories" :key="item.id">
                 <TableCell class="w-[40px]"><Checkbox class="bg-white scale-70" /></TableCell>
-                <TableCell>{{ index + 1 }}</TableCell>
+                <TableCell>{{ Number(index) + 1 }}</TableCell>
                 <TableCell>{{ item.inventory_date }}</TableCell>
+                <TableCell>{{ item.articles?.length || 0 }}</TableCell>
                 <TableCell>{{ item.note || '-' }}</TableCell>
                 <TableCell>
                   <div class="flex items-center justify-end gap-2">
@@ -311,9 +327,19 @@ onMounted(() => {
                       size="icon"
                       variant="ghost"
                       class="size-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                      title="Voir détails"
+                      @click="openDetailsModal(item)"
+                    >
+                      <span class="flex iconify hugeicons--eye"></span>
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      class="size-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                      title="Modifier"
                       @click="openEditModal(item)"
                     >
-                      <span class="iconify hugeicons--edit-01"></span>
+                      <span class="flex iconify hugeicons--edit-01"></span>
                     </Button>
                     <Dialog>
                       <DialogTrigger as-child>
@@ -322,7 +348,7 @@ onMounted(() => {
                           variant="ghost"
                           class="size-8 text-gray-500 hover:text-red-600 hover:bg-red-50"
                         >
-                          <span class="iconify hugeicons--delete-02"></span>
+                          <span class="flex iconify hugeicons--delete-02"></span>
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -342,8 +368,13 @@ onMounted(() => {
                             :disabled="deletingId === item.id"
                           >
                             <IconifySpinner v-if="deletingId === item.id" class="mr-2" />
-                            <span v-if="deletingId === item.id">Suppression...</span>
-                            <span v-else>Supprimer</span>
+                            <span v-if="deletingId === item.id" class="flex items-center gap-2">
+                              <span>Suppression...</span>
+                            </span>
+                            <span v-else class="flex items-center gap-2">
+                               <span class="flex iconify hugeicons--delete-02"></span>
+                               Supprimer
+                            </span>
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -360,7 +391,7 @@ onMounted(() => {
           v-else
           class="flex flex-col items-center justify-center h-full py-10 bg-white rounded-md text-gray-500"
         >
-          <span class="iconify hugeicons--file-failed text-4xl mb-2"></span>
+          <span class="flex iconify hugeicons--package text-4xl mb-2"></span>
           <span>Aucun inventaire trouvé.</span>
         </div>
 
@@ -371,6 +402,48 @@ onMounted(() => {
           :totalItems="total"
           @update:perPage="onPerPageUpdate"
         />
+
+        <!-- Details Modal -->
+        <Dialog v-model:open="isDetailsModalOpen">
+          <DialogContent class="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Détails de l'inventaire</DialogTitle>
+              <DialogDescription>
+                Inventaire du {{ selectedInventory?.inventory_date }}
+              </DialogDescription>
+            </DialogHeader>
+            <div class="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+              <div>
+                <Label class="text-xs text-gray-400">Note</Label>
+                <p class="text-sm font-medium">{{ selectedInventory?.note || 'Aucune note' }}</p>
+              </div>
+              <div class="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Article</TableHead>
+                      <TableHead>Qté en Stock</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="art in selectedInventory?.articles" :key="art.id">
+                      <TableCell>{{ art.name }}</TableCell>
+                      <TableCell>{{ art.quantity }}</TableCell>
+                    </TableRow>
+                    <TableRow v-if="!selectedInventory?.articles?.length">
+                      <TableCell colspan="2" class="text-center py-4 text-gray-500">
+                        Aucun article dans cet inventaire
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button @click="isDetailsModalOpen = false">Fermer</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </BoxPanelWrapper>
     </div>
   </DashLayout>

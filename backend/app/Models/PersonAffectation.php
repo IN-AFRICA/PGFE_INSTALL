@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class PersonAffectation extends Model
 {
@@ -27,5 +28,10 @@ final class PersonAffectation extends Model
     public function schoolYear()
     {
         return $this->belongsTo(SchoolYear::class, 'school_year_id');
+    }
+
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class);
     }
 }

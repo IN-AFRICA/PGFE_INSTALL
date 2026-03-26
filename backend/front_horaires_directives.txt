@@ -1,0 +1,181 @@
+DIRECTIVES FRONT — MODULE HORAIRES (SchoolPlaner)
+
+Objectif
+- Documenter ce que le front fait réellement (build compilé) et définir les règles de gating/UI à appliquer côté front pour respecter la politique d’accès:
+  - Admins uniquement (super-admin + admin-ecole + legacy admin) : créer / modifier / supprimer
+  - Enseignants : lecture seule de leur propre horaire
+
+Sources (backend / front build)
+- Backend rôles: database/seeders/RolesAndPermissionsSeeder.php
+- Backend rôle legacy: database/seeders/UserRoleDemoSeeder.php + app/Http/Middleware/SuperAdminMiddleware.php
+- Front (build compilé): public/frontend/assets/SchoolPlaner-*.js + public/frontend/assets/index-*.js
+
+
+1) Rôles existants (backend)
+Rôles « canoniques » (RolesAndPermissionsSeeder)
+- super-admin
+- admin-ecole
+- tiers
+- enseignant
+- comptable
+- stoker
+- rh
+- inspecteur
+- disciplinaire
+
+Rôle « legacy / demo » (UserRoleDemoSeeder)
+- admin
+  - À traiter côté front comme un admin global (au même niveau d’accès que super-admin pour le gating UI)
+
+
+2) Endpoints API utilisés par le front (constantes Kt, API_BASE)
+Base
+- API_BASE (front) = http://127.0.0.1:8000/api/v1/
+
+Horaires
+- GET_SCHEDULES: "schedules"
+- CREATE_SCHEDULE: "schedules"
+- UPDATE_SCHEDULE(id): `schedules/${id}`
+- DELETE_SCHEDULE(id): `schedules/${id}`
+
+Calendrier (nouveau côté backend)
+- GET_CALENDAR_WEEKS: "calendar/weeks"
+
+Référentiels utilisés dans la boîte de dialogue (création/édition)
+- GET_SCHOOL_YEARS: "school/years"
+- GET_CLASSROOMS: "school/classrooms"
+- GET_ACADEMIC_PERSONALS: "hr/academic-personals"
+- GET_COURSES: "school/courses"
+
+
+3) Contrat « liste horaires » côté front (observé)
+Requête
+- Le front appelle GET_SCHEDULES avec params:
+  - school_year_id
+  - month
+  - week_number
+
+Important: filtrage côté backend actuellement (état du repo)
+- Le backend (ScheduleController@index) filtre désormais sur:
+  - school_year_id (si présent)
+  - week_number (si présent) en incluant toujours les récurrents (week_number = null)
+  - classroom_id (si présent)
+  - academic_personal_id (si présent)
+- Donc: school_year_id / week_number envoyés par le front sont pris en compte côté serveur.
+- Note: month est validé côté backend (pour cohérence) mais ne peut pas filtrer strictement les schedules (Schedule n’a pas de date).
+
+Conséquence UX
+- Le backend limitant déjà par school_year_id + week_number, le front ne doit plus faire de filtrage local par week_number.
+- Le front peut conserver le filtrage local par school_year_id uniquement comme garde-fou (optionnel) si nécessaire.
+
+Réponse attendue (mapping front)
+- Le front accepte soit un tableau direct, soit un objet { data: [...] }, soit le format backend { success: true, data: [...] }.
+- Champs utilisés:
+  - id
+  - day
+  - start_time (HH:MM:SS… -> tronqué en HH:MM)
+  - end_time (HH:MM:SS… -> tronqué en HH:MM)
+  - course.label
+  - academic_personal.name
+  - classroom.name
+  - school_year_id, classroom_id, academic_personal_id, course_id, week_number
+
+
+4) Contrat « create / update » côté front (observé)
+UI / validation front
+- Champs requis (le front bloque si manquant): school_year_id, classroom_id, academic_personal_id, course_id, week_number
+- Validation horaire: si start_time >= end_time => message d’erreur
+
+Payload envoyé
+- school_year_id: Number
+- classroom_id: Number
+- academic_personal_id: Number
+- course_id: Number
+- day: String (valeurs UI: "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi")
+- start_time: "HH:MM"
+- end_time: "HH:MM"
+- week_number:
+  - null si sélection "all" (cours récurrent)
+  - Number sinon
+
+Update: méthode
+- Le front utilise un POST avec spoofing:
+  - payload contient { _method: "PUT" }
+  - endpoint = UPDATE_SCHEDULE(id)
+
+
+5) Règles d’accès (à appliquer côté front)
+Politique backend (déjà en place)
+- Admins (super-admin, admin-ecole) : accès complet sur horaires (liste + CRUD)
+- Enseignant : liste uniquement de son propre horaire (pas de CRUD)
+
+Directives UI front (à faire / à vérifier)
+A) Définition “admin” pour le gating UI
+- Considérer admin si user a l’un des rôles:
+  - super-admin
+  - admin-ecole
+  - admin (legacy)
+
+B) Enseignant (read-only)
+- Si rôle enseignant (et pas admin):
+  - masquer/désactiver:
+    - bouton “Ajouter un cours”
+    - actions d’édition
+    - actions de suppression
+  - la page peut rester consultable (lecture), mais ne doit jamais proposer d’opérations mutantes.
+
+C) Gestion des erreurs API
+- Si 401/419: rediriger login / rafraîchir session (selon stratégie actuelle)
+- Si 403 (interdit): afficher un message clair (ex: “Vous n’avez pas les droits pour cette action.”) et ne pas boucler en retry.
+- Si 422: afficher le message backend tel quel (ex: conflit enseignant / conflit classe).
+
+D) Paramètres de requête (liste) — état actuel
+- Le front doit considérer le backend comme “source of truth” pour le filtrage.
+- GET /schedules:
+  - school_year_id: à envoyer (pour ne pas mélanger les années)
+  - week_number: à envoyer quand une semaine est sélectionnée (le backend inclut automatiquement les récurrents week_number=null)
+  - month: optionnel (non utilisé pour filtrer strictement côté backend, car Schedule n’a pas de date)
+- Le front ne doit plus filtrer localement par week_number (risque de divergence avec le backend).
+
+
+6) Contrat backend ↔ front (référence)
+Principe
+- Le front envoie school_year_id et éventuellement week_number au backend.
+- Le backend filtre et renvoie la liste finale à afficher.
+
+État actuel (après alignement backend)
+- GET /schedules supporte désormais school_year_id + week_number (en incluant les récurrents).
+- month reste une notion UI (sélection d’un mois), utilisée pour déterminer quelles semaines proposer, mais pas pour filtrer /schedules directement.
+
+Deux voies possibles
+- Voie A (retenue): backend filtre school_year_id + week_number dans GET /schedules
+- Voie B (complément): front ne calcule plus les semaines ISO, et consomme les semaines disponibles depuis GET /calendar/weeks
+
+Contrat « semaines du mois » (nouveau)
+- Endpoint: GET /api/v1/calendar/weeks
+- Query:
+  - school_year_id (requis)
+  - month (requis, 1..12)
+- Réponse: { success: true, data: { school_year_id, school_year_name, calendar_year, month, weeks: [...] } }
+  - weeks[]: { value, week_number, label, start_date, end_date }
+    - week_number: Number ISO (1..53)
+    - start_date/end_date: dates ISO YYYY-MM-DD (lundi → vendredi)
+
+Directives UI (à appliquer côté front)
+- Pour “mois” sélectionné:
+  - appeler GET /calendar/weeks(school_year_id, month) et afficher les semaines renvoyées
+  - pour la navigation prev/next, utiliser l’index dans la liste renvoyée (pas une arithmétique sur le numéro ISO)
+- Pour le listing horaires:
+  - appeler GET /schedules avec school_year_id + week_number choisi (et month facultatif)
+  - afficher directement la réponse (le backend inclut déjà les récurrents)
+
+Règles de sélection “All / Semaine X” (listing)
+- “Semaine X”: envoyer `week_number=X` (Number 1..53). Le backend renvoie (X + récurrents week_number=null).
+- “All” (toutes les semaines): ne pas envoyer `week_number` dans la query. Le backend renvoie tous les schedules de l’année (récurrents + semaine 1..53).
+
+
+7) Notes métier observées dans l’UI
+- Jours affichés: uniquement Lundi → Vendredi
+- Plage horaire: 08:00 → 17:00 (pas de weekend)
+- Le calendrier ne doit plus calculer les numéros de semaine ISO côté client; utiliser GET /calendar/weeks.
+- Affichage: une entrée récurrente (week_number = null) est visible quelle que soit la semaine sélectionnée.

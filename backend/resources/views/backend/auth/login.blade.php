@@ -1,125 +1,99 @@
 @extends('backend.auth.layouts.app')
 
-@section('title')
-    {{ __('Sign In') }} | {{ config('app.name') }}
-@endsection
+@section('title', __('Connexion'))
 
 @section('admin-content')
-<div>
-    <div class="mb-5 sm:mb-8">
-      <h1 class="mb-2 font-semibold text-gray-700 text-title-sm dark:text-white/90 sm:text-title-md">
-        {{ __('Sign In') }}
-      </h1>
-      <p class="text-sm text-gray-500 dark:text-gray-300">
-        {{ __('Enter your email and password to sign in!') }}
-      </p>
-    </div>
-    <div>
-      <form action="{{ route('admin.login.submit') }}" method="POST" x-data="{ loading: false }" @submit="loading = true">
-        @csrf
-        <div class="space-y-5">
-          <x-messages />
+    <div class="flex flex-col space-y-8 fade-in" x-data="{ loading: false, showPassword: false }">
 
-          <div>
-            <label class="form-label" for="email">{{ __('Email') }}</label>
-            <input
-              autofocus
-              type="text"
-              id="email"
-              name="email"
-              autocomplete="username"
-              placeholder="{{ __('Enter your email') }}"
-              class="form-control"
-              value="{{ old('email') ?? config('app.demo_mode', false) ? 'superadmin@example.com' : '' }}"
-              required
-            />
-          </div>
-
-          <x-inputs.password 
-            name="password" 
-            label="{{ __('Password') }}"
-            placeholder="{{ __('Enter your password') }}" 
-            value="{{ (config('app.demo_mode', false) ? '12345678' : '') }}" 
-            required
-          />
-
-          <div class="flex items-center justify-between">
-            <label for="remember" class="flex items-center justify-center gap-2 text-sm font-medium has-checked:text-gray-900 dark:has-checked:text-white has-disabled:cursor-not-allowed">
-                <span class="relative flex items-center">
-                    <input id="remember" name="remember" type="checkbox" class="before:content[''] peer relative size-4 appearance-none overflow-hidden rounded-sm border border-outline bg-surface-alt before:absolute before:inset-0 checked:border-primary checked:before:bg-primary focus:outline-2 focus:outline-offset-2 focus:outline-outline-strong checked:focus:outline-primary active:outline-offset-0 disabled:cursor-not-allowed dark:border-outline-dark dark:bg-surface-dark-alt dark:checked:border-primary-dark dark:checked:before:bg-primary-dark dark:focus:outline-outline-dark-strong dark:checked:focus:outline-primary-dark" checked/>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" fill="none" stroke-width="4" class="pointer-events-none invisible absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 text-white peer-checked:visible">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                    </svg>
-                </span>
-                <span class="form-label mb-0">{{ __('Remember me') }}</span>
-            </label>
-            <a href="{{ route('admin.password.request') }}" class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">{{ __('Forgot password?') }}</a>
-          </div>
-
-          <x-recaptcha page="login" />
-
-          <div>
-            <button type="submit" class="btn-primary w-full" :disabled="loading">
-              <span x-text="loading ? '' : '{{ __('Sign In') }}'">{{ __('Sign In') }}</span>
-              <iconify-icon :icon="loading ? 'lucide:loader-circle' : 'lucide:log-in'" :class="{ 'animate-spin': loading, 'ml-2': !loading }" />
-            </button>
-          </div>
-          @if (config('app.demo_mode', false))
-          <div x-data="{ showDemoCredentials: false }" class="mt-4 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
-            <button
-              type="button"
-              @click="showDemoCredentials = !showDemoCredentials"
-              class="flex justify-between items-center w-full px-4 py-3 text-sm font-medium text-left text-brand-600 dark:text-brand-400 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <span>
-                <iconify-icon icon="lucide:info" class="mr-2"></iconify-icon>
-                {{ __('Demo Credentials') }}
-              </span>
-              <iconify-icon :icon="showDemoCredentials ? 'lucide:chevron-up' : 'lucide:chevron-down'"></iconify-icon>
-            </button>
-
-            <div x-show="showDemoCredentials" x-transition class="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-              <div class="mb-3">
-                <p class="text-sm text-gray-600 dark:text-gray-300">{{ __('Use these credentials to explore the demo:') }}</p>
-              </div>
-              <div class="grid grid-cols-1 gap-2 mb-3 text-gray-500 dark:text-gray-300">
-                <div class="flex items-center">
-                  <span class="w-20 text-xs font-medium">{{ __('Email:') }}</span>
-                  <code class="px-2 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-800 rounded">superadmin@example.com</code>
+        {{-- Header spécifique au formulaire --}}
+        <div class="flex flex-col space-y-2 text-center lg:text-left">
+            {{-- Logo visible uniquement sur Mobile pour l'harmonie --}}
+            <div class="flex items-center justify-center lg:hidden gap-3 mb-4">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-600 shadow-sm">
+                    <iconify-icon icon="lucide:graduation-cap" class="text-2xl text-white"></iconify-icon>
                 </div>
-                <div class="flex items-center">
-                  <span class="w-20 text-xs font-medium">{{ __('Password:') }}</span>
-                  <code class="px-2 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-800 rounded">12345678</code>
-                </div>
-              </div>
-              <button
-                type="button"
-                id="fill-demo-credentials"
-                class="!text-xs btn-default"
-                :disabled="loading"
-                @click="loading = true"
-              >
-                <span x-text="loading ? '' : '{{ __('Login Now') }}'">{{ __('Login Now') }}</span>
-                <iconify-icon :icon="loading ? 'lucide:loader-circle' : 'lucide:log-in'" :class="{ 'animate-spin': loading, 'ml-2': !loading }" />
-              </button>
+                <span class="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ config('app.name') }}</span>
             </div>
-          </div>
-          @endif
-        </div>
-      </form>
-    </div>
-</div>
-@endsection
 
-@if (config('app.demo_mode', false))
-    @push('scripts')
-        <script>
-            document.getElementById('fill-demo-credentials').addEventListener('click', function() {
-              console.log('clicked');
-                document.getElementById('email').value = 'superadmin@example.com';
-                document.querySelector('input[name="password"]').value = '12345678';
-                document.querySelector('form').submit();
-            });
-        </script>
-    @endpush
-@endif
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                {{ __('Heureux de vous revoir') }}
+            </h1>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                {{ __('Entrez vos identifiants pour accéder à l’administration') }}
+            </p>
+        </div>
+
+        {{-- Formulaire --}}
+        <form method="POST" action="{{ route('web.auth.login.submit') }}" class="space-y-6" @submit="loading = true">
+            @csrf
+
+            {{-- Erreurs style Shadcn Alert --}}
+            @if (session('error') || $errors->any())
+                <div class="rounded-lg border border-red-200 bg-red-50/50 p-4 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400 animate-in fade-in slide-in-from-top-1">
+                    <div class="flex items-center gap-2 font-semibold mb-1">
+                        <iconify-icon icon="lucide:alert-circle" class="text-lg"></iconify-icon>
+                        <span>Erreur d'authentification</span>
+                    </div>
+                    <ul class="text-xs opacity-90 list-none space-y-0.5">
+                        @if(session('error')) <li>{{ session('error') }}</li> @endif
+                        @foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <div class="space-y-4">
+                {{-- Email --}}
+                <div class="space-y-2">
+                    <label for="email" class="text-sm font-medium text-zinc-700 dark:text-zinc-300 ml-0.5">{{ __('Adresse e-mail') }}</label>
+                    <div class="relative group">
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-violet-600 transition-colors">
+                            <iconify-icon icon="lucide:mail" class="text-lg"></iconify-icon>
+                        </div>
+                        <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus placeholder="nom@ecole.com"
+                               class="flex h-10 w-full rounded-md border border-zinc-200 bg-white pl-10 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-violet-500/10">
+                    </div>
+                </div>
+
+                {{-- Password --}}
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between ml-0.5">
+                        <label for="password" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Mot de passe') }}</label>
+                        @if (Route::has('password.request'))
+                            <a href="{{ route('password.request') }}" class="text-xs font-medium text-violet-600 hover:text-violet-500 transition-colors">Oublié ?</a>
+                        @endif
+                    </div>
+                    <div class="relative group">
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-violet-600 transition-colors">
+                            <iconify-icon icon="lucide:lock" class="text-lg"></iconify-icon>
+                        </div>
+                        <input id="password" name="password" type="password" :type="showPassword ? 'text' : 'password'" required placeholder="••••••••"
+                               class="flex h-10 w-full rounded-md border border-zinc-200 bg-white pl-10 pr-10 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-violet-500/10">
+                        <button type="button" @click="showPassword = !showPassword" class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors p-1" aria-label="Afficher le mot de passe">
+                            <iconify-icon :icon="showPassword ? 'lucide:eye-off' : 'lucide:eye'" class="text-lg"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center py-1">
+                <input type="checkbox" id="remember" name="remember" class="h-4 w-4 rounded border-zinc-300 text-violet-600 focus:ring-violet-500/20 accent-violet-600 cursor-pointer">
+                <label for="remember" class="ml-2 text-sm text-zinc-500 dark:text-zinc-400 cursor-pointer select-none">{{ __('Rester connecté') }}</label>
+            </div>
+
+            <button type="submit" :disabled="loading"
+                    class="relative inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-50 shadow hover:bg-zinc-900/90 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100">
+                <span x-show="!loading" class="flex items-center gap-2">
+                    {{ __('Se connecter') }}
+                    <iconify-icon icon="lucide:arrow-right" class="text-lg"></iconify-icon>
+                </span>
+                <iconify-icon x-show="loading" icon="lucide:loader-2" class="animate-spin text-xl" x-cloak></iconify-icon>
+            </button>
+        </form>
+
+        <footer class="text-center lg:text-left pt-4 border-t border-zinc-100 dark:border-zinc-900">
+            <p class="text-[11px] text-zinc-400 dark:text-zinc-500 tracking-wide uppercase font-medium">
+                &copy; {{ date('Y') }} {{ config('app.name') }} — {{ __('Portail Sécurisé') }}
+            </p>
+        </footer>
+    </div>
+@endsection

@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="$breadcrumbs">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: $breadcrumbs -->
+        </nav>
+    </div>
+
     <div
         x-data="{ showUploadArea: false }"
         x-init="showUploadArea = {{ count($modules) > 0 ? 'false' : 'true' }}"
@@ -124,13 +132,16 @@
                                         class="absolute top-full right-0 z-10 w-44 bg-white divide-y divide-gray-100 rounded-md shadow-lg dark:bg-gray-700 dark:divide-gray-600 mt-2">
                                         <ul class="py-2 text-sm text-gray-700 dark:text-gray-200">
                                             <li>
-                                                <button
-                                                    @click="deleteModalOpen = true; dropdownOpen = false"
-                                                    class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white text-left"
-                                                >
-                                                    <iconify-icon icon="lucide:trash" class="mr-2 text-red-500"></iconify-icon>
-                                                    {{ __('Delete') }}
-                                                </button>
+                                                <form id="delete-form-{{ $module->name }}" action="{{ route('admin.modules.delete', $module->name) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button"
+                                                        @click="if(confirm('{{ __('Are you sure you want to delete this module?') }}')) { document.getElementById('delete-form-{{ $module->name }}').submit(); } dropdownOpen = false"
+                                                        class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white text-left">
+                                                        <iconify-icon icon="lucide:trash" class="mr-2 text-red-500"></iconify-icon>
+                                                        {{ __('Delete') }}
+                                                    </button>
+                                                </form>
                                             </li>
                                             <li>
                                                 <button
@@ -145,34 +156,18 @@
                                     </div>
                                 </div>
 
-                                <x-modals.confirm-delete
-                                    id="delete-modal-{{ $module->name }}"
-                                    title="{{ __('Delete Module') }}"
-                                    content="{{ __('Are you sure you want to delete this module?') }}"
-                                    formId="delete-form-{{ $module->name }}"
-                                    formAction="{{ route('admin.modules.delete', $module->name) }}"
-                                    modalTrigger="deleteModalOpen"
-                                    cancelButtonText="{{ __('No, Cancel') }}"
-                                    confirmButtonText="{{ __('Yes, Confirm') }}"
-                                />
-
-                                <x-modals.error-message
-                                    id="error-modal-{{ $module->name }}"
-                                    title="{{ __('Operation Failed') }}"
-                                    modalTrigger="errorModalOpen"
-                                />
-                            </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $module->description }}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-300">
-                                {{ __('Tags:') }}
-                                @foreach ($module->tags as $tag)
-                                    <span class="inline-block px-2 py-1 text-xs font-medium text-white bg-gray-400 rounded-full mr-1 mb-1">{{ $tag }}</span>
-                                @endforeach
-                            </p>
-                            <div class="mt-4 flex items-center justify-between">
-                                <span class="text-sm font-medium {{ $module->status ? 'text-green-500' : 'text-red-500' }}">
-                                    {{ $module->status ? __('Enabled') : __('Disabled') }}
-                                </span>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">{{ $module->description }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">
+                                    {{ __('Tags:') }}
+                                    @foreach ($module->tags as $tag)
+                                        <span class="inline-block px-2 py-1 text-xs font-medium text-white bg-gray-400 rounded-full mr-1 mb-1">{{ $tag }}</span>
+                                    @endforeach
+                                </p>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <span class="text-sm font-medium {{ $module->status ? 'text-green-500' : 'text-red-500' }}">
+                                        {{ $module->status ? __('Enabled') : __('Disabled') }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -230,4 +225,4 @@
         }
     </script>
     @endpush
-</x-layouts.backend-layout>
+@endsection

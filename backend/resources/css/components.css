@@ -186,4 +186,77 @@
     .table-td-checkbox {
         @apply p-2 px-5;
     }
+
+    /* Admin backend (Blade + zinc) */
+    .admin-app-shell {
+        @apply min-h-full text-zinc-950 antialiased;
+    }
+
+    .admin-sidebar-panel {
+        @apply flex flex-col h-full bg-zinc-50/50 font-sans border-r border-zinc-200/90 shadow-[2px_0_24px_-8px_rgba(0,0,0,0.08)];
+    }
+
+    .admin-sidebar-nav {
+        @apply w-full max-w-none px-3 py-2 space-y-7;
+    }
+
+    .admin-sidebar-group-title {
+        @apply px-3 mb-2 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] text-left;
+    }
+
+    .admin-sidebar-link {
+        @apply relative flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-[13px] font-semibold leading-snug transition-all duration-200;
+    }
+
+    .admin-sidebar-link-active {
+        @apply bg-zinc-900 text-white shadow-lg shadow-zinc-900/20;
+    }
+
+    .admin-sidebar-link-idle {
+        @apply text-zinc-600 hover:bg-white hover:text-zinc-900 hover:shadow-sm;
+    }
+
+    .admin-sidebar-sublink {
+        @apply relative flex items-center justify-between gap-2 rounded-lg py-2 pl-3 pr-2 text-[12px] font-medium leading-snug transition-colors duration-200;
+    }
+
+    .admin-sidebar-sublink-active {
+        @apply bg-white font-semibold text-zinc-900 shadow-sm ring-1 ring-zinc-200/80 before:pointer-events-none before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-zinc-900;
+    }
+
+    .admin-sidebar-sublink-idle {
+        @apply text-zinc-500 hover:bg-white/90 hover:text-zinc-800;
+    }
+
+    .admin-data-card {
+        @apply rounded-xl border border-zinc-200 bg-white shadow-sm;
+    }
+
+    .admin-btn-primary {
+        @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-zinc-900 px-5 text-xs font-bold text-white shadow-md shadow-zinc-200 transition-all hover:bg-black;
+    }
+
+    .admin-btn-secondary {
+        @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-5 text-xs font-bold text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50;
+    }
+
+    .admin-label {
+        @apply mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-zinc-500;
+    }
+
+    .admin-input {
+        @apply w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm font-medium text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900/20 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400;
+    }
+
+    .admin-select {
+        @apply w-full appearance-none rounded-lg border border-zinc-200 bg-white px-3 py-2.5 pr-10 text-sm font-medium text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900/20;
+    }
+
+    .admin-textarea {
+        @apply min-h-[100px] w-full resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm font-medium text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900/20;
+    }
+
+    .admin-form-section-title {
+        @apply mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400;
+    }
 }

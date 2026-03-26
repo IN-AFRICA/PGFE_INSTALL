@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="[['title'=>'Écoles','url'=>route('admin.schools.index')],['title'=>'Créer']]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: [['title'=>'Écoles','url'=>route('admin.schools.index')],['title'=>'Créer']] -->
+        </nav>
+    </div>
+
     <h1 class="text-lg font-semibold mb-6">Créer une école</h1>
 
     <form method="POST" action="{{ route('admin.schools.store') }}" enctype="multipart/form-data" class="space-y-6 max-w-3xl">
@@ -73,4 +81,4 @@
             </button>
         </div>
     </form>
-</x-layouts.backend-layout>
+@endsection

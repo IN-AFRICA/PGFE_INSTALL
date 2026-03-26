@@ -61,7 +61,7 @@ final class DatabaseSeeder extends Seeder
 
             // 8. Étudiants (après année scolaire et classes)
             StudentSeeder::class,
-            //            FirstYearElectronicsStudentsSeeder::class, // Seeder spécifique : 200 élèves en 1ère Électronique
+                       FirstYearElectronicsStudentsSeeder::class, // Seeder spécifique : 20 élèves en 1ère Électronique
 
             // 9. Cours (dépend du personnel académique, enseignants et des classes)
             CourseSeeder::class,

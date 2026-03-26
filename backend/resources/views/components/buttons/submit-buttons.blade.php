@@ -1,42 +1,19 @@
 @props([
-    'submitLabel' => __('Save'),
-    'showSubmit' => true,
-    'cancelLabel' => __('Cancel'),
     'cancelUrl' => null,
-    'id' => null,
-    'showIcon' => false,
-    'classNames' => [
-        'wrapper' => 'flex justify-start gap-3',
-        'primary' => 'btn-primary',
-        'cancel' => 'btn-default',
-    ],
+    'submitLabel' => 'Save',
+    'cancelLabel' => 'Cancel',
 ])
 
-<div class="{{ $classNames['wrapper'] ?? 'mt-6 flex justify-start gap-4' }}">
-    @if ($showSubmit)
-        <button type="submit" @if (!empty($id)) id="{{ $id }}" @endif
-            class="{{ $classNames['primary'] ?? 'btn-primary' }}">
-            @if ($showIcon)
-                <iconify-icon icon="lucide:check-circle" class="mr-2"></iconify-icon>
-            @endif
-
-            @if (!empty($submitLabel))
-                {{ $submitLabel }}
-            @endif
-
-            @if (empty($submitLabel) && $showIcon)
-                {{ __('Save') }}
-            @endif
-        </button>
-    @endif
-
-    @if (!empty($cancelLabel) && !empty($cancelUrl))
-        <a href="{{ $cancelUrl }}" class="{{ $classNames['cancel'] ?? 'btn-default' }}">
-            @if ($showIcon)
-                <iconify-icon icon="lucide:x-circle" class="mr-2"></iconify-icon>
-            @endif
-
-            {{ $cancelLabel }}
+<div class="flex items-center gap-3">
+    <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">
+        <iconify-icon icon="lucide:save"></iconify-icon>
+        <span>{{ __($submitLabel) }}</span>
+    </button>
+    @if($cancelUrl)
+        <a href="{{ $cancelUrl }}" class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+            <iconify-icon icon="lucide:x"></iconify-icon>
+            <span>{{ __($cancelLabel) }}</span>
         </a>
     @endif
 </div>
+

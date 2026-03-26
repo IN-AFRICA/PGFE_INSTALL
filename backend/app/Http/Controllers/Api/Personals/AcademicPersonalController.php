@@ -140,50 +140,19 @@ final class AcademicPersonalController extends Controller
     {
         try {
             DB::beginTransaction();
-
-            $password = Str::random(8);
             $validated = $request->validated();
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('academic_personals', 'public');
                 $validated['image'] = basename($path);
             }
             $creatorSchoolId = Auth::user()?->school_id;
-
-            try {
-                $user = User::create([
-                    'name' => $validated['name'],
-                    'email' => $validated['email'],
-                    'password' => Hash::make($password),
-                    'school_id' => $creatorSchoolId,
-                ]);
-            } catch (\Illuminate\Database\QueryException $qe) {
-                DB::rollBack();
-                if ($qe->getCode() === '23000' && str_contains($qe->getMessage(), 'users_email_unique')) {
-                    return response()->json([
-                        'message' => "L'adresse e-mail est déjà utilisée par un autre utilisateur.",
-                        'errors' => [
-                            'email' => ["Cette adresse e-mail est déjà utilisée par un autre utilisateur."]
-                        ]
-                    ], 422);
-                }
-                throw $qe;
-            }
-
             $personnel = AcademicPersonal::create(array_merge(
                 $validated,
                 [
-                    'user_id' => $user->id,
                     'school_id' => $creatorSchoolId,
                 ]
             ));
-
-            $user->notify(new NewUserCredentialsNotification(
-                $personnel,
-                $password
-            ));
-
             DB::commit();
-
             return response()->json([
                 'data' => $personnel->load([
                     'user',
@@ -196,17 +165,49 @@ final class AcademicPersonalController extends Controller
                     'academicLevel.cycle.filiaire',
                     'fonction',
                 ]),
-                'message' => 'Academic personnel created successfully with user account',
+                'message' => 'Academic personnel created successfully',
             ], 201);
-
         } catch (Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'message' => 'Error creating academic personnel',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Crée un User pour un AcademicPersonal et lui attribue un rôle.
+     * @param Request $request (attend academic_personal_id, role)
+     */
+    public function assignRoleAndCreateUser(Request $request): JsonResponse
+    {
+        $request->validate([
+            'academic_personal_id' => 'required|exists:academic_personals,id',
+            'role' => 'required|string|exists:roles,name',
+        ]);
+        $personnel = AcademicPersonal::findOrFail($request->academic_personal_id);
+        if ($personnel->user_id) {
+            return response()->json([
+                'message' => 'Un compte utilisateur existe déjà pour ce personnel.',
+            ], 409);
+        }
+        $password = Str::random(8);
+        $user = User::create([
+            'name' => trim($personnel->pre_name.' '.$personnel->name),
+            'email' => $personnel->email,
+            'password' => Hash::make($password),
+            'school_id' => $personnel->school_id,
+        ]);
+        $user->assignRole($request->role);
+        $personnel->user_id = $user->id;
+        $personnel->save();
+        $user->notify(new NewUserCredentialsNotification($personnel, $password));
+        return response()->json([
+            'message' => 'Compte utilisateur créé et rôle attribué avec succès.',
+            'user' => $user,
+            'personnel' => $personnel,
+        ]);
     }
 
     public function show(int $id): JsonResponse

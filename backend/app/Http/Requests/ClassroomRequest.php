@@ -25,7 +25,13 @@ final class ClassroomRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('classrooms')->ignore($this->classroom),
+                Rule::unique('classrooms')
+                    ->where(function ($query) {
+                        return $query
+                            ->where('school_id', $this->user()->school_id)
+                            ->where('academic_level_id', $this->input('academic_level_id'));
+                    })
+                    ->ignore($this->classroom),
             ],
             'indicator' => ['nullable', 'string', 'max:255'],
             'titulaire_id' => ['nullable', 'exists:academic_personals,id'],

@@ -1,69 +1,73 @@
 name: deploy
+
 on:
   push:
     branches:
       - main
+
 jobs:
   audit:
     uses: './.github/workflows/audit.yaml'
+
   deploy:
     name: Deploy to Production
     needs: [audit]
     runs-on: ubuntu-latest
+
     steps:
       - name: execute ssh command
-        uses : appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-#          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd ~/enabel.inafrica.tech
+            set -e # Arrête le script en cas d'erreur
 
-            # Sauvegarder les fichiers/dossiers à préserver (copie, pas déplacement)
-            cp -r config /tmp/config_backup || true
-            cp -r storage /tmp/storage_backup || true
-            cp -r public /tmp/public_backup || true
+            echo "==============================="
+            echo "🚀 Deploying pgfe-back.enabel.inafrica.tech"
+            echo "==============================="
 
-            # Afficher l'état du dépôt avant pull
-            echo '--- AVANT PULL ---'
-            git status
-            ls -l
+            cd ~/pgfe-back.inafrica.tech
 
+            # 1. Nettoyage et mise à jour du code
             git reset --hard
-            git clean -fd
             git pull origin main --rebase
 
-            # Afficher l'état du dépôt après pull
-            echo '--- APRES PULL ---'
-            git status
-            ls -l
-
-            # Supprimer le package rapids/rapids si présent (évite l'erreur de rapidModels)
+            # 2. Gestion de composer (plus propre)
             if grep -q 'rapids/rapids' composer.json; then
-              composer remove rapids/rapids || true
+              composer remove rapids/rapids --no-update
             fi
 
-            # Fusionner/restaurer le contenu sauvegardé dans les dossiers correspondants
-            rsync -a /tmp/config_backup/ config/ || true
-            rsync -a /tmp/storage_backup/ storage/ || true
-            rsync -a /tmp/public_backup/ public/ || true
+            composer install --no-dev --optimize-autoloader
 
-            # Nettoyer les sauvegardes temporaires
-            rm -rf /tmp/config_backup /tmp/storage_backup /tmp/public_backup
-
-            # Installer les dépendances prod
-            composer install
-
-            # Migrations et cache Laravel
+            # 3. Optimisations Laravel (Ordre : Clear puis Cache)
             php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:clear
-            php artisan view:cache
-            php artisan cache:clear
+
+            # On vide tout pour éviter les conflits de version
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
+            php artisan cache:clear
+
+            # On recréé les caches pour la performance
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            npm install
+            npm run build
+            echo "✅ Deployment finished successfully!"
+
+      - name: Notify Telegram
+        if: success()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d text="🚀 Deployment SUCCESS
+
+          Repo: ${{ github.repository }}
+          Branch: ${{ github.ref_name }}
+
+          Domain: pgfe-back.inafrica.tech
+          Time: $(date)"

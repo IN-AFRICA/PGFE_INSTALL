@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="[['title'=>'Pays','url'=>route('admin.countries.index')],['title'=>'Créer']]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: [['title'=>'Pays','url'=>route('admin.countries.index')],['title'=>'Créer']] -->
+        </nav>
+    </div>
+
     <h1 class="text-lg font-semibold mb-6">Créer un pays</h1>
     <form method="POST" action="{{ route('admin.countries.store') }}" class="space-y-6 max-w-md">
         @csrf
@@ -14,5 +22,5 @@
             </button>
         </div>
     </form>
-</x-layouts.backend-layout>
+@endsection
 

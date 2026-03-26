@@ -1,5 +1,7 @@
-<x-layouts.modules-layout :breadcrumbs="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Planification des travaux', 'url' => route('admin.planning.index')], ['label' => 'Nouvelle planification', 'url' => '#']]">
-    <div class="max-w-3xl mx-auto space-y-8">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
         <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800">
             <div class="flex items-center gap-4">
                 <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
@@ -71,4 +73,4 @@
             </form>
         </div>
     </div>
-</x-layouts.modules-layout>
+@endsection

@@ -4,21 +4,26 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Students;
 
+use const n;
+
+use App\Exports\StudentsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StudentRequest;
 use App\Models\Classroom;
+use App\Models\Parents;
 use App\Models\Registration;
 use App\Models\SchoolYear;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Throwable;
-use App\Exports\StudentsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 final class StudentController extends Controller
 {
@@ -27,40 +32,43 @@ final class StudentController extends Controller
      */
     public function export(Request $request)
     {
-        $fileName = 'students_' . now()->format('Ymd_His') . '.xlsx';
+        $fileName = 'students_'.now()->format('Ymd_His').'.xlsx';
+
         return Excel::download(new StudentsExport(), $fileName);
     }
-        /**
-         * Export students as PDF file.
-         */
-        public function exportPdf(Request $request)
-        {
-            $query = Student::query();
-            if ($request->filled('classroom_id')) {
-                $query->whereHas('registrations', function($q) use ($request) {
-                    $q->where('classroom_id', $request->input('classroom_id'));
-                });
-            }
-            $students = $query->get();
 
-            $html = view('exports.students', [
-                'students' => $students
-            ])->render();
-
-            $dompdf = new \Dompdf\Dompdf();
-            $dompdf->loadHtml($html);
-            $dompdf->setPaper('A4', 'landscape');
-            $dompdf->render();
-
-            $filename = 'students_' . now()->format('Ymd_His') . '.pdf';
-
-            return response($dompdf->output(), 200)
-                ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    /**
+     * Export students as PDF file.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Student::query();
+        if ($request->filled('classroom_id')) {
+            $query->whereHas('registrations', function ($q) use ($request) {
+                $q->where('classroom_id', $request->input('classroom_id'));
+            });
         }
+        $students = $query->get();
+
+        $html = view('exports.students', [
+            'students' => $students,
+        ])->render();
+
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'students_'.now()->format('Ymd_His').'.pdf';
+
+        return response($dompdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    }
+
     public function index(Request $request): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
         // Si super admin, utiliser l'école sélectionnée en session
         if ($user && $user->hasRole('super-admin')) {
@@ -93,8 +101,9 @@ final class StudentController extends Controller
 
         return response()->json([
             'success' => true,
+            'message' => 'Etudiant Recuperer avec success',
             'students' => $students,
-        ]);
+        ], status: Response::HTTP_OK);
     }
 
     public function show(Student $student): JsonResponse
@@ -109,8 +118,8 @@ final class StudentController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la récupération de l\'étudiant.',
-            ], 500);
+                'message' => 'Erreur lors de la récupération de l\'étudiant.',            ],
+                Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -119,32 +128,127 @@ final class StudentController extends Controller
         try {
             $data = $request->validated();
 
-            // Normalisation : accepter first_name / last_name si un client legacy les envoie
+            // Normalisation legacy
             if (isset($data['first_name']) && ! isset($data['firstname'])) {
                 $data['firstname'] = $data['first_name'];
             }
+
             if (isset($data['last_name']) && ! isset($data['lastname'])) {
                 $data['lastname'] = $data['last_name'];
             }
 
+            // =============================
             // Gestion upload image
+            // =============================
+
             if ($request->hasFile('image')) {
+
                 $path = $request->file('image')->store('students', 'public');
                 $data['image'] = $path;
+
+            } elseif (! empty($data['image']) && str_contains($data['image'], 'base64')) {
+
+                $image = $data['image'];
+
+                preg_match('/data:image\/(\w+);base64,/', $image, $type);
+
+                $image = mb_substr($image, mb_strpos($image, ',') + 1);
+                $image = base64_decode($image);
+
+                $extension = $type[1] ?? 'png';
+
+                $fileName = 'students/'.uniqid().'.'.$extension;
+
+                Storage::disk('public')->put($fileName, $image);
+
+                $data['image'] = $fileName;
             }
 
-            /** @var \App\Models\User|null $user */
+            /** @var User|null $user */
             $user = auth()->user();
             $schoolId = $user?->school_id;
+
             if (! $schoolId) {
                 return response()->json([
                     'success' => false,
                     'message' => "Impossible de déterminer l'école de l'utilisateur.",
                 ], 422);
             }
+
             $data['school_id'] = $schoolId;
 
-            // Déduplication et logique d'inscription
+            // =============================
+            // Gestion des parents
+            // =============================
+
+            if (empty($data['parents_id']) && empty($data['parent'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le premier parent est obligatoire.',
+                ], 422);
+            }
+
+            // Parent 1
+            if (empty($data['parents_id']) && ! empty($data['parent'])) {
+
+                $parentData = $data['parent'];
+                $parentData['school_id'] = $schoolId;
+
+                $parent = Parents::where('phone_number', $parentData['phone_number'])
+                    ->where('school_id', $schoolId)
+                    ->first();
+
+                if (! $parent) {
+                    $parent = Parents::create($parentData);
+                }
+
+                $data['parents_id'] = $parent->id;
+
+                unset($data['parent']);
+            }
+
+            // Parent 2
+            if (empty($data['parent2_id']) && ! empty($data['parent2'])) {
+
+                $parent2Data = $data['parent2'];
+                $parent2Data['school_id'] = $schoolId;
+
+                $parent2 = Parents::where('phone_number', $parent2Data['phone_number'])
+                    ->where('school_id', $schoolId)
+                    ->first();
+
+                if (! $parent2) {
+                    $parent2 = Parents::create($parent2Data);
+                }
+
+                $data['parent2_id'] = $parent2->id;
+
+                unset($data['parent2']);
+            }
+
+            // Parent 3
+            if (empty($data['parent3_id']) && ! empty($data['parent3'])) {
+
+                $parent3Data = $data['parent3'];
+                $parent3Data['school_id'] = $schoolId;
+
+                $parent3 = Parents::where('phone_number', $parent3Data['phone_number'])
+                    ->where('school_id', $schoolId)
+                    ->first();
+
+                if (! $parent3) {
+                    $parent3 = Parents::create($parent3Data);
+                }
+
+                $data['parent3_id'] = $parent3->id;
+
+                unset($data['parent3']);
+            }
+
+            // =============================
+            // Déduplication étudiant
+            // =============================
+
             $dupQuery = Student::query()
                 ->where('school_id', $schoolId)
                 ->when(isset($data['name']), fn ($q) => $q->where('name', $data['name']))
@@ -153,40 +257,58 @@ final class StudentController extends Controller
                 ->when(isset($data['birth_date']), fn ($q) => $q->where('birth_date', $data['birth_date']));
 
             $existingStudent = $dupQuery->first();
+
             $classroomId = $data['classroom_id'] ?? null;
-            $hasRegFields = isset($data['academic_personal_id'], $data['academic_level_id'], $data['filiaire_id'], $data['cycle_id']);
+
+            $hasRegFields = isset(
+                $data['academic_personal_id'],
+                $data['academic_level_id'],
+                $data['filiaire_id'],
+                $data['cycle_id']
+            );
+
             $shouldRegister = ! empty($classroomId) && $hasRegFields;
 
             $createdStudent = false;
             $createdRegistration = false;
             $registration = null;
             $student = $existingStudent;
+
             $incompleteRegistration = ! empty($classroomId) && ! $hasRegFields;
 
-            // Validations additionnelles pour inscription one-shot
+            // =============================
+            // Validation classe
+            // =============================
+
             if ($classroomId) {
+
                 $classroom = Classroom::with('academicLevel.cycle.filiaire')->find($classroomId);
+
                 if (! $classroom || (int) $classroom->academicLevel?->cycle?->filiaire?->school_id !== (int) $schoolId) {
                     return response()->json([
                         'success' => false,
                         'message' => 'La classe fournie est invalide ou n’appartient pas à votre école.',
                     ], 422);
                 }
-                // Validation du chainage réel : classe -> niveau académique -> cycle -> filière
+
                 if (! empty($data['academic_level_id']) && (int) $classroom->academic_level_id !== (int) $data['academic_level_id']) {
                     return response()->json([
                         'success' => false,
                         'message' => "La classe sélectionnée n'est pas rattachée au niveau académique indiqué.",
                     ], 422);
                 }
+
                 $academicLevel = $classroom->academicLevel;
+
                 if (! empty($data['cycle_id']) && ($academicLevel?->cycle?->id ?? null) !== (int) $data['cycle_id']) {
                     return response()->json([
                         'success' => false,
                         'message' => "Le niveau académique sélectionné n'est pas rattaché au cycle indiqué.",
                     ], 422);
                 }
+
                 $cycle = $academicLevel?->cycle;
+
                 if (! empty($data['filiaire_id']) && ($cycle?->filiaire?->id ?? null) !== (int) $data['filiaire_id']) {
                     return response()->json([
                         'success' => false,
@@ -196,25 +318,33 @@ final class StudentController extends Controller
             }
 
             DB::beginTransaction();
+
             try {
+
                 if (! $student) {
+
                     $data['matricule'] = $this->generateSimpleMatricule();
+
                     $student = Student::create(collect($data)->only([
-                        'name', 'lastname', 'firstname', 'gender', 'birth_date', 'birth_place', 'civil_status',
-                        'address', 'phone_number', 'email', 'image', 'province_id', 'territory_id', 'commune_id',
-                        'parents_id', 'parent2_id', 'parent3_id', 'country_id', 'matricule', 'school_id',
+                        'name', 'lastname', 'firstname', 'gender', 'birth_date', 'birth_place',
+                        'civil_status', 'address', 'phone_number', 'email', 'image',
+                        'province_id', 'territory_id', 'commune_id', 'parents_id',
+                        'parent2_id', 'parent3_id', 'country_id', 'matricule', 'school_id',
                     ])->toArray());
+
                     $createdStudent = true;
                 }
 
                 if ($shouldRegister) {
+
                     $activeYear = SchoolYear::active($schoolId);
+
                     if (! $activeYear) {
                         DB::rollBack();
 
                         return response()->json([
                             'success' => false,
-                            'message' => "Aucune année scolaire active pour cette école. Impossible de créer l'inscription.",
+                            'message' => 'Aucune année scolaire active pour cette école.',
                         ], 422);
                     }
 
@@ -224,6 +354,7 @@ final class StudentController extends Controller
                         ->exists();
 
                     if (! $alreadyRegistered) {
+
                         $registration = Registration::create([
                             'student_id' => $student->id,
                             'school_id' => $schoolId,
@@ -237,68 +368,31 @@ final class StudentController extends Controller
                             'registration_status' => true,
                             'note' => $data['note'] ?? null,
                         ]);
+
                         $createdRegistration = true;
                     }
                 }
 
                 DB::commit();
+
             } catch (Throwable $txe) {
+
                 DB::rollBack();
                 throw $txe;
-            }
-
-            // Réponses contextualisées
-            if ($existingStudent && ! $createdRegistration && ! $createdStudent) {
-                $msg = $incompleteRegistration ? "Étudiant déjà existant (données d'inscription incomplètes)." : 'Étudiant déjà existant (aucune nouvelle inscription créée).';
-
-                return response()->json([
-                    'success' => true,
-                    'duplicate' => true,
-                    'student' => $student->fresh(),
-                    'message' => $msg,
-                ], 200);
-            }
-
-            if ($existingStudent && $createdRegistration) {
-                return response()->json([
-                    'success' => true,
-                    'duplicate' => true,
-                    'student' => $student->fresh(),
-                    'registration' => $registration,
-                    'message' => 'Étudiant déjà existant; inscription créée avec succès.',
-                ], 201);
-            }
-
-            if ($createdStudent && $createdRegistration) {
-                return response()->json([
-                    'success' => true,
-                    'duplicate' => false,
-                    'student' => $student->fresh(),
-                    'registration' => $registration,
-                    'message' => 'Étudiant et inscription créés avec succès.',
-                ], 201);
-            }
-
-            if ($createdStudent && ! $createdRegistration) {
-                $msg = $incompleteRegistration
-                    ? "Étudiant créé sans inscription (données d'inscription incomplètes)."
-                    : 'Étudiant créé sans inscription (classe non fournie).';
-
-                return response()->json([
-                    'success' => true,
-                    'duplicate' => false,
-                    'student' => $student->fresh(),
-                    'message' => $msg,
-                ], 201);
             }
 
             return response()->json([
                 'success' => true,
                 'student' => $student->fresh(),
-                'message' => 'Opération terminée.',
-            ], 200);
+                'registration' => $registration,
+                'duplicate' => ! $createdStudent,
+            ], $createdStudent ? 201 : 200);
+
         } catch (Throwable $e) {
-            Log::error('Student store error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            Log::error('Student store error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
@@ -312,13 +406,42 @@ final class StudentController extends Controller
         try {
             $data = $request->validated();
 
-            // Upload nouvelle image si fournie, supprimer l'ancienne
+            // =============================
+            // Gestion upload image (file ou base64)
+            // =============================
+
             if ($request->hasFile('image')) {
+
                 $newPath = $request->file('image')->store('students', 'public');
+
+                // supprimer ancienne image
                 if (! empty($student->image) && Storage::disk('public')->exists($student->image)) {
                     Storage::disk('public')->delete($student->image);
                 }
+
                 $data['image'] = $newPath;
+
+            } elseif (! empty($data['image']) && str_contains($data['image'], 'base64')) {
+
+                $image = $data['image'];
+
+                preg_match('/data:image\/(\w+);base64,/', $image, $type);
+
+                $image = mb_substr($image, mb_strpos($image, ',') + 1);
+                $image = base64_decode($image);
+
+                $extension = $type[1] ?? 'png';
+
+                $fileName = 'students/'.uniqid().'.'.$extension;
+
+                Storage::disk('public')->put($fileName, $image);
+
+                // supprimer ancienne image
+                if (! empty($student->image) && Storage::disk('public')->exists($student->image)) {
+                    Storage::disk('public')->delete($student->image);
+                }
+
+                $data['image'] = $fileName;
             }
 
             // Ne mettre à jour que les champs appartenant réellement au modèle Student.
@@ -409,7 +532,7 @@ final class StudentController extends Controller
                 // Récupérer ou créer l'inscription pour l'année scolaire active
                 $activeYear = SchoolYear::active((int) $schoolId);
                 if (! $activeYear) {
-                    return response()->json([\n+                        'success' => false,
+                    return response()->json([n + 'success' => false,
                         'message' => "Aucune année scolaire active pour cette école. Impossible de mettre à jour l'inscription.",
                     ], 422);
                 }

@@ -1,51 +1,46 @@
-<x-layouts.backend-layout :breadcrumbs="[['title' => 'Stock', 'url' => route('admin.stock-articles.index')], ['title' => 'Catégories']]">
-    <div class="max-w-4xl mx-auto space-y-10">
-        <!-- Premium Header -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800">
-            <div>
-                <h1 class="text-3xl font-black text-gray-800 dark:text-white flex items-center gap-3">
-                    <div class="h-12 w-12 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
-                        <iconify-icon icon="lucide:tags" width="28"></iconify-icon>
-                    </div>
-                    Catégories d'Articles
-                </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">Organisez votre inventaire par types de biens.</p>
-            </div>
-            <a href="{{ route('admin.stock-categories.create') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-8 py-4 text-sm font-black text-white hover:bg-amber-600 shadow-xl shadow-amber-500/20 transition-all hover:-translate-y-1">
-                <iconify-icon icon="lucide:plus-circle" width="20"></iconify-icon>
-                NOUVELLE CATÉGORIE
-            </a>
-        </div>
+@extends('backend.layouts.app')
 
-        <!-- Categories List -->
-        <div class="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+@section('admin-content')
+    <x-admin.shadcn-shell module="stock" title="Catégories" subtitle="Classification des articles en stock." icon="lucide:tags"
+        breadcrumb-current="Catégories">
+        <x-slot name="actions">
+            <a href="{{ route('admin.stock-categories.create') }}" class="admin-btn-primary">
+                <iconify-icon icon="lucide:plus-circle" width="16"></iconify-icon>
+                Nouvelle catégorie
+            </a>
+        </x-slot>
+
+        <div class="admin-data-card overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
+                <table class="w-full border-collapse text-left text-sm">
                     <thead>
-                        <tr class="bg-gray-50/50 dark:bg-gray-950/50 border-b border-gray-100 dark:border-gray-700">
-                            <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-widest w-24">ID</th>
-                            <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Nom de la Catégorie</th>
-                            <th class="px-8 py-5 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                        <tr class="border-b border-zinc-200 bg-zinc-50/80">
+                            <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Réf.</th>
+                            <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Intitulé</th>
+                            <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-400">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @forelse($categories as $cat)
-                            <tr class="group hover:bg-amber-50/20 dark:hover:bg-amber-900/10 transition-colors">
-                                <td class="px-8 py-6">
-                                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/40 text-amber-600 font-black text-sm">{{ $cat->id }}</span>
-                                </td>
-                                <td class="px-8 py-6">
-                                    <span class="font-black text-lg text-gray-800 dark:text-white">{{ $cat->name }}</span>
-                                </td>
-                                <td class="px-8 py-6 text-right">
-                                    <div class="flex justify-end items-center gap-3">
-                                        <a href="{{ route('admin.stock-categories.edit', $cat->id) }}" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:bg-amber-500 hover:text-white transition-all">
-                                            <iconify-icon icon="lucide:pen-line" width="20"></iconify-icon>
+                    <tbody class="divide-y divide-zinc-100">
+                        @forelse ($categories as $cat)
+                            <tr class="hover:bg-zinc-50/50">
+                                <td class="px-4 py-3 font-mono text-xs text-zinc-500">#{{ str_pad((string) $cat->id, 3, '0', STR_PAD_LEFT) }}</td>
+                                <td class="px-4 py-3 font-semibold text-zinc-900">{{ $cat->name }}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <div class="flex justify-end gap-1">
+                                        <a href="{{ route('admin.stock-categories.show', $cat) }}"
+                                            class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-900 hover:text-white">
+                                            <iconify-icon icon="lucide:eye" width="16"></iconify-icon>
                                         </a>
-                                        <form action="{{ route('admin.stock-categories.destroy', $cat->id) }}" method="POST" onsubmit="return confirm('Supprimer cette catégorie ?')" class="inline">
+                                        <a href="{{ route('admin.stock-categories.edit', $cat) }}"
+                                            class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-500 hover:bg-zinc-900 hover:text-white">
+                                            <iconify-icon icon="lucide:pen-line" width="16"></iconify-icon>
+                                        </a>
+                                        <form action="{{ route('admin.stock-categories.destroy', $cat) }}" method="POST" class="inline"
+                                            onsubmit="return confirm('Supprimer cette catégorie ?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-rose-600 hover:text-white transition-all">
-                                                <iconify-icon icon="lucide:trash-2" width="20"></iconify-icon>
+                                            <button type="submit"
+                                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+                                                <iconify-icon icon="lucide:trash-2" width="16"></iconify-icon>
                                             </button>
                                         </form>
                                     </div>
@@ -53,19 +48,19 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-8 py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-xs">
-                                    Aucune catégorie définie.
-                                </td>
+                                <td colspan="3" class="px-4 py-16 text-center text-sm text-zinc-500">Aucune catégorie.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            @if(method_exists($categories, 'links'))
-                <div class="px-8 py-6 border-t border-gray-100 dark:border-gray-800">
-                    {{ $categories->links() }}
-                </div>
+            @if ($categories->hasPages())
+                <div class="border-t border-zinc-100 px-4 py-3">{{ $categories->links() }}</div>
             @endif
         </div>
-    </div>
-</x-layouts.backend-layout>
+
+        <div class="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/40 p-5 text-sm text-zinc-600">
+            <p><span class="font-semibold text-zinc-900">Astuce :</span> des noms explicites facilitent les filtres et rapports (ex. papeterie, maintenance).</p>
+        </div>
+    </x-admin.shadcn-shell>
+@endsection

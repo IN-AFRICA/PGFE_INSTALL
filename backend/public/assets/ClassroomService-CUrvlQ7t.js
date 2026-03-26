@@ -1,0 +1,1 @@
+import{aj as t,a4 as e,A as s,ak as n}from"./index-D2Tshtwy.js";const r=`${e}${s.GET_CLASSROOMS}?per_page=1000`;var o;const p=(o=n())==null?void 0:o.token,c={Accept:"application/json","Content-Type":"application/json",Authorization:`Bearer ${p}`},A={getAllClassroom(a={}){return t.get(r,{headers:c,params:a})}};export{A as C};

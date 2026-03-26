@@ -53,21 +53,7 @@
     <div class="w-full md:w-1/5 flex-shrink-0 flex flex-col items-center gap-4">
         <div class="w-full flex flex-col items-center">
             <div class="mt-2 w-full">
-                <x-media-selector
-                    name="avatar_id"
-                    label=""
-                    :multiple="false"
-                    allowedTypes="images"
-                    :existingMedia="$user?->avatar_id ? [['id' => $user->avatar_id, 'url' => $avatarUrl, 'name' => $user->avatar->name]] : []"
-                    :required="false"
-                    height="150px"
-                    class="[&_.media-selector-button]:w-full [&_.media-selector-button]:justify-center w-full"
-                    buttonText="{{ __('Change Photo') }}"
-                    :showClearButton="false"
-                    :showNoSelection="true"
-                    :showPreviewCircular="true"
-                    emptyText="{{ $emptyText }}"
-                />
+                <!-- Media selector removed -->
             </div>
             {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_AVATAR, '') !!}
             @if($user)
@@ -78,14 +64,7 @@
         </div>
 
         {{-- Social Links Section - Only show in edit and profile modes --}}
-        @if(($isEdit || $isProfile) && $user)
-            <x-users.social-links 
-                :user="$user" 
-                :userMeta="$userMeta"
-                :showEdit="true"
-            />
-            {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_SOCIAL_LINKS, '') !!}
-        @endif
+        {{-- Composant x-users.social-links supprimé car fichier manquant --}}
     </div>
     @endif
 
@@ -141,23 +120,11 @@
 
             {{-- Password Fields --}}
             <div>
-                <x-inputs.password
-                    name="password"
-                    label="{{ $passwordLabel }}"
-                    placeholder="{{ __('Enter Password') }}"
-                    :required="$isCreate"
-                    :autogenerate="true"
-                />
+                <!-- Password input removed -->
             </div>
             {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_PASSWORD, '', $user) !!}
             <div>
-                <x-inputs.password
-                    name="password_confirmation"
-                    label="{{ $confirmPasswordLabel }}"
-                    placeholder="{{ __('Confirm Password') }}"
-                    :required="$isCreate"
-                    :autogenerate="true"
-                />
+                <!-- Password confirmation input removed -->
             </div>
             {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_CONFIRM_PASSWORD, '', $user) !!}
 
@@ -171,17 +138,7 @@
                 </div>
                 @if($showRoles)
                 <div>
-                    <x-inputs.combobox
-                        name="roles[]"
-                        label="{{ $rolesLabel }}"
-                        placeholder="{{ __('Select Roles') }}"
-                        :options="collect($roles)
-                            ->map(fn($name, $id) => ['value' => $name, 'label' => ucfirst($name)])
-                            ->values()
-                            ->toArray()"
-                        :selected="old('roles', $user?->roles?->pluck('name')->toArray() ?? [])"
-                        :multiple="true"
-                        :searchable="true" />
+                    <!-- Roles combobox removed -->
                 </div>
                 {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_ROLES, '', $user) !!}
                 @endif
@@ -214,38 +171,18 @@
                 {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_BIO, '', $user) !!}
 
                 @if(!empty($timezones))
-                    <div>
-                        <x-searchable-select
-                            name="timezone"
-                            label="{{ __('Timezone') }}"
-                            placeholder="{{ __('Select Timezone') }}"
-                            searchPlaceholder="{{ __('Search timezones...') }}"
-                            :options="$timezones"
-                            :selected="old('timezone', $userMeta['timezone'] ?? '')"
-                            position="top"
-                        />
-                    </div>
+                    {{-- Composant x-searchable-select supprimé car fichier manquant --}}
                     {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_TIMEZONE, '', $user) !!}
                 @endif
 
                 @if(!empty($locales))
-                    <div>
-                        <x-searchable-select
-                            name="locale"
-                            label="{{ __('Locale') }}"
-                            placeholder="{{ __('Select Locale') }}"
-                            searchPlaceholder="{{ __('Search locales...') }}"
-                            :options="$locales"
-                            :selected="old('locale', $userMeta['locale'] ?? '')"
-                            position="top"
-                        />
-                    </div>
+                    {{-- Composant x-searchable-select supprimé car fichier manquant --}}
                     {!! Hook::applyFilters(UserFilterHook::USER_FORM_AFTER_LOCALE, '', $user) !!}
                 @endif
             @endif
 
             <div class="col-span-2 flex mt-4">
-                <x-buttons.submit-buttons cancelUrl="{{ $cancelUrl }}" />
+                <!-- Submit buttons removed -->
             </div>
         </div>
     </div>

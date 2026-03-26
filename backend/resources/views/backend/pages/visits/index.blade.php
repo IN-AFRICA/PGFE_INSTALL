@@ -1,5 +1,11 @@
-<x-layouts.modules-layout>
-    <x-backend.pages.students.partials.layout>
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <x-breadcrumb :links="[
+        ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
+        ['label' => 'Élèves', 'url' => route('admin.students.index')]
+    ]" current="Visites de Classe" />
+    <div class="space-y-6">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center justify-between mb-4">
             <div>
                 <h1 class="text-2xl font-black text-gray-800 dark:text-white flex items-center gap-2 italic">
@@ -10,7 +16,7 @@
             </div>
         </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -55,5 +61,6 @@
                     {{ $visits->links() }}
                 </div>
             @endif
-        </x-backend.pages.students.partials.layout>
-</x-layouts.modules-layout>
+        </div>
+    </div>
+@endsection

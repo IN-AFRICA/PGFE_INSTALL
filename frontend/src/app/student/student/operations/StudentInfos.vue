@@ -630,7 +630,8 @@ function resolveParentName(id?: string | number): string | undefined {
   if (!id) return undefined
   const list = parentsData?.value || []
   const found = list.find((p: any) => String(p.id) === String(id))
-  return found?.name
+  if (!found) return undefined
+  return [found.name, found.lastname, found.firstname].filter(Boolean).join(' ')
 }
 
 function resolveCountryName(id?: string | number): string | undefined {
@@ -754,18 +755,26 @@ const photoSrc = computed(() => {
   let raw: string | undefined = s.image || s.image_url || s.photo || s.avatar || s.picture
   if (!raw || typeof raw !== 'string') return undefined
   const lower = raw.toLowerCase()
-  // base64 or absolute
-  if (
-    lower.startsWith('data:image') ||
-    lower.startsWith('http://') ||
-    lower.startsWith('https://')
-  ) {
-    return raw
-  }
+
+  // Déjà un data URI complet
+  if (lower.startsWith('data:image')) return raw
+
+  // URL absolue
+  if (lower.startsWith('http://') || lower.startsWith('https://')) return raw
   if (raw.startsWith('//')) return `https:${raw}`
-  if (raw.startsWith('/')) return `${SANCTUM_BASE_URL}${raw}`
-  if (raw.includes('storage')) return `${SANCTUM_BASE_URL}/${raw.replace(/^\/?/, '')}`
-  return `${BASE_URL}/${raw.replace(/^\/?/, '')}`
+
+  // Base64 brut (sans préfixe data:) — détection: uniquement des chars base64 et longueur > 200
+  const isBase64 = raw.length > 200 && /^[A-Za-z0-9+/=]+$/.test(raw.trim())
+  if (isBase64) return `data:image/jpeg;base64,${raw}`
+
+  // Path déjà préfixé /storage/
+  if (raw.startsWith('/storage/')) return `${SANCTUM_BASE_URL.replace(/\/$/, '')}${raw}`
+
+  // Path absolu depuis la racine
+  if (raw.startsWith('/')) return `${SANCTUM_BASE_URL.replace(/\/$/, '')}${raw}`
+
+  // Path relatif type "students/xxx.jpeg" → storage symlink Laravel
+  return `${SANCTUM_BASE_URL.replace(/\/$/, '')}/storage/${raw}`
 })
 
 // Compléments scolaires (filière, cycle, personnel)

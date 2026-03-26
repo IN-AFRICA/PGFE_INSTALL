@@ -1,4 +1,6 @@
-<x-layouts.modules-layout :breadcrumbs="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Activités scolaires', 'url' => route('admin.activities.index')], ['label' => 'Nouvelle activité', 'url' => '#']]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
     <div class="max-w-3xl mx-auto space-y-8">
         <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800">
             <div class="flex items-center gap-4">
@@ -67,4 +69,4 @@
             </form>
         </div>
     </div>
-</x-layouts.modules-layout>
+@endsection

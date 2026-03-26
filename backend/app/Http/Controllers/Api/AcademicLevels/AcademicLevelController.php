@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\AcademicLevels;
@@ -19,30 +20,29 @@ final class AcademicLevelController extends Controller
      */
     public function export(Request $request)
     {
-        $fileName = 'academic_levels_' . now()->format('Ymd_His') . '.xlsx';
+        $fileName = 'academic_levels_'.now()->format('Ymd_His').'.xlsx';
+
         return Excel::download(new AcademicLevelsExport(), $fileName);
     }
+
     public function index(Request $request): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        $query = AcademicLevel::with(['cycle', 'classrooms'])->latest();
+        $query = AcademicLevel::with([
+            'cycle.filiaire',
+            'classrooms',
+        ])->latest();
 
-        // Le scope global ScopeBySchool filtre déjà par école via cycle.filiaire.school_id
-
-        // Nouveau: filtre par cycle
         if ($request->filled('cycle_id')) {
             $query->where('cycle_id', (int) $request->input('cycle_id'));
         }
 
-        // Recherche filtrante sur le nom du niveau académique et du cycle
         if ($request->filled('search')) {
             $search = mb_strtolower(mb_trim($request->input('search')));
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                  ->orWhereHas('cycle', function ($q2) use ($search) {
-                      $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
-                  });
+                    ->orWhereHas('cycle', function ($q2) use ($search) {
+                        $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+                    });
             });
         }
 
@@ -59,7 +59,7 @@ final class AcademicLevelController extends Controller
         $academicLevel = AcademicLevel::create($request->validated());
 
         return response()->json([
-            'data' => $academicLevel->load('cycle'),
+            'data' => $academicLevel->load('cycle.filiaire'),
             'message' => 'Niveau académique créé avec succès',
         ], 201);
     }
@@ -86,7 +86,7 @@ final class AcademicLevelController extends Controller
         $academicLevel->update($request->validated());
 
         return response()->json([
-            'data' => $academicLevel->fresh('cycle'),
+            'data' => $academicLevel->fresh('cycle.filiaire'),
             'message' => 'Niveau académique mis à jour avec succès',
         ]);
     }

@@ -20,6 +20,10 @@ import "./components/image-resize";
 import SlugGenerator from "./components/slug-generator";
 import * as Popper from '@popperjs/core';
 
+window.Alpine = Alpine;
+Alpine.plugin(focus);
+Alpine.start();
+
 // Make Popper available globally with the correct structure
 window.Popper = Popper;
 
@@ -86,9 +90,6 @@ Alpine.data('advancedFields', (initialMeta = {}) => {
     };
 });
 
-// Alpine plugins.
-Alpine.plugin(focus);
-window.Alpine = Alpine;
 
 // Global drawers.
 window.openDrawer = function (drawerId) {

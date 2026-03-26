@@ -542,7 +542,7 @@ const deleteSelectedPayments = async () => {
   if (selectedPayments.value.length === 0) {
     showCustomToast({
       message: 'Aucun paiement sélectionné',
-      type: 'warning',
+      type: 'error',
     })
     return
   }

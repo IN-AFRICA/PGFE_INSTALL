@@ -1,6 +1,7 @@
 import api from '@/services/api'
 import { API_ROUTES } from '@/utils/constants/api_route'
 import { defineStore } from 'pinia'
+import { rolesPermissions } from '@/data/rolesPermissions'
 
 interface User {
   id: number
@@ -54,12 +55,12 @@ export const useAuthStore = defineStore('auth', {
     userSchoolId: (state) => state.user?.school_id ?? null,
     // RBAC Getters
     can: (state) => (permission: string) => {
-      // Super admin bypass or explicit permission check
-      return (
-        state.roles.includes('super-admin') ||
-        state.roles.includes('admin') ||
-        state.permissions.includes(permission)
-      )
+      // Log des rôles de l'utilisateur connecté
+      console.log('[AUTH] Rôles utilisateur:', state.roles)
+      // Vérifie dans les permissions de l'utilisateur
+      if (state.permissions.includes(permission)) return true
+      // Vérifie dans les permissions des rôles
+      return state.roles.some(role => rolesPermissions[role]?.includes(permission))
     },
     hasRole: (state) => (role: string) => state.roles.includes(role),
   },

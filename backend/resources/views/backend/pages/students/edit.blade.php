@@ -1,8 +1,10 @@
-<x-layouts.modules-layout :breadcrumbs="[
-    ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
-    ['label' => 'Élèves', 'url' => route('admin.students.index')],
-    ['label' => 'Détail élève', 'url' => '#'],
-]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <x-breadcrumb :links="[
+        ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
+        ['label' => 'Élèves', 'url' => route('admin.students.index')]
+    ]" current="Fiche Élève" />
     <div class="space-y-6">
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
@@ -436,4 +438,4 @@
             </div>
         </div>
     </div>
-</x-layouts.modules-layout>
+@endsection

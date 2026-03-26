@@ -1,5 +1,6 @@
 @extends('backend.layouts.app')
 @section('admin-content')
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Infrastructures', 'url' => route('admin.infrastructures.index')]]" current="Créer une infrastructure" />
     <div class="max-w-xl mx-7">
         <h1 class="text-lg font-semibold mb-4">Créer une infrastructure</h1>
         <form method="POST" action="{{ route('admin.infrastructures.store') }}">

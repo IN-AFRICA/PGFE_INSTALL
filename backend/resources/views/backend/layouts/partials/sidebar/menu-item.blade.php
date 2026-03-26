@@ -1,67 +1,78 @@
 @php
     /** @var \App\Services\MenuService\AdminMenuItem $item */
+    $hasChildren = ! empty($item->children);
+    $isActive = $item->active;
+    $nested = $nested ?? false;
 @endphp
 
-@if (isset($item->htmlData))
-    <div class="menu-item-html" style="{!! $item->itemStyles !!}">
-        {!! $item->htmlData !!}
-    </div>
-@elseif (!empty($item->children))
+@if($hasChildren)
     @php
-        $submenuId = $item->id ?? \Str::slug($item->label) . '-submenu';
-        $isActive = $item->active ? 'menu-item-active' : '';
-        $showSubmenu = app(\App\Services\MenuService\AdminMenuService::class)->shouldExpandSubmenu($item);
-        $chevronIcon = $showSubmenu ? 'lucide:chevron-up' : 'lucide:chevron-right';
-        $firstChildRoute = !empty($item->children) && isset($item->children[0]->route) ? $item->children[0]->route : null;
-        
-        // Check if current URL matches any child route to prevent unnecessary redirects.
-        $currentUrl = request()->url();
-        $isOnChildPage = false;
-        if (!empty($item->children)) {
-            foreach ($item->children as $child) {
-                if (isset($child->route) && $child->route === $currentUrl) {
-                    $isOnChildPage = true;
-                    break;
-                }
-            }
-        }
+        $menuService = app(\App\Services\MenuService\AdminMenuService::class);
+        $childBranchActive = $menuService->shouldExpandSubmenu($item);
+        $parentLooksActive = $isActive || $childBranchActive;
     @endphp
-
-    <li class="menu-item-{{ $item->id }}" style="{!! $item->itemStyles !!}">
-        <button :style="`color: ${textColor}`" class="menu-item group w-full text-left {{ $isActive }}" type="button" 
-                onclick="handleMenuItemClick(this, '{{ $submenuId }}', '{{ $firstChildRoute }}', {{ $showSubmenu ? 'true' : 'false' }}, {{ $isOnChildPage ? 'true' : 'false' }})">
-            @if (!empty($item->icon))
-                <iconify-icon icon="{{ $item->icon }}" class="menu-item-icon" width="18" height="18"></iconify-icon>
-            @elseif (!empty($item->iconClass))
-                <iconify-icon icon="lucide:circle" class="menu-item-icon" width="18" height="18"></iconify-icon>
-            @endif
-            <span class="menu-item-text">{!! $item->label !!}</span>
-            <iconify-icon icon="{{ $chevronIcon }}" class="menu-item-arrow transition-all duration-300 w-4 h-4" style="transform: {{ $showSubmenu ? 'rotate(180deg)' : 'rotate(0deg)' }}"></iconify-icon>
-        </button>
-        <ul id="{{ $submenuId }}" class="submenu space-y-1 mt-1 overflow-hidden {{ $showSubmenu ? 'submenu-expanded' : 'submenu-collapsed' }}">
-            @foreach($item->children as $child)
-                @include('backend.layouts.partials.sidebar.menu-item', ['item' => $child])
+    <li class="block" x-data="{ open: {{ $childBranchActive ? 'true' : 'false' }} }">
+        <div
+            class="flex overflow-hidden rounded-xl ring-1 transition-colors duration-200 {{ $parentLooksActive ? 'bg-zinc-900/5 ring-zinc-200' : 'ring-transparent hover:ring-zinc-200/80' }}">
+            <a href="{{ $item->route ?? '#' }}"
+                @if($item->target) target="{{ $item->target }}" rel="noopener noreferrer" @endif
+                class="admin-sidebar-link min-w-0 flex-1 !rounded-r-none {{ $parentLooksActive ? 'admin-sidebar-link-active' : 'admin-sidebar-link-idle' }}">
+                <div class="flex min-w-0 flex-1 items-center gap-3">
+                    @if($item->icon)
+                        <iconify-icon icon="{{ $item->icon }}"
+                            class="{{ $parentLooksActive ? 'text-zinc-300' : 'text-zinc-500' }} shrink-0"
+                            width="18"></iconify-icon>
+                    @endif
+                    <span class="truncate">{{ $item->label }}</span>
+                </div>
+            </a>
+            <button type="button" @click.prevent="open = !open"
+                :aria-expanded="open"
+                class="admin-sidebar-link flex shrink-0 items-center !rounded-l-none border-l px-2.5 !py-2.5 {{ $parentLooksActive ? 'admin-sidebar-link-active border-zinc-600/30' : 'admin-sidebar-link-idle border-zinc-200/60' }}">
+                <span class="inline-flex transition-transform duration-200" :class="open ? 'rotate-180' : ''">
+                    <iconify-icon icon="lucide:chevron-down" class="text-current opacity-80" width="16"></iconify-icon>
+                </span>
+            </button>
+        </div>
+        <ul x-show="open" x-cloak
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0 -translate-y-0.5"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            class="ml-1 mt-1.5 space-y-0.5 border-l border-zinc-200/90 pl-3">
+            @foreach ($item->children as $child)
+                @include('backend.layouts.partials.sidebar.menu-item', ['item' => $child, 'nested' => true])
             @endforeach
         </ul>
     </li>
 @else
-    @php
-        $isActive = $item->active ? 'menu-item-active' : 'menu-item-inactive';
-        $target = !empty($item->target) ? ' target="' . e($item->target) . '"' : '';
-    @endphp
-
-    <li class="menu-item-{{ $item->id }}" style="{!! $item->itemStyles !!}">
-        <a :style="`color: ${textColor}`" href="{{ $item->route ?? '#' }}" class="menu-item group {{ $isActive }}" {!! $target !!}>
-            @if (!empty($item->icon))
-                <iconify-icon icon="{{ $item->icon }}" class="menu-item-icon" width="18" height="18"></iconify-icon>
-            @elseif (!empty($item->iconClass))
-                <iconify-icon icon="lucide:circle" class="menu-item-icon" width="18" height="18"></iconify-icon>
+    <li class="block">
+        <a href="{{ $item->route ?? '#' }}"
+            @if($item->target) target="{{ $item->target }}" rel="noopener noreferrer" @endif
+            @class([
+                'group',
+                $nested ? 'admin-sidebar-sublink' : 'admin-sidebar-link',
+                $nested
+                    ? ($isActive ? 'admin-sidebar-sublink-active' : 'admin-sidebar-sublink-idle')
+                    : ($isActive ? 'admin-sidebar-link-active' : 'admin-sidebar-link-idle'),
+            ])>
+            <div class="flex min-w-0 flex-1 items-center gap-3">
+                @if($item->icon)
+                    <iconify-icon icon="{{ $item->icon }}"
+                        @class([
+                            'shrink-0',
+                            $isActive
+                                ? ($nested ? 'text-zinc-800' : 'text-zinc-300')
+                                : 'text-zinc-500 group-hover:text-zinc-700',
+                        ])
+                        width="{{ $nested ? '16' : '18' }}"></iconify-icon>
+                @endif
+                <span class="truncate">{!! $item->label !!}</span>
+            </div>
+            @if (! $nested)
+                <iconify-icon icon="lucide:chevron-right"
+                    class="shrink-0 text-zinc-400 opacity-0 transition-opacity group-hover:opacity-40"
+                    width="14"></iconify-icon>
             @endif
-            <span class="menu-item-text">{!! $item->label !!}</span>
         </a>
     </li>
-@endif
-
-@if(isset($item->id))
-    {!! Hook::applyFilters(AdminFilterHook::SIDEBAR_MENU_ITEM_AFTER->value . strtolower($item->id), '') !!}
 @endif

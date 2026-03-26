@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="$breadcrumbs">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: $breadcrumbs -->
+        </nav>
+    </div>
+
     <x-slot name="breadcrumbsData">
         <x-breadcrumbs :breadcrumbs="$breadcrumbs">
             <x-slot name="title_after">
@@ -20,4 +28,4 @@
     @livewire('datatable.post-datatable', ['postType' => $postType ,'lazy' => true])
 
     {!! Hook::applyFilters(PostFilterHook::POSTS_AFTER_TABLE, '', $postType) !!}
-</x-layouts.backend-layout>
+@endsection

@@ -1,4 +1,9 @@
-<x-layouts.backend-layout :breadcrumbs="$breadcrumbs">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Rôles', 'url' => route('admin.roles.index')]]" current="Éditer un Rôle" />
+
     {!! Hook::ApplyFilters(RoleFilterHook::ROLE_EDIT_BEFORE_FORM, '') !!}
 
     <form
@@ -12,4 +17,4 @@
     </form>
 
     {!! Hook::ApplyFilters(RoleFilterHook::ROLE_EDIT_AFTER_FORM, '') !!}
-</x-layouts.backend-layout>
+@endsection

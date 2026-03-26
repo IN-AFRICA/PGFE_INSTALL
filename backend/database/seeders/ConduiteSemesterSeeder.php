@@ -18,8 +18,8 @@ final class ConduiteSemesterSeeder extends Seeder
         $semesters = Semester::pluck('id', 'name');
 
         foreach (School::all() as $school) {
-            $schoolYear = SchoolYear::where('school_id', $school->id)->where('is_active', true)->first()
-                ?? SchoolYear::create(['school_id' => $school->id, 'name' => now()->year.'-'.(now()->year + 1), 'is_active' => true]);
+            $schoolYear = SchoolYear::where('is_active', true)->first()
+                ?? SchoolYear::create(['name' => now()->year.'-'.(now()->year + 1), 'is_active' => true]);
 
             $conduite = Conduite::firstOrCreate(['school_id' => $school->id, 'label' => 'Conduite Générale']);
 

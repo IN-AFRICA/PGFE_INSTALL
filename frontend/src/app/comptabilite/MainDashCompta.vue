@@ -190,7 +190,7 @@ const {
   data: schoolYearsRaw,
   loading: loadingYears,
   fetchData: fetchSchoolYears,
-} = useGetApi<any>(API_ROUTES.GET_SHOOL_YEARS)
+} = useGetApi<any>(API_ROUTES.GET_SCHOOL_YEARS)
 const schoolYears = computed(() => {
   const v: any = schoolYearsRaw?.value
   let list: any[] = []

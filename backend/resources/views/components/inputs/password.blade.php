@@ -1,66 +1,29 @@
 @props([
-    'name',
-    'label' => '',
-    'placeholder' => '',
-    'value' => '',
+    'name' => 'password',
+    'label' => null,
+    'placeholder' => null,
     'required' => false,
-    'class' => '',
-    'id' => null,
-    'autocomplete' => 'new-password',
-    'autogenerate' => false,
-    'showTooltip' => __('Show password'),
 ])
 
-@php
-    $inputId = $id ?? $name;
-@endphp
-
-<div class="w-full flex flex-col gap-1">
+<div class="space-y-2" x-data="{ show: false }">
     @if($label)
-        <label for="{{ $inputId }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $label }}</label>
+        <label for="{{ $name }}" class="block text-sm font-semibold text-gray-700">{{ $label }} @if($required)<span class="text-red-500">*</span>@endif</label>
     @endif
-
-    <div
-        x-data="{
-            showPassword: false,
-            password: '{{ $value }}',
-            autogenerate() {
-                // 16-char random password: upper, lower, digit, symbol
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
-                let pass = '';
-                for (let i = 0; i < 16; i++) {
-                    pass += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                this.password = pass;
-            }
-        }"
-        class="relative"
-    >
+    <div class="relative">
         <input
-            :type="showPassword ? 'text' : 'password'"
+            id="{{ $name }}"
             name="{{ $name }}"
-            id="{{ $inputId }}"
-            x-model="password"
+            :type="show ? 'text' : 'password'"
+            @class([
+                'w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
+            ])
             placeholder="{{ $placeholder }}"
-            @if($required) required @endif
-            class="form-control {{ $class }}"
-            autocomplete="{{ $autocomplete }}"
+            {{ $required ? 'required' : '' }}
+            {{ $attributes->except(['class']) }}
         />
-
-        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2 z-30">
-            <x-tooltip :title="$showTooltip">
-                <button type="button" @click="showPassword = !showPassword" class="text-gray-500 cursor-pointer dark:text-gray-300 flex items-center justify-center w-6 h-6">
-                    <iconify-icon x-show="!showPassword" icon="lucide:eye" width="20" height="20" class="text-[#98A2B3]"></iconify-icon>
-                    <iconify-icon x-show="showPassword" icon="lucide:eye-off" width="20" height="20" class="text-[#98A2B3]" style="display: none;"></iconify-icon>
-                </button>
-            </x-tooltip>
-            @if($autogenerate)
-            <x-tooltip title="{{ __('Autogenerate password') }}">
-                <button type="button" @click="autogenerate" class="text-gray-500 cursor-pointer dark:text-gray-300 flex items-center justify-center w-6 h-6">
-                    <iconify-icon icon="lucide:wand-sparkles" width="20" height="20" class="text-[#98A2B3]"></iconify-icon>
-                </button>
-            </x-tooltip>
-            @endif
-        </div>
+        <button type="button" @click="show = !show" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
+            <iconify-icon :icon="show ? 'lucide:eye-off' : 'lucide:eye'" class="text-lg"></iconify-icon>
+        </button>
     </div>
 </div>
+

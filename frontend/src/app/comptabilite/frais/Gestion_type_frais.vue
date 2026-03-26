@@ -241,7 +241,7 @@ const deleteSelectedFeeTypes = async () => {
   if (selectedFeeTypes.value.length === 0) {
     showCustomToast({
       message: 'Aucun type de frais sélectionné',
-      type: 'warning',
+      type: 'error',
     })
     return
   }
@@ -282,7 +282,7 @@ const deleteSelectedFeeTypes = async () => {
       console.error('Erreurs de suppression:', errors)
       showCustomToast({
         message: `${successCount} supprimé(s), ${errorCount} échec(s). Voir la console pour les détails.`,
-        type: 'warning',
+        type: 'error',
       })
     } else {
       showCustomToast({

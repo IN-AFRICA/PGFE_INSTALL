@@ -1,5 +1,6 @@
 @extends('backend.layouts.app')
 @section('admin-content')
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Stock', 'url' => route('admin.stock-articles.index')]]" current="Détail de l'article" />
     <div class="max-w-xl mx-7">
         <h1 class="text-lg font-semibold mb-4">Détail de l'article du stock</h1>
         <div class="mb-3">

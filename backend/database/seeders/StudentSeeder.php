@@ -24,7 +24,7 @@ final class StudentSeeder extends Seeder
         }
 
         // Récupération robuste de l'année scolaire active
-        $activeYear = method_exists(SchoolYear::class, 'active') && SchoolYear::active() ? SchoolYear::active()->first() : SchoolYear::query()->first();
+        $activeYear = SchoolYear::active() ?? SchoolYear::query()->first();
         if (! $activeYear) {
             return; // Pas d'année scolaire, pas d'élève
         }

@@ -90,12 +90,8 @@ const schemaForm = z.object({
   birth_date: z.string({ required_error: 'Veuillez saisir la date de naissance' }),
   birth_place: z.string({ required_error: 'Veuillez saisir le lieu de naissance' }).min(2).max(100),
   identity_card: z.string().min(2).max(100).optional(),
-  phone_number: z
-    .string({ required_error: 'Veuillez saisir le numéro de téléphone' })
-    .min(2)
-    .max(30)
-    .nullable(),
-  email: z.string({ required_error: "Veuillez saisir l'email" }).email('Email invalide').nullable(),
+  phone_number: z.string().min(2).max(30).nullable().optional(),
+  email: z.string().email('Email invalide').nullable().optional(),
   image: z.string().optional(),
   note: z.string().optional(),
   // Champs d'inscription (optionnels) - à confirmer côté backend
@@ -254,7 +250,11 @@ const fetchStudentById = async () => {
     }
 
     if (student.image) {
-      previewUrl.value = student.image
+      // Si c'est un chemin relatif, construire l'URL complète avec le storage backend
+      const imgUrl = student.image.startsWith('http') || student.image.startsWith('data:')
+        ? student.image
+        : `https://pgfe-back.inafrica.tech/storage/${student.image}`
+      previewUrl.value = imgUrl
       image.value = student.image
     }
 
@@ -552,6 +552,24 @@ watch(parents_id_3, (val) => {
     email_3.value = ''
   }
 })
+
+// Auto-fill téléphone/email depuis le parent 1 sélectionné
+function handleParent1Selected(parent: any) {
+  if (parent?.phone_number) phone_number.value = parent.phone_number
+  if (parent?.email) email.value = parent.email
+}
+
+// Auto-fill téléphone/email depuis le parent 2 sélectionné
+function handleParent2Selected(parent: any) {
+  if (parent?.phone_number) phone_number_2.value = parent.phone_number
+  if (parent?.email) email_2.value = parent.email
+}
+
+// Auto-fill téléphone/email depuis le parent 3 sélectionné
+function handleParent3Selected(parent: any) {
+  if (parent?.phone_number) phone_number_3.value = parent.phone_number
+  if (parent?.email) email_3.value = parent.email
+}
 </script>
 <template>
   <DashFormLayout
@@ -724,7 +742,7 @@ watch(parents_id_3, (val) => {
       >
         <!-- Parent 1 (requis) -->
         <InputWrapper :error="parentIdError">
-          <ListParents v-model="parents_id" />
+          <ListParents v-model="parents_id" @parent-selected="handleParent1Selected" />
           <span v-if="parentIdError" class="text-xs text-red-500">{{ parentIdError }}</span>
         </InputWrapper>
 
@@ -742,7 +760,7 @@ watch(parents_id_3, (val) => {
 
         <!-- Parent 2 (optionnel) - s'affiche si Parent 1 est renseigné -->
         <InputWrapper v-if="parents_id" class="relative">
-          <ListParents v-model="parents_id_2" :exclude-ids="excludeForParent2" />
+          <ListParents v-model="parents_id_2" :exclude-ids="excludeForParent2" @parent-selected="handleParent2Selected" />
           <button
             v-if="parents_id_2"
             type="button"
@@ -763,7 +781,7 @@ watch(parents_id_3, (val) => {
 
         <!-- Parent 3 (optionnel) - s'affiche si Parent 2 est renseigné -->
         <InputWrapper v-if="parents_id_2" class="relative">
-          <ListParents v-model="parents_id_3" :exclude-ids="excludeForParent3" />
+          <ListParents v-model="parents_id_3" :exclude-ids="excludeForParent3" @parent-selected="handleParent3Selected" />
           <button
             v-if="parents_id_3"
             type="button"

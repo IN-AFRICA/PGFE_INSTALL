@@ -1,64 +1,30 @@
-@php
-    $breadcrumbs = $breadcrumbs ?? [];
-@endphp
-
 @props([
-    'disabled' => $breadcrumbs['disabled'] ?? false,
-    'title' => $breadcrumbs['title'] ?? '',
-    'items' => $breadcrumbs['items'] ?? [],
-    'show_home' => $breadcrumbs['show_home'] ?? true,
-    'show_current' => $breadcrumbs['show_current'] ?? true,
-    'show_messages_after' => $breadcrumbs['show_messages_after'] ?? true,
+    'breadcrumbs' => [],
 ])
 
-@if (!$disabled)
-<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-    @if($title)
-    <h2 class="text-xl font-semibold text-gray-700 dark:text-white/90 flex justify-center items-center gap-2">
-        {!! $title_before ?? '' !!}
-        {!! __($title) !!}
-        {!! $title_after ?? '' !!}
-    </h2>
-    @endif
-
-    @if(count($items) || ($show_home || $show_current))
-    <nav>
-        <ol class="flex items-center gap-1.5 pe-2">
-            @if($show_home)
-                <li>
-                    <a
-                        class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
-                        href="{{ route('admin.dashboard') }}"
-                    >
-                        {{ __("Home") }}
-                        <iconify-icon icon="lucide:chevron-right"></iconify-icon>
-                    </a>
-                </li>
+<div class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+    <nav class="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs font-semibold text-zinc-500"
+        aria-label="{{ __('Fil d\'Ariane') }}">
+        <a href="{{ route('admin.dashboard') }}"
+            class="rounded-md px-2 py-1 transition-colors hover:bg-zinc-100 hover:text-zinc-900">
+            {{ __('Dashboard') }}
+        </a>
+        @foreach ($breadcrumbs as $crumb)
+            <span class="px-0.5 text-zinc-300">/</span>
+            @php
+                $label = $crumb['label'] ?? $crumb['title'] ?? '';
+                $url = $crumb['url'] ?? null;
+            @endphp
+            @if ($url && $url !== '#')
+                <a href="{{ $url }}"
+                    class="rounded-md px-2 py-1 transition-colors hover:bg-zinc-100 hover:text-zinc-900">{{ $label }}</a>
+            @else
+                <span
+                    class="rounded-md bg-zinc-100 px-2 py-1 font-bold text-zinc-900">{{ $label }}</span>
             @endif
-
-            @foreach($items as $item)
-                <li>
-                    <a
-                        class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
-                        href="{{ $item['url'] }}"
-                    >
-                        {{ __($item['label']) }}
-                        <iconify-icon icon="lucide:chevron-right"></iconify-icon>
-                    </a>
-                </li>
-            @endforeach
-
-            @if($show_current)
-                <li class="text-sm text-gray-700 dark:text-white/90">
-                    {{ __($title) }}
-                </li>
-            @endif
-        </ol>
+        @endforeach
     </nav>
-    @endif
+    @isset($title_after)
+        <div class="flex flex-wrap items-center gap-2">{{ $title_after }}</div>
+    @endisset
 </div>
-@endif
-
-@if($show_messages_after)
-    <x-messages />
-@endif

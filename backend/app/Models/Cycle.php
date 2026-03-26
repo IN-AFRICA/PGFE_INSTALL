@@ -14,16 +14,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Cycle extends Model
 {
-    use HasUuid;
     use AutoAssignsSchoolContext;
-    use HasFactory; // auto-assignation du school_id
+    use HasFactory;
+    use HasUuid; // auto-assignation du school_id
     use ScopeBySchool; // filtrage multi-école
 
     protected $guarded = [];
-    protected $fillable = [
-        'name',
-        'filiaire_id',
-    ];
 
     public function filiaire(): BelongsTo
     {

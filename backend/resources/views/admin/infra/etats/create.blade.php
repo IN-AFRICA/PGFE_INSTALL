@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="[['title' => 'États', 'url' => route('admin.infra-etats.index')], ['title' => 'Signalement']]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: [['title' => 'États', 'url' => route('admin.infra-etats.index')], ['title' => 'Signalement']] -->
+        </nav>
+    </div>
+
     <div class="max-w-2xl mx-auto space-y-10">
         <!-- Premium Header -->
         <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800">
@@ -53,4 +61,4 @@
             </form>
         </div>
     </div>
-</x-layouts.backend-layout>
+@endsection

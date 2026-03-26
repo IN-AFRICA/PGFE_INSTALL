@@ -1,104 +1,111 @@
-<x-layouts.modules-layout>
-    <x-backend.pages.students.partials.layout>
-        <div class="space-y-6">
-            @include('backend.pages.students.partials.operations-nav')
+@extends('backend.layouts.app')
 
-            <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div class="p-8">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                        {{-- Search & Grouped Actions matches Image 1 --}}
-                        <div class="flex items-center gap-4 flex-grow max-w-xl">
-                            <div class="relative flex-grow">
-                                <iconify-icon icon="lucide:search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" width="18"></iconify-icon>
-                                <input type="text" placeholder="Recherche..." class="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-100 bg-gray-50/50 text-sm focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none">
-                            </div>
-                            <button class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-gray-100 bg-white text-[11px] font-black text-gray-400 uppercase tracking-widest hover:bg-gray-50 transition-all">
-                                Filtre <iconify-icon icon="lucide:filter" width="14"></iconify-icon>
-                            </button>
-                        </div>
+@section('admin-content')
+    <x-breadcrumb :links="[['label' => 'Dashboard', 'url' => route('admin.dashboard')]]" current="Gestion des Inscriptions" />
 
-                        <div class="flex items-center gap-3">
-                            <a href="{{ route('admin.registrations.create') }}" class="inline-flex items-center gap-2 rounded-2xl bg-[#0ea5e9] px-6 py-3.5 text-[11px] font-black text-white hover:bg-sky-600 shadow-lg shadow-sky-500/20 transition-all active:scale-95 uppercase tracking-widest">
-                                <iconify-icon icon="lucide:plus" width="16" height="16" />
-                                Nouveau Eleve
-                            </a>
-                            <div class="relative">
-                                <button class="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl border border-gray-100 bg-white text-[11px] font-black text-gray-400 uppercase tracking-widest hover:bg-gray-50 transition-all">
-                                    Exporter <iconify-icon icon="lucide:chevron-down" width="14"></iconify-icon>
-                                </button>
-                            </div>
+    <div class="space-y-6 animate-in fade-in duration-500">
+
+        <div class="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-3 flex-grow max-w-2xl">
+                        <div class="relative flex-grow group">
+                            <iconify-icon icon="lucide:search" class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 transition-colors" width="16"></iconify-icon>
+                            <input type="text" placeholder="Rechercher un élève, matricule..."
+                                class="w-full h-10 pl-10 pr-4 rounded-md border border-zinc-200 bg-zinc-50/50 text-xs font-medium focus:ring-1 focus:ring-zinc-950 outline-none transition-all">
                         </div>
+                        <button class="inline-flex items-center gap-2 h-10 px-4 rounded-md border border-zinc-200 bg-white text-[10px] font-bold text-zinc-500 uppercase tracking-widest hover:bg-zinc-50 transition-all">
+                            Filtres <iconify-icon icon="lucide:filter" width="14"></iconify-icon>
+                        </button>
                     </div>
 
-                    <div class="overflow-x-auto -mx-8">
-                        <table class="min-w-full text-[11px] font-medium">
-                            <thead class="border-y border-gray-50 text-gray-400 uppercase tracking-[0.05em] font-black">
-                                <tr>
-                                    <th class="px-8 py-4 text-left w-10">
-                                        <input type="checkbox" class="rounded-lg border-gray-100 text-sky-500 focus:ring-sky-500/20">
-                                    </th>
-                                    <th class="px-3 py-4 text-left">N°</th>
-                                    <th class="px-3 py-4 text-left">Matricule</th>
-                                    <th class="px-3 py-4 text-left">Nom</th>
-                                    <th class="px-3 py-4 text-left">Postnom</th>
-                                    <th class="px-3 py-4 text-left">Prénom</th>
-                                    <th class="px-3 py-4 text-left">Pays</th>
-                                    <th class="px-3 py-4 text-left">Sexe</th>
-                                    <th class="px-3 py-4 text-left">Classe</th>
-                                    <th class="px-3 py-4 text-left">Section</th>
-                                    <th class="px-3 py-4 text-left">Date de naissance</th>
-                                    <th class="px-3 py-4 text-right">Actions</th>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('admin.registrations.create') }}"
+                            class="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-zinc-900 text-[10px] font-bold text-white hover:bg-black transition-all shadow-sm uppercase tracking-widest">
+                            <iconify-icon icon="lucide:plus" width="14" />
+                            Nouvel Élève
+                        </a>
+                        <button class="inline-flex items-center gap-2 h-10 px-4 rounded-md border border-zinc-200 bg-white text-[10px] font-bold text-zinc-500 uppercase tracking-widest hover:bg-zinc-50 transition-all">
+                            Exporter <iconify-icon icon="lucide:download" width="14"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto -mx-6">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-zinc-50/50 border-y border-zinc-100">
+                                <th class="px-6 py-3 w-10 text-center">
+                                    <input type="checkbox" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
+                                </th>
+                                <th class="px-3 py-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-left">Matricule</th>
+                                <th class="px-3 py-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-left">Identité</th>
+                                <th class="px-3 py-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-left text-center">Sexe</th>
+                                <th class="px-3 py-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-left">Classe / Section</th>
+                                <th class="px-3 py-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-left">Naissance</th>
+                                <th class="px-6 py-3 text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100 text-[11px]">
+                            @forelse($registrations as $r)
+                                <tr class="hover:bg-zinc-50/50 transition-colors group">
+                                    <td class="px-6 py-4 text-center">
+                                        <input type="checkbox" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
+                                    </td>
+                                    <td class="px-3 py-4">
+                                        <span class="font-mono font-bold text-zinc-900 bg-zinc-100 px-1.5 py-0.5 rounded italic">{{ $r->student->matricule ?? '—' }}</span>
+                                    </td>
+                                    <td class="px-3 py-4">
+                                        <div class="flex flex-col leading-tight">
+                                            <span class="font-bold text-zinc-900 uppercase tracking-tight">{{ $r->student->lastname }} {{ $r->student->name }}</span>
+                                            <span class="text-zinc-400 text-[10px] font-medium">{{ $r->student->firstname }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 text-center">
+                                        <span class="px-2 py-0.5 rounded-full border border-zinc-200 text-zinc-500 font-bold uppercase text-[9px]">{{ $r->student->gender ?? '—' }}</span>
+                                    </td>
+                                    <td class="px-3 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-zinc-800 tracking-tight">{{ $r->classroom->name ?? '—' }}</span>
+                                            <span class="text-[10px] text-zinc-400 font-bold uppercase">{{ $r->student->section ?? '—' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 text-zinc-500 font-medium">
+                                        {{ $r->student->birth_date?->format('d/m/Y') ?? '—' }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <a href="{{ route('admin.registrations.edit', $r) }}"
+                                                class="h-8 w-8 rounded-md text-zinc-400 flex items-center justify-center hover:bg-zinc-100 hover:text-zinc-900 transition-all">
+                                                <iconify-icon icon="lucide:edit-3" width="14"></iconify-icon>
+                                            </a>
+                                            <form action="{{ route('admin.registrations.destroy', $r) }}" method="POST" onsubmit="return confirm('Supprimer cet élève ?')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="h-8 w-8 rounded-md text-zinc-300 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 transition-all">
+                                                    <iconify-icon icon="lucide:trash-2" width="14"></iconify-icon>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                @forelse($registrations as $index => $r)
-                                    <tr class="hover:bg-gray-50/50 transition-colors group">
-                                        <td class="px-8 py-4">
-                                            <input type="checkbox" class="rounded-lg border-gray-100 text-sky-500 focus:ring-sky-500/20">
-                                        </td>
-                                        <td class="px-3 py-4 text-gray-400">{{ $index + 1 }}</td>
-                                        <td class="px-3 py-4 font-black text-gray-600 uppercase">{{ $r->student->matricule ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-700 capitalize">{{ $r->student->lastname ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-700 capitalize">{{ $r->student->name ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-700 capitalize">{{ $r->student->firstname ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-500">{{ $r->student->country->name ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-500">{{ $r->student->gender ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-600 font-bold uppercase">{{ $r->classroom->name ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-500 capitalize">{{ $r->student->section ?? '—' }}</td>
-                                        <td class="px-3 py-4 text-gray-500">{{ $r->student->birth_date?->format('d/m/Y') ?? '—' }}</td>
-                                        <td class="px-8 py-4 text-right">
-                                            <div class="flex items-center justify-end gap-2">
-                                                <a href="{{ route('admin.registrations.edit', $r) }}" class="h-8 w-8 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-amber-100 hover:text-amber-600 transition-all">
-                                                    <iconify-icon icon="lucide:edit" width="14"></iconify-icon>
-                                                </a>
-                                                <form action="{{ route('admin.registrations.destroy', $r) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?')">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="h-8 w-8 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-rose-100 hover:text-rose-600 transition-all">
-                                                        <iconify-icon icon="lucide:trash-2" width="14"></iconify-icon>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="12" class="px-8 py-20 text-center">
-                                            <div class="flex flex-col items-center">
-                                                <iconify-icon icon="lucide:user-x" class="text-gray-100 mb-4" width="64"></iconify-icon>
-                                                <p class="text-gray-400 font-medium">Aucun élève trouvé.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-24 text-center">
+                                        <div class="flex flex-col items-center max-w-xs mx-auto">
+                                            <iconify-icon icon="lucide:user-x" class="text-zinc-100 mb-4" width="48"></iconify-icon>
+                                            <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Aucune inscription active</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div class="mt-8">
-                        {{ $registrations->links() }}
-                    </div>
+                <div class="mt-6 border-t border-zinc-100 pt-6">
+                    {{ $registrations->links() }}
                 </div>
             </div>
         </div>
-    </x-backend.pages.students.partials.layout>
-</x-layouts.modules-layout>
+    </div>
+@endsection

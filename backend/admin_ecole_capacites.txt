@@ -1,0 +1,50 @@
+# Capacités de l'Administrateur d'École (PGFE)
+
+L'administrateur d'école dispose des droits suivants dans la plateforme PGFE :
+
+## Gestion des personnels
+- Créer, modifier, supprimer les personnels académiques et administratifs de son école.
+- Associer un personnel à un utilisateur (création de compte utilisateur et attribution de rôle sur demande).
+- Gérer les niveaux académiques, fonctions, et affectations des personnels.
+
+## Gestion des élèves
+- Inscrire de nouveaux élèves.
+- Modifier les informations des élèves existants.
+- Gérer les inscriptions, réinscriptions, et radiations.
+- Accéder à la liste des élèves par classe, année, ou filière.
+
+## Gestion des classes et filières
+- Créer, modifier, supprimer les classes.
+- Gérer les filières et cycles d'enseignement.
+- Affecter les élèves et personnels aux classes.
+
+## Gestion des cours et emplois du temps
+- Créer, modifier, supprimer les cours.
+- Gérer les emplois du temps des classes et des enseignants.
+
+## Gestion des notes et évaluations
+- Saisir, modifier, valider les notes des élèves.
+- Générer les bulletins et relevés de notes.
+- Exporter les fiches de cotation.
+
+## Gestion administrative
+- Gérer les frais scolaires, paiements, et remises.
+- Suivre les dépenses et recettes de l'école.
+- Gérer les stocks et inventaires (matériel, fournitures, équipements).
+
+## Statistiques et rapports
+- Accéder aux statistiques sur les élèves, personnels, résultats scolaires, finances, etc.
+- Générer et exporter des rapports personnalisés.
+
+## Gestion des accès et sécurité
+- Gérer les utilisateurs de l'école (création, modification, désactivation).
+- Attribuer les rôles (enseignant, secrétaire, etc.) aux utilisateurs de l'école.
+- Consulter l'historique des actions (logs).
+
+## Autres fonctionnalités
+- Importer et exporter des données (élèves, personnels, notes, etc.).
+- Recevoir des notifications importantes (ex : nouveaux comptes, échéances, alertes).
+
+---
+
+**Remarque :** L'administrateur d'école ne peut gérer que les données de son propre établissement. Certaines actions avancées (gestion multi-écoles, paramétrage global, etc.) sont réservées à l'administrateur système ou au niveau central.

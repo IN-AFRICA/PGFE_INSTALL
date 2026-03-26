@@ -16,14 +16,28 @@ final class AcademicLevelRequest extends FormRequest
 
     public function rules(): array
     {
+        $cycleId = $this->input('cycle_id');
+        /** @var \App\Models\User|null $user */
+        $user = $this->user();
+        $schoolId = $user?->school_id;
+
         return [
+            'cycle_id' => ['required', 'exists:cycles,id'],
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('academic_levels', 'name')->ignore($this->academic_level),
+                Rule::unique('academic_levels', 'name')
+                    ->where(function ($query) use ($cycleId, $schoolId) {
+                        $query->where('cycle_id', $cycleId);
+                        if ($schoolId) {
+                            $query->where('school_id', $schoolId);
+                        }
+                        // Support soft-deletes when deleted_at exists in table
+                        $query->whereNull('deleted_at');
+                    })
+                    ->ignore($this->academic_level),
             ],
-            'cycle_id' => ['required', 'exists:cycles,id'],
         ];
     }
 

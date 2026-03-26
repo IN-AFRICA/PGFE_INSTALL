@@ -1,5 +1,7 @@
-<x-layouts.modules-layout :breadcrumbs="[['label' => 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Personnel', 'url' => route('admin.personnels.index')], ['label' => 'Modifier', 'url' => '#']]">
-    <div class="max-w-3xl mx-auto space-y-8">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
         <!-- Header -->
         <div class="flex items-center justify-between bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-gray-800">
             <div class="flex items-center gap-4">
@@ -96,4 +98,4 @@
             </form>
         </div>
     </div>
-</x-layouts.modules-layout>
+@endsection

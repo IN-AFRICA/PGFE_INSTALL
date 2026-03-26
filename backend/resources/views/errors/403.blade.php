@@ -1,29 +1,45 @@
 @extends('backend.auth.layouts.app')
 
-@section('title')
-    403 - {{ __('Access Denied') }} - {{ config('app.name') }}
-@endsection
+@section('title', '403 - ' . __('Accès Refusé'))
 
 @section('admin-content')
-<div class="relative z-1 flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
-    <div class="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
-        <h1 class="mb-8 text-title-md font-bold text-gray-700 dark:text-white/90 xl:text-title-2xl">
-            {{ __('ERROR') }}
-        </h1>
-        <h1 class="mb-8 text-title-md font-bold text-gray-700 dark:text-white/90 xl:text-title-2xl">
-            403
-        </h1>
+    <div class="flex flex-col items-center justify-center text-center space-y-6 fade-in">
 
-        <p class="mt-2 bg-red-100 p-4">
-            <iconify-icon icon="lucide:alert-circle"></iconify-icon>&nbsp;
-            {{ $exception->getMessage() }}
-        </p>
+        {{-- Icône d'alerte stylisée --}}
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-600 shadow-sm border border-red-100 mb-2">
+            <iconify-icon icon="lucide:shield-off" class="text-4xl"></iconify-icon>
+        </div>
 
-        <p class="mb-6 mt-10 text-base text-gray-700 dark:text-gray-300 sm:text-lg">
-            {{ __('Access to this resource on the server is denied') }}
-        </p>
+        {{-- Texte d'erreur --}}
+        <div class="space-y-2">
+            <h1 class="text-4xl font-black tracking-tighter text-zinc-900">403</h1>
+            <h2 class="text-xl font-bold text-zinc-800">{{ __('Accès Refusé') }}</h2>
+            <p class="text-sm text-zinc-500 max-w-[280px] mx-auto leading-relaxed">
+                {{ __('Désolé, vous n\'avez pas les autorisations nécessaires pour accéder à cette ressource.') }}
+            </p>
+        </div>
 
-        @include('errors.partials.links')
+        {{-- Message d'exception (si présent) --}}
+        @if($exception->getMessage())
+            <div class="w-full rounded-lg border border-red-100 bg-red-50/50 p-3 text-xs text-red-700 font-medium flex items-center justify-center gap-2">
+                <iconify-icon icon="lucide:info" class="text-base"></iconify-icon>
+                <span>{{ $exception->getMessage() }}</span>
+            </div>
+        @endif
+
+        {{-- Actions / Liens --}}
+        <div class="pt-4 w-full space-y-3">
+            <a href="{{ url()->previous() }}"
+               class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-50 shadow transition-all hover:bg-zinc-800 active:scale-[0.98]">
+                <iconify-icon icon="lucide:arrow-left" class="text-lg"></iconify-icon>
+                {{ __('Retourner en arrière') }}
+            </a>
+        </div>
+
+        <footer class="pt-6 border-t border-zinc-100 w-full">
+            <p class="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">
+                {{ config('app.name') }} Security System
+            </p>
+        </footer>
     </div>
-</div>
 @endsection

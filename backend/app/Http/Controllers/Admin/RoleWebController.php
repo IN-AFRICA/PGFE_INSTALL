@@ -22,7 +22,8 @@ final class RoleWebController extends Controller
         $selectedRole = null;
         $users = collect();
         if ($roleId = $request->get('role_id')) {
-            $selectedRole = Role::find($roleId);
+            // Récupère le rôle depuis la collection $roles (qui a users_count)
+            $selectedRole = $roles->where('id', $roleId)->first();
             if ($selectedRole) {
                 $users = User::role($selectedRole->name)
                     ->with(['academicPersonal.school', 'academicPersonal.fonction', 'school'])

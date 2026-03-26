@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="$breadcrumbs">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: $breadcrumbs -->
+        </nav>
+    </div>
+
     {!! Hook::applyFilters(PostFilterHook::POSTS_CREATE_AFTER_BREADCRUMBS, '', $postType) !!}
 
     <form
@@ -22,6 +30,6 @@
     {!! Hook::applyFilters(PostFilterHook::AFTER_POST_FORM, '', $postType) !!}
 
     @push('scripts')
-        <x-quill-editor :editor-id="'content'" height="200px" maxHeight="-1" />
+        {{-- Quill editor removed; add your own init here if needed --}}
     @endpush
-</x-layouts.backend-layout>
+@endsection

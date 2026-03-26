@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="[['title'=>'Types d\'école']]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: [['title'=>'Types d\'école']] -->
+        </nav>
+    </div>
+
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-lg font-semibold">Types d'école</h1>
         <a href="{{ route('admin.types.create') }}" class="inline-flex items-center gap-1 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700">
@@ -19,7 +27,22 @@
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                         <td class="px-3 py-2">{{ $t->id }}</td>
                         <td class="px-3 py-2 font-medium">{{ $t->title }}</td>
-                        <td class="px-3 py-2"><x-ui.action-buttons :edit-url="route('admin.types.edit',$t)" :delete-url="route('admin.types.destroy',$t)" /></td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('admin.types.edit',$t) }}" class="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-gray-700 shadow-sm hover:bg-gray-50">
+                                    <iconify-icon icon="lucide:pencil" class="text-base"></iconify-icon>
+                                    <span>{{ __('Edit') }}</span>
+                                </a>
+                                <form action="{{ route('admin.types.destroy',$t) }}" method="POST" onsubmit="return confirm('{{ __('Delete this item?') }}')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-red-700 shadow-sm hover:bg-red-100">
+                                        <iconify-icon icon="lucide:trash" class="text-base"></iconify-icon>
+                                        <span>{{ __('Delete') }}</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="3" class="px-3 py-6 text-center text-gray-500">Aucun type.</td></tr>
@@ -28,4 +51,4 @@
         </table>
     </div>
     <div class="mt-4">{{ $types->links() }}</div>
-</x-layouts.backend-layout>
+@endsection

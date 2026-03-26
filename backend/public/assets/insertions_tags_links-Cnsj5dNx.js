@@ -1,0 +1,1 @@
+const e=[{name:"entreprises",text:"Entreprises",href:"/insertion/prealables/entreprises"},{name:"candidats",text:"Candidats",href:"/insertion/prealables/candidats"}],s=[{name:"offres",text:"Offres d'emploi",href:"/insertion/operations/offres"},{name:"candidatures",text:"Candidatures",href:"/insertion/operations/candidatures"}];export{s as a,e as i};

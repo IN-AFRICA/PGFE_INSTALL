@@ -61,7 +61,7 @@ router.beforeEach((to, from, next) => {
     return next({ path: '/login', query: { redirect: to.fullPath } })
   }
 
-  // Check for permission requirements
+  // Check for permission requirements (utilise le mapping centralisé rolesPermissions via authStore.can)
   if (to.meta.permission) {
     const permission = to.meta.permission as string
     if (!authStore.can(permission)) {

@@ -72,6 +72,7 @@ final class AcademicPersonalRequest extends FormRequest
             'post_name' => ['nullable', 'string', 'max:255'],
             'pre_name' => ['required', 'string', 'max:255'],
             'username' => ['nullable', 'string', 'max:255'],
+            'user_id' => ['nullable', 'exists:users,id'],
             'phone' => [
                 'required',
                 'string',

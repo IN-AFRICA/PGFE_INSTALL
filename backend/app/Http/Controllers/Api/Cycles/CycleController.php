@@ -7,6 +7,7 @@ use App\Exports\CyclesExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CycleRequest;
 use App\Models\Cycle;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;

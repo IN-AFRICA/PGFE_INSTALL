@@ -79,7 +79,11 @@
             </div>
         </div>
 
-        <x-advanced-fields :post-meta="isset($post) ? $post->getAllMeta() : []" />
+        <div class="rounded-md border border-dashed border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <label for="meta_json" class="block text-sm font-semibold text-gray-700">{{ __('Meta (JSON)') }}</label>
+            <textarea id="meta_json" name="meta_json" rows="6" class="mt-2 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ isset($post) ? json_encode($post->getAllMeta(), JSON_PRETTY_PRINT) : '' }}</textarea>
+            <p class="mt-1 text-xs text-gray-500">{{ __('Use JSON key/values for additional metadata.') }}</p>
+        </div>
     </div>
 
     <!-- Sidebar Area -->

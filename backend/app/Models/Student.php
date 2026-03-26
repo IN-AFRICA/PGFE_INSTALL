@@ -24,6 +24,9 @@ final class Student extends Model
     use SoftDeletes; // activation des soft deletes pour gérer forceDeleted
     use \App\Models\Concerns\HasUuid;
 
+    protected $appends = [
+        'image_url',
+    ];
     protected $fillable = [
         'name',
         'lastname',

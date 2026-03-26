@@ -102,4 +102,17 @@ final class SchoolWebController extends Controller
 
         return redirect()->route('admin.schools.index')->with('success', 'École supprimée.');
     }
+        /**
+     * Change le contexte d'école (global ou spécifique)
+     */
+    public function switchSchool($id)
+    {
+        if ($id === 'all') {
+            session()->forget(['selected_school_id', 'selected_school_name']);
+        } else {
+            $school = \App\Models\School::findOrFail($id);
+            session(['selected_school_id' => $school->id, 'selected_school_name' => $school->name]);
+        }
+        return back();
+    }
 }

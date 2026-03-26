@@ -1,0 +1,97 @@
+# Rôles et Accès Utilisateurs PGFE
+
+Voici la liste des rôles et les accès/actions associés pour chaque utilisateur sur la plateforme PGFE :
+
+---
+
+## super-admin
+- Accès total à toutes les fonctionnalités et données.
+- Permissions :
+  - users.view, users.create.tiers, users.create.any, users.update, users.delete, users.assign.roles
+  - schools.view, schools.create, schools.update, schools.delete
+  - schoolyears.view, schoolyears.create, schoolyears.update, schoolyears.delete, schoolyears.activate
+  - classrooms.full, academic-levels.full, students.full, students.view, personals.full
+  - classrooms.view, courses.manage, grades.manage, deliberation.manage
+  - accounts.full, fees.full, payments.full, expenses.full, accounting.module
+  - stock.full, sales.full, rentals.full
+  - personnel.module
+  - visits.manage
+  - discipline.full
+  - infrastructure.full
+  - settings.full
+
+## admin-ecole
+- Gestion locale de l’école (personnels, élèves, finances, stocks, infrastructures).
+- Permissions :
+  - users.view, users.update, users.create.tiers
+  - schools.view
+  - schoolyears.view, schoolyears.activate
+  - students.full, personals.full
+  - accounts.full, fees.full, payments.full, expenses.full
+  - infrastructure.full, stock.full, personnel.module
+  - courses.manage, grades.manage, deliberation.manage
+  - discipline.full, visits.manage
+
+## enseignant
+- Gérer ses cours, saisir/modifier les notes, participer aux délibérations.
+- Permissions :
+  - courses.manage
+  - grades.manage
+  - deliberation.manage
+  - students.view
+
+## comptable
+- Gérer la comptabilité de l’école (comptes, frais, paiements, dépenses).
+- Permissions :
+  - accounts.full
+  - fees.full
+  - payments.full
+  - expenses.full
+  - accounting.module
+
+## stoker
+- Gérer le stock, les ventes et les locations de matériel.
+- Permissions :
+  - stock.full
+  - sales.full
+  - rentals.full
+
+## rh
+- Gérer le module personnel et les fiches des personnels.
+- Permissions :
+  - personnel.module
+  - personals.full
+
+## inspecteur
+- Gérer les visites de classe.
+- Permissions :
+  - visits.manage
+  - classrooms.view
+
+## disciplinaire
+- Gérer toute la discipline.
+- Permissions :
+  - discipline.full
+  - students.view
+
+## tiers
+- Accès lecture uniquement (aucune modification).
+- Permissions :
+  - Aucun (lecture seulement)
+
+---
+
+## Accès aux horaires de cours
+
+- **enseignant** : Peut voir ses propres horaires de cours (emploi du temps).
+- **admin-ecole** : Peut voir et gérer les horaires de tous les enseignants et classes de son école.
+- **super-admin** : Peut voir et gérer tous les horaires de cours sur la plateforme.
+- **tiers, comptable, stoker, rh, inspecteur, disciplinaire** : Pas d'accès direct aux horaires de cours.
+
+---
+
+**Résumé** : Seuls les enseignants, l’admin-ecole et le super-admin ont accès aux horaires de cours. L’enseignant ne voit que ses propres horaires, l’admin-ecole gère tous les horaires de l’école, le super-admin gère tout.
+
+---
+
+**Remarque :** Les accès sont limités par le rôle attribué à chaque utilisateur. Les actions avancées ou globales sont réservées au super-admin.

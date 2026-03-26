@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="$breadcrumbs">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: $breadcrumbs -->
+        </nav>
+    </div>
+
     {!! Hook::applyFilters(TermFilterHook::TERM_AFTER_BREADCRUMBS, '', $taxonomyModel) !!}
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -10,4 +18,4 @@
             @livewire('datatable.term-datatable', ['taxonomy' => $taxonomy])
         </div>
     </div>
-</x-layouts.backend-layout>
+@endsection

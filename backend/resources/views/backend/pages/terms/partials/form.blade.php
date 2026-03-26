@@ -7,8 +7,8 @@
     @method($term ? 'PUT' : 'POST')
     @csrf
 
-    <x-card>
-        <x-slot name="header">
+    <!-- Card removed -->
+        <!-- Slot header removed -->
             {{ $term ? __("Edit {$taxonomyModel->label_singular}") : __("Add New {$taxonomyModel->label_singular}") }}
         </x-slot>
         <div x-data="slugGenerator('{{ old('name', $term ? $term->name : '') }}', '{{ old('slug', $term ? $term->slug : '') }}')">
@@ -50,7 +50,7 @@
             <div class="flex">
                 @if ($taxonomyModel->show_featured_image)
                     <div class="mt-2">
-                        <x-media-selector
+                        <!-- Media selector removed -->
                             name="featured_image"
                             label="{{ __('Featured Image') }}"
                             :multiple="false"
@@ -67,12 +67,17 @@
 
             @if ($taxonomyModel->hierarchical)
                 <div class="mt-2">
-                    <x-posts.term-selector name="parent_id" :taxonomyModel="$taxonomyModel" :term="$term" :parentTerms="$parentTerms"
-                        :placeholder="__('Select Parent ' . $taxonomyModel->label_singular)" :label='__("Parent {$taxonomyModel->label_singular}")' searchable="false" />
+                    <label for="parent_id" class="block text-sm font-semibold text-gray-700">{{ __("Parent {$taxonomyModel->label_singular}") }}</label>
+                    <select id="parent_id" name="parent_id" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">{{ __('Select Parent ' . $taxonomyModel->label_singular) }}</option>
+                        @foreach($parentTerms as $parent)
+                            <option value="{{ $parent->id }}" {{ ($term && $term->parent_id == $parent->id) ? 'selected' : '' }}>{{ $parent->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
             @endif
-            <x-slot name="footer">
-                <x-buttons.submit-buttons cancelUrl="{{ $term ? route('admin.terms.index', $taxonomy) : '' }}" />
+            <!-- Slot footer removed -->
+                <!-- Submit buttons removed -->
             </x-slot>
         </div>
     </x-card>

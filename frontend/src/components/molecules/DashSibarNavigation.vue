@@ -145,7 +145,7 @@ const handlePrint = async () => {
   if (!bulletinStore.selectedEleveId) {
     showCustomToast({
       message: 'Veuillez sélectionner un élève',
-      type: 'warning',
+      type: 'error',
     })
     return
   }

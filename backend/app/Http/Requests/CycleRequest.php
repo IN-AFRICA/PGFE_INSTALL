@@ -8,6 +8,7 @@ use App\Http\Requests\Concerns\SchoolIdRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+
 final class CycleRequest extends FormRequest
 {
     use SchoolIdRule;
@@ -20,6 +21,7 @@ final class CycleRequest extends FormRequest
     public function rules(): array
     {
         /** @var \App\Models\User|null $user */
+        $user = $this->user();
         return [
             'filiaire_id' => [
                 'required',
@@ -29,7 +31,11 @@ final class CycleRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('cycles')->ignore($this->cycle),
+                Rule::unique('cycles', 'name')
+                    ->where('filiaire_id', $this->filiaire_id)
+                    ->where('school_id', $user?->school_id)
+                    ->whereNull('deleted_at')
+                    ->ignore($this->cycle),
             ],
         ];
     }

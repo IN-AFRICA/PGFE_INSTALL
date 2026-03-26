@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="$breadcrumbs">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: $breadcrumbs -->
+        </nav>
+    </div>
+
     {!! Hook::applyFilters(TermFilterHook::TERM_AFTER_BREADCRUMBS, '', $taxonomyModel) !!}
 
     <div class="max-w-4xl mx-auto">
@@ -6,6 +14,6 @@
     </div>
 
     @push('scripts')
-        <x-quill-editor :editor-id="'description'" />
+        {{-- Quill editor removed; add your own init here if needed --}}
     @endpush
-</x-layouts.backend-layout>
+@endsection

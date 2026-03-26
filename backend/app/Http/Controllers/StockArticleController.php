@@ -40,10 +40,32 @@ class StockArticleController extends Controller
         $perPage = (int) $request->input('per_page', $request->input('perPage', 15));
         $articles = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
+        // Ajoute le stock restant calculé pour chaque article
+        $data = collect($articles->items())->map(function($article) {
+            $article = (array) $article;
+            $articleId = $article['id'] ?? $article['ID'] ?? null;
+            $sorties = \App\Models\StockOperation::where('article_id', $articleId)
+                ->where('type', 'sortie')
+                ->sum('quantite');
+            $article['stock_remaining'] = ($article['quantity'] ?? 0) - $sorties;
+
+            // Ajoute l'état (dernier StockState)
+            $lastState = \App\Models\StockState::where('article_id', $articleId)
+                ->orderByDesc('state_date')
+                ->first();
+            $article['state'] = $lastState ? [
+                'quantity' => $lastState->quantity,
+                'state_date' => $lastState->state_date,
+                'note' => $lastState->note,
+            ] : null;
+
+            return $article;
+        });
+
         return response()->json([
             'status' => true,
             'message' => 'Liste des articles récupérée avec succès.',
-            'data' => $articles->items(),
+            'data' => $data,
             'meta' => [
                 'current_page' => $articles->currentPage(),
                 'last_page' => $articles->lastPage(),

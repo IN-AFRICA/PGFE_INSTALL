@@ -1,4 +1,12 @@
-<x-layouts.backend-layout :breadcrumbs="[['title'=>'Filières','url'=>route('admin.filiaires.index')],['title'=>'Créer']]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: [['title'=>'Filières','url'=>route('admin.filiaires.index')],['title'=>'Créer']] -->
+        </nav>
+    </div>
+
     <h1 class="text-lg font-semibold mb-6">Créer une filière</h1>
     <form method="POST" action="{{ route('admin.filiaires.store') }}" class="space-y-6 max-w-md">
         @csrf
@@ -14,5 +22,5 @@
             </button>
         </div>
     </form>
-</x-layouts.backend-layout>
+@endsection
 

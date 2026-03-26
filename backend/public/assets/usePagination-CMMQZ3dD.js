@@ -1,0 +1,1 @@
+import{r as e,v as d}from"./index-D2Tshtwy.js";function i(m,c=1,l=15,a){const r=e(c),t=e(l),u=e(0),P=e({}),g=(a==null?void 0:a.pageParam)??"page",n=(a==null?void 0:a.perPageParam)??"limit";return d([r,t],()=>{m({[g]:r.value,[n]:t.value,...P.value})}),{page:r,perPageCount:t,total:u,setAdditionalParams:s=>{P.value=s}}}export{i as u};

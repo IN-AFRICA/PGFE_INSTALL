@@ -1,4 +1,6 @@
-<x-layouts.modules-layout><x-backend.pages.settings.layout> 'Dashboard', 'url' => route('admin.dashboard')], ['label' => 'Écoles', 'url' => '#']]">
+@extends('backend.layouts.app')
+
+@section('admin-content')
     <div class="space-y-6">
         <!-- Modern Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
@@ -105,7 +107,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex justify-end items-center gap-2">
                                         @if(session('selected_school_id') != $s->id)
-                                            <a href="{{ route('admin.dashboard', ['school_id' => $s->id]) }}" 
+                                            <a href="{{ route('admin.dashboard', ['school_id' => $s->id]) }}"
                                                class="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all text-xs font-bold dark:bg-emerald-900/30 dark:text-emerald-300"
                                                title="Sélectionner cette école">
                                                 <iconify-icon icon="lucide:check-square" width="16"></iconify-icon>
@@ -117,7 +119,7 @@
                                                 Sélectionnée
                                             </span>
                                         @endif
-                                        
+
                                         <a href="{{ route('admin.schools.edit', $s) }}" class="p-2 rounded-xl bg-gray-50 text-gray-400 hover:bg-violet-600 hover:text-white transition-all dark:bg-gray-700 dark:text-gray-300">
                                             <iconify-icon icon="lucide:edit-3" width="18"></iconify-icon>
                                         </a>
@@ -150,4 +152,4 @@
             @endif
         </div>
     </div>
-</x-backend.pages.settings.layout></x-layouts.modules-layout>
+@endsection

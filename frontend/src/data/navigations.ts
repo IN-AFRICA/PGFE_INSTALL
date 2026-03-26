@@ -59,6 +59,7 @@ export const modulesItems = [
     text: 'Horaire',
     icon: 'hugeicons--calendar-03',
     link: '/schedule',
+    permission: 'schedule.view',
   },
   {
     id: 10,
@@ -239,7 +240,7 @@ export const scheduleModuleItemNav = [
     text: 'Opérations',
     icon: 'hugeicons--task-add-01',
     link: '/schedule/school-planer',
-    permission: 'users.view',
+    permission: 'schedule.view',
   },
 ]
 

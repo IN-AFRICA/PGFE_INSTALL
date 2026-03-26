@@ -1,7 +1,7 @@
-<x-card>
-    <x-slot name="header">
+<!-- Card removed -->
+    <!-- Slot header removed -->
         {{ __('Role Details') }}
-        <x-buttons.submit-buttons :classNames="['wrapper' => 'flex gap-4']" cancelUrl="{{ route('admin.roles.index') }}" />
+        <!-- Submit buttons removed -->
     </x-slot>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -15,8 +15,8 @@
     </div>
 </x-card>
 
-<x-card class="mt-6">
-    <x-slot name="header">{{ __('Permissions') }}</x-slot>
+<!-- Card removed -->
+    <!-- Slot header removed -->
     <div>
         <div class="mb-4">
             <input type="checkbox" id="checkPermissionAll" class="form-checkbox mr-2" @isset($role) {{ $roleService->roleHasPermissions($role, $all_permissions) ? 'checked' : '' }} @endisset>
@@ -52,9 +52,9 @@
             </div>
         @endforeach
     </div>
-    <x-slot name="footer">
+    <!-- Slot footer removed -->
         <div class="flex justify-end">
-            <x-buttons.submit-buttons cancelUrl="{{ route('admin.roles.index') }}" />
+            <!-- Submit buttons removed -->
         </div>
     </x-slot>
 </x-card>

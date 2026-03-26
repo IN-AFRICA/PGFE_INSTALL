@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\AcademicPersonal;
 use App\Models\Fonction;
 use App\Models\Schedule;
+use App\Models\SchoolYear;
 use App\Models\TeacherUnavailability;
+use Illuminate\Support\Arr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
-class ScheduleController extends Controller
-{
+class ScheduleController extends Controller{
+
     /**
      * Get list of available teachers for a specific time slot.
      */
@@ -91,21 +94,46 @@ class ScheduleController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        \Log::info('calendar/weeks params', $request->all());
+
+        \DB::listen(function ($query) {
+            \Log::info($query->sql, $query->bindings);
+        });
+
         $validated = $request->validate([
-            'school_year_id' => 'required|exists:school_years,id',
-            'classroom_id' => 'required|exists:classrooms,id',
-            'academic_personal_id' => 'required|exists:academic_personals,id',
-            'course_id' => 'required|exists:courses,id',
+            'school_year_id' => [
+                'required',
+                Rule::exists('school_years', 'id')->where('is_active', 1),
+            ],
+            'classroom_id' => [
+                'required',
+                Rule::exists('classrooms', 'id')->where('school_id', $request->user()->school_id),
+            ],
+            'academic_personal_id' => [
+                'required',
+                Rule::exists('academic_personals', 'id')->where('school_id', $request->user()->school_id),
+            ],
+            'course_id' => [
+                'required',
+                Rule::exists('courses', 'id')->where('school_id', $request->user()->school_id),
+            ],
             'day' => 'required|string',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'week_number' => 'nullable|integer',
         ]);
 
-        $schoolId = $request->user()->school_id;
+        $year = SchoolYear::where('id', $request->school_year_id)
+            ->where('is_active', 1)
+            ->first();
+        \Log::info('SchoolYear found', ['year' => $year]);
+
+        if (!$year) {
+            \Log::warning('Invalid school_year_id', ['id' => $request->school_year_id]);
+        }
 
         // Vérification de dernier recours contre les conflits (enseignant)
-        $conflict = Schedule::where('school_id', $schoolId)
+        $conflict = Schedule::where('school_id', $request->user()->school_id)
             ->where('academic_personal_id', $validated['academic_personal_id'])
             ->where('day', $validated['day'])
             ->where(function ($query) use ($validated) {
@@ -128,7 +156,7 @@ class ScheduleController extends Controller
         }
 
         // Vérification conflit salle/classe
-        $classConflict = Schedule::where('school_id', $schoolId)
+        $classConflict = Schedule::where('school_id', $request->user()->school_id)
             ->where('classroom_id', $validated['classroom_id'])
             ->where('day', $validated['day'])
             ->where(function ($query) use ($validated) {
@@ -150,7 +178,13 @@ class ScheduleController extends Controller
             ], 422);
         }
 
-        $schedule = Schedule::create(array_merge($validated, ['school_id' => $schoolId]));
+
+        // Ajout UUID automatique si non fourni (sécurité côté contrôleur)
+        $data = array_merge($validated, ['school_id' => $request->user()->school_id]);
+        if (empty($data['uuid'])) {
+            $data['uuid'] = (string) \Illuminate\Support\Str::uuid();
+        }
+        $schedule = Schedule::create($data);
 
         return response()->json([
             'success' => true,
@@ -162,20 +196,202 @@ class ScheduleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $schoolId = $request->user()->school_id;
+
+        $validated = $request->validate([
+            'school_year_id' => [
+                'sometimes',
+                'required',
+                Rule::exists('school_years', 'id')->where(function ($query) use ($schoolId) {
+                    $query->where('school_id', $schoolId)->orWhereNull('school_id');
+                }),
+            ],
+            // month n'est pas stocké côté Schedule aujourd'hui; on le valide juste pour éviter valeurs bizarres
+            'month' => ['sometimes', 'required', 'integer', 'between:1,12'],
+            'week_number' => ['sometimes', 'required', 'integer', 'between:1,53'],
+            'classroom_id' => [
+                'sometimes',
+                'required',
+                Rule::exists('classrooms', 'id')->where('school_id', $schoolId),
+            ],
+            'academic_personal_id' => [
+                'sometimes',
+                'required',
+                Rule::exists('academic_personals', 'id')->where('school_id', $schoolId),
+            ],
+        ]);
+
         $query = Schedule::with(['academicPersonal', 'classroom', 'course'])
             ->where('school_id', $schoolId);
 
-        if ($request->filled('classroom_id')) {
-            $query->where('classroom_id', $request->input('classroom_id'));
+        if (Arr::has($validated, 'school_year_id')) {
+            $query->where('school_year_id', $validated['school_year_id']);
         }
 
-        if ($request->filled('academic_personal_id')) {
-            $query->where('academic_personal_id', $request->input('academic_personal_id'));
+        if (Arr::has($validated, 'week_number')) {
+            $weekNumber = (int) $validated['week_number'];
+            // Inclure les cours récurrents (week_number = null)
+            $query->where(function ($q) use ($weekNumber) {
+                $q->whereNull('week_number')
+                    ->orWhere('week_number', $weekNumber);
+            });
         }
+
+        // Enseignant: lecture uniquement de son propre horaire
+        if ($request->user()->hasRole('enseignant') && !$request->user()->hasAnyRole(['admin-ecole', 'super-admin'])) {
+            $academicPersonalId = $request->user()->academicPersonal?->id;
+            if (!$academicPersonalId) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                ]);
+            }
+
+            $query->where('academic_personal_id', $academicPersonalId);
+        }
+
+        if (Arr::has($validated, 'classroom_id')) {
+            $query->where('classroom_id', $validated['classroom_id']);
+        }
+
+        if (Arr::has($validated, 'academic_personal_id')) {
+            $query->where('academic_personal_id', $validated['academic_personal_id']);
+        }
+
+        // Ordre stable pour l'affichage
+        $query->orderBy('day')->orderBy('start_time');
 
         return response()->json([
             'success' => true,
             'data' => $query->get(),
+        ]);
+    }
+    /**
+     * Update an existing schedule entry.
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $schoolId = $request->user()->school_id;
+
+        $validated = $request->validate([
+            'school_year_id' => [
+                'sometimes',
+                'required',
+                Rule::exists('school_years', 'id')->where('school_id', $schoolId),
+            ],
+            'classroom_id' => [
+                'sometimes',
+                'required',
+                Rule::exists('classrooms', 'id')->where('school_id', $schoolId),
+            ],
+            'academic_personal_id' => [
+                'sometimes',
+                'required',
+                Rule::exists('academic_personals', 'id')->where('school_id', $schoolId),
+            ],
+            'course_id' => [
+                'sometimes',
+                'required',
+                Rule::exists('courses', 'id')->where('school_id', $schoolId),
+            ],
+            'day' => 'sometimes|required|string',
+            'start_time' => 'sometimes|required|date_format:H:i',
+            'end_time' => 'sometimes|required|date_format:H:i',
+            'week_number' => 'nullable|integer',
+        ]);
+        $schedule = Schedule::where('school_id', $schoolId)->findOrFail($id);
+
+        $effective = [
+            'school_year_id' => $validated['school_year_id'] ?? $schedule->school_year_id,
+            'classroom_id' => $validated['classroom_id'] ?? $schedule->classroom_id,
+            'academic_personal_id' => $validated['academic_personal_id'] ?? $schedule->academic_personal_id,
+            'course_id' => $validated['course_id'] ?? $schedule->course_id,
+            'day' => $validated['day'] ?? $schedule->day,
+            'start_time' => $validated['start_time'] ?? $schedule->start_time,
+            'end_time' => $validated['end_time'] ?? $schedule->end_time,
+            'week_number' => array_key_exists('week_number', $validated) ? $validated['week_number'] : $schedule->week_number,
+        ];
+
+        if (strtotime((string) $effective['start_time']) >= strtotime((string) $effective['end_time'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'L\'heure de fin doit être après l\'heure de début.',
+            ], 422);
+        }
+
+        // Vérification de dernier recours contre les conflits (enseignant)
+        $teacherConflict = Schedule::where('school_id', $schoolId)
+            ->where('id', '!=', $schedule->id)
+            ->where('academic_personal_id', $effective['academic_personal_id'])
+            ->where('day', $effective['day'])
+            ->where(function ($query) use ($effective) {
+                $query->where('start_time', '<', $effective['end_time'])
+                    ->where('end_time', '>', $effective['start_time']);
+            })
+            ->when(!is_null($effective['week_number']), function ($query) use ($effective) {
+                return $query->where(function ($q) use ($effective) {
+                    $q->where('week_number', $effective['week_number'])
+                        ->orWhereNull('week_number');
+                });
+            })
+            ->exists();
+
+        if ($teacherConflict) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cet enseignant est déjà occupé sur ce créneau horaire.',
+            ], 422);
+        }
+
+        // Vérification conflit salle/classe
+        $classConflict = Schedule::where('school_id', $schoolId)
+            ->where('id', '!=', $schedule->id)
+            ->where('classroom_id', $effective['classroom_id'])
+            ->where('day', $effective['day'])
+            ->where(function ($query) use ($effective) {
+                $query->where('start_time', '<', $effective['end_time'])
+                    ->where('end_time', '>', $effective['start_time']);
+            })
+            ->when(!is_null($effective['week_number']), function ($query) use ($effective) {
+                return $query->where(function ($q) use ($effective) {
+                    $q->where('week_number', $effective['week_number'])
+                        ->orWhereNull('week_number');
+                });
+            })
+            ->exists();
+
+        if ($classConflict) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette classe a déjà un cours prévu sur ce créneau horaire.',
+            ], 422);
+        }
+
+        // Ajout UUID automatique si non fourni (sécurité côté contrôleur)
+        $data = $validated;
+        if (empty($data['uuid'])) {
+            $data['uuid'] = $schedule->uuid ?? (string) \Illuminate\Support\Str::uuid();
+        }
+
+        $schedule->update($data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $schedule->fresh(),
+            'message' => 'Horaire modifié avec succès.',
+        ]);
+    }
+
+    /**
+     * Delete a schedule entry.
+     */
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $schoolId = $request->user()->school_id;
+        $schedule = Schedule::where('school_id', $schoolId)->findOrFail($id);
+        $schedule->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Horaire supprimé avec succès.',
         ]);
     }
 }

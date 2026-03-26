@@ -1,7 +1,15 @@
-<x-layouts.backend-layout :breadcrumbs="[
+@extends('backend.layouts.app')
+
+@section('admin-content')
+    <div class="space-y-6">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            <!-- BREADCRUMBS: [
     ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
     ['label' => 'Recherche Multi-Écoles', 'url' => '#']
-]">
+] -->
+        </nav>
+    </div>
+
     <div class="space-y-10">
         <!-- Floating Modern Header -->
         <div class="relative overflow-hidden rounded-[2.5rem] bg-white dark:bg-gray-900 p-10 shadow-2xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800">
@@ -134,4 +142,4 @@
             </div>
         @endif
     </div>
-</x-layouts.backend-layout>
+@endsection
