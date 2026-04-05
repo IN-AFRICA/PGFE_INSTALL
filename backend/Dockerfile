@@ -13,9 +13,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd exif zip
 
 WORKDIR /app
-COPY composer.json composer.lock ./
+# Copier d'abord seulement composer.json (composer.lock généré au besoin)
+COPY composer.json ./
 
 # On utilise le chemin absolu /usr/bin/composer pour éviter le "not found"
+# Si composer.lock existe, il sera aussi copié après; sinon composer va le générer
 RUN --network=host /usr/bin/composer install \
     --no-dev \
     --no-autoloader \
