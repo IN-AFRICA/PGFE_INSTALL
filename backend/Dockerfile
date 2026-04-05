@@ -30,8 +30,8 @@ FROM node:22-alpine AS node-builder
 
 WORKDIR /app
 
-# Copier les fichiers package (lock file doit exister!)
-COPY package.json package-lock.json ./
+# Copier package.json (et package-lock.json s'il existe)
+COPY package*.json ./
 
 # Configuration npm pour éviter les timeouts
 RUN npm config set fetch-retry-maxtimeout 1200000 && \
@@ -39,7 +39,7 @@ RUN npm config set fetch-retry-maxtimeout 1200000 && \
     npm config set fetch-retry-mintimeout 100000
 
 # Installer les dépendances de production + build
-RUN npm ci
+RUN npm ci || npm install
 
 # Copier le reste du code et builder
 COPY . .
