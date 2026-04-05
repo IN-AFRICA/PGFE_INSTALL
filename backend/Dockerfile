@@ -30,20 +30,18 @@ FROM node:22-alpine AS node-builder
 
 WORKDIR /app
 
-# Copier package.json (et package-lock.json s'il existe)
-COPY package*.json ./
+# Copier package.json et pnpm-lock.yaml
+COPY package*.json pnpm-lock.yaml* ./
 
-# Configuration npm pour éviter les timeouts
-RUN npm config set fetch-retry-maxtimeout 1200000 && \
-    npm config set fetch-retries 10 && \
-    npm config set fetch-retry-mintimeout 100000
+# Installer pnpm globalement
+RUN npm install -g pnpm@latest
 
 # Installer les dépendances de production + build
-RUN npm ci || npm install
+RUN pnpm install --frozen-lockfile 2>/dev/null || pnpm install
 
 # Copier le reste du code et builder
 COPY . .
-RUN npm run build || echo "No npm build script found"
+RUN pnpm run build || echo "No pnpm build script found"
 
 # ── Stage 3 : Runtime PHP Production ──
 FROM php:8.3-fpm-alpine AS production
