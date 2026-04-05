@@ -3,7 +3,18 @@ set -e
 
 echo "=== PGFE Backend Entrypoint ==="
 
-# ── 1. Générer APP_KEY si absente ──
+# ── 1. Assurer la présence de .env ──
+if [ ! -f /var/www/html/.env ]; then
+    if [ -f /var/www/html/.env.example ]; then
+        echo "[entrypoint] .env absent, copie depuis .env.example..."
+        cp /var/www/html/.env.example /var/www/html/.env
+    else
+        echo "[entrypoint] ERREUR: .env introuvable et .env.example manquant."
+        exit 1
+    fi
+fi
+
+# ── 2. Générer APP_KEY si absente ──
 if [ -z "$APP_KEY" ]; then
     echo "[entrypoint] APP_KEY absente, génération..."
     php artisan key:generate --force --no-interaction
@@ -11,7 +22,7 @@ else
     echo "[entrypoint] APP_KEY déjà définie."
 fi
 
-# ── 2. Attendre que la DB soit prête ──
+# ── 3. Attendre que la DB soit prête ──
 echo "[entrypoint] Attente de la base de données..."
 MAX_RETRIES=30
 RETRY=0
