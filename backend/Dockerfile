@@ -1,5 +1,5 @@
 # ── Stage 1 : Installation des dépendances PHP (Vendor) ──
-FROM php:8.4-alpine AS php-builder
+FROM php:8.3-alpine AS php-builder
 
 # On récupère le binaire Composer depuis l'image officielle
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -46,7 +46,7 @@ COPY . .
 RUN npm run build || echo "No npm build script found"
 
 # ── Stage 3 : Runtime PHP Production ──
-FROM php:8.4-fpm-alpine AS production
+FROM php:8.3-fpm-alpine AS production
 
 # Installation des dépendances système (runtime + dev pour compiler les extensions)
 RUN --network=host apk add --no-cache \
@@ -91,7 +91,7 @@ COPY --chown=www:www . .
 
 
 # Finalisation : Autoload optimisé
-RUN /usr/bin/composer dump-autoload --no-dev --optimize --ignore-platform-reqs && \
+RUN /usr/bin/composer dump-autoload --no-dev --optimize --ignore-platform-reqs --no-scripts && \
     mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache && \
     chown -R www:www /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
