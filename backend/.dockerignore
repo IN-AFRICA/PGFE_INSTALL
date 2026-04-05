@@ -1,6 +1,8 @@
 # Node dependencies  
 node_modules
 npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Composer
 /vendor
@@ -23,6 +25,7 @@ npm-debug.log*
 .idea
 *.swp
 *.swo
+*.iml
 
 # OS
 .DS_Store
@@ -36,6 +39,7 @@ Thumbs.db
 # Documentation
 README.md
 docs
+*.md
 
 # Tests
 tests/
@@ -44,10 +48,26 @@ phpunit.xml
 
 # Docker
 Dockerfile
-docker-compose.yml
+Dockerfile.*
+docker-compose*.yml
 .dockerignore
 
 # Build artifacts
+public/hot
+public/build
+
+# Package Lock
+composer.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Other
+.editorconfig
+.prettierrc
+.eslintrc
+Makefile
+
 public/hot
 public/storage
 public/build

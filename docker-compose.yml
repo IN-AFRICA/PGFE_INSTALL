@@ -1,62 +1,4 @@
 services:
-  # ── Frontend Vue.js (nginx) ──
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      network: host
-    container_name: pgfe-frontend
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - pgfe-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 5s
-
-  # ── Backend Laravel (PHP-FPM) ──
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-      network: host
-    container_name: pgfe-backend
-    restart: unless-stopped
-    # Pas de ports exposés : php-fpm communique via le réseau Docker interne
-    depends_on:
-      database:
-        condition: service_healthy
-    environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      APP_URL: http://localhost
-      DB_CONNECTION: mysql
-      DB_HOST: database
-      DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-pgfe_db}
-      DB_USERNAME: ${DB_USERNAME:-pgfe_user}
-      DB_PASSWORD: ${DB_PASSWORD:-pgfe_secret}
-      SESSION_DRIVER: file
-      CACHE_STORE: file
-      QUEUE_CONNECTION: sync
-    volumes:
-      - backend-storage:/var/www/html/storage
-    networks:
-      - pgfe-network
-    healthcheck:
-      test: ["CMD-SHELL", "php-fpm -t 2>/dev/null && echo ok"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-
   # ── Base de données MySQL ──
   database:
     image: mysql:8.0
@@ -79,6 +21,90 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+
+  # ── Backend Laravel (PHP-FPM) ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      network: host
+    container_name: pgfe-backend
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_KEY: ${APP_KEY}
+      APP_URL: http://localhost
+      APP_TIMEZONE: ${APP_TIMEZONE:-Africa/Lubumbashi}
+      DB_CONNECTION: mysql
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-pgfe_db}
+      DB_USERNAME: ${DB_USERNAME:-pgfe_user}
+      DB_PASSWORD: ${DB_PASSWORD:-pgfe_secret}
+      SESSION_DRIVER: ${SESSION_DRIVER:-file}
+      CACHE_STORE: ${CACHE_STORE:-file}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-sync}
+      SKIP_SEEDING: ${SKIP_SEEDING}
+    volumes:
+      - backend-storage:/var/www/html/storage
+    networks:
+      - pgfe-network
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t 2>/dev/null && echo ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── Backend API Gateway (nginx FastCGI → php-fpm) ──
+  nginx-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.nginx-api
+      network: host
+    container_name: pgfe-nginx-api
+    restart: unless-stopped
+    ports:
+      - "8400:8400"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pgfe-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8400/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ── Frontend Vue.js (nginx SPA) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      network: host
+    container_name: pgfe-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      nginx-api:
+        condition: service_healthy
+    networks:
+      - pgfe-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
 volumes:
   db-data:

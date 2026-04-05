@@ -1,0 +1,32 @@
+# ── Override Docker Compose pour le développement ──
+# Utilisation: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Ce fichier modifie la configuration de production pour le développement:
+# - Montage des volumes sources (hot reload du code)
+# - Variables pour APP_DEBUG et APP_ENV
+# - Logs augmentés
+
+version: '3.8'
+
+services:
+  backend:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - ./backend:/var/www/html
+
+  frontend:
+    environment:
+      VITE_DEV_SERVER_HOST: "0.0.0.0"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+
+  database:
+    environment:
+      MYSQL_ROOT_PASSWORD: pgfe_root_secret
+      MYSQL_DATABASE: pgfe_db
+      MYSQL_USER: pgfe_user
+      MYSQL_PASSWORD: pgfe_secret

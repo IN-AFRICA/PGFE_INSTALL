@@ -1,22 +1,28 @@
 # Dependencies
 node_modules
+pnpm-store
 
 # Build output
 dist
+build
 
 # Version control
 .git
 .gitignore
+.gitattributes
 
 # IDE
 .vscode
 .idea
 *.swp
 *.swo
+*.iml
 
 # Logs
 *.log
 npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Environment
 .env
@@ -25,7 +31,9 @@ npm-debug.log*
 
 # Tests
 coverage
+test
 __tests__
+vitest.config.ts
 
 # OS
 .DS_Store
@@ -33,10 +41,21 @@ Thumbs.db
 
 # Docker
 Dockerfile
-docker-compose.yml
+docker-compose*.yml
 .dockerignore
 
 # Documentation
 README.md
 docs
-comparaison
+*.md
+
+# Config files (kept in source, not in image)
+.prettierrc
+.eslintrc.*
+tsconfig*.json
+vite.config.ts
+vitest.config.ts
+
+# Other
+Makefile
+.env.d.ts
