@@ -44,6 +44,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-pgfe_db}
       DB_USERNAME: ${DB_USERNAME:-pgfe_user}
       DB_PASSWORD: ${DB_PASSWORD:-pgfe_secret}
+      MYSQL_SSL_MODE: ${MYSQL_SSL_MODE:-disabled}
+      MYSQL_CLIENT_SSL_MODE: ${MYSQL_CLIENT_SSL_MODE:-disabled}
       SESSION_DRIVER: ${SESSION_DRIVER:-file}
       CACHE_STORE: ${CACHE_STORE:-file}
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-sync}
