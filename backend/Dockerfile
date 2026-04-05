@@ -56,7 +56,7 @@ RUN --network=host apk add --no-cache \
     chromium chromium-chromedriver \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        pdo_mysql mysqli gd zip mbstring xml bcmath intl exif opcache \
+        pdo_mysql mysqli gd zip mbstring xml bcmath intl exif opcache pcntl calendar sockets \
     && apk del --no-cache \
         libpng-dev libjpeg-turbo-dev freetype-dev \
         libzip-dev libexif-dev \
