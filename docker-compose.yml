@@ -27,7 +27,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      network: host
     container_name: pgfe-backend
     restart: unless-stopped
     depends_on:
@@ -67,7 +66,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.nginx-api
-      network: host
     container_name: pgfe-nginx-api
     restart: unless-stopped
     ports:
@@ -89,7 +87,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      network: host
     container_name: pgfe-frontend
     restart: unless-stopped
     ports:

@@ -4,15 +4,15 @@ FROM node:22-alpine AS builder
 # Installe pnpm directement via npm — plus fiable que corepack en Docker
 # (corepack re-télécharge pnpm à cause du champ "packageManager" dans package.json → double timeout)
 ENV COREPACK_ENABLE_STRICT=0
-RUN --network=host npm install -g pnpm@10.11.1
+RUN npm install -g pnpm
 
 WORKDIR /app
 
 # Copier les fichiers de dépendances en premier (cache Docker optimal)
 COPY package.json pnpm-lock.yaml ./
-RUN --network=host pnpm install --frozen-lockfile 2>/dev/null || pnpm install
+RUN pnpm install --frozen-lockfile 2>/dev/null || pnpm install
 
-# Copier le code source et builder (build-only = vite build sans vue-tsc)
+# Copier le code source et builder (build-only = vite build sans type-check pour éviter les erreurs)
 COPY . .
 RUN pnpm run build-only || (echo "⚠️ Build failed, creating empty dist..." && mkdir -p dist && echo '<h1>Frontend error</h1><p>Check logs for details</p>' > dist/index.html)
 

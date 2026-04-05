@@ -18,7 +18,7 @@ COPY composer.json ./
 
 # On utilise le chemin absolu /usr/bin/composer pour éviter le "not found"
 # Si composer.lock existe, il sera aussi copié après; sinon composer va le générer
-RUN --network=host /usr/bin/composer install \
+RUN /usr/bin/composer install \
     --no-dev \
     --no-autoloader \
     --no-scripts \
@@ -47,7 +47,7 @@ RUN pnpm run build || echo "No pnpm build script found"
 FROM php:8.3-fpm-alpine AS production
 
 # Installation des dépendances système (runtime + dev pour compiler les extensions)
-RUN --network=host apk add --no-cache \
+RUN apk add --no-cache \
     git curl zip unzip \
     libpng-dev libjpeg-turbo-dev freetype-dev \
     libzip-dev libexif-dev \
@@ -56,7 +56,7 @@ RUN --network=host apk add --no-cache \
     chromium chromium-chromedriver \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        pdo_mysql mysqli gd zip mbstring xml bcmath intl exif opcache pcntl calendar sockets \
+        pdo_mysql mysqli gd zip mbstring xml bcmath intl exif opcache \
     && apk del --no-cache \
         libpng-dev libjpeg-turbo-dev freetype-dev \
         libzip-dev libexif-dev \
