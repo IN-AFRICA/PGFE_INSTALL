@@ -25,20 +25,25 @@ RUN --network=host /usr/bin/composer install \
     --no-progress \
     --ignore-platform-reqs
 
-# ── Stage 2 : Build des assets frontend (Vite/Mix) ──
+# ── Stage 2 : Build des assets Node.js (partie admin) ──
 FROM node:22-alpine AS node-builder
 
 WORKDIR /app
-COPY package*.json ./
 
-# Augmentation des timeouts pour prévenir les erreurs réseau ETIMEDOUT
+# Copier les fichiers package (lock file doit exister!)
+COPY package.json package-lock.json ./
+
+# Configuration npm pour éviter les timeouts
 RUN npm config set fetch-retry-maxtimeout 1200000 && \
     npm config set fetch-retries 10 && \
-    npm config set fetch-retry-mintimeout 100000 && \
-    npm ci --omit=dev
+    npm config set fetch-retry-mintimeout 100000
 
+# Installer les dépendances de production + build
+RUN npm ci
+
+# Copier le reste du code et builder
 COPY . .
-RUN npm run build 2>/dev/null || echo "No npm build script found"
+RUN npm run build || echo "No npm build script found"
 
 # ── Stage 3 : Runtime PHP Production ──
 FROM php:8.3-fpm-alpine AS production
@@ -81,6 +86,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Récupération des fichiers depuis les stages précédents
 COPY --from=php-builder /app/vendor ./vendor
 COPY --from=node-builder /app/public ./public
+COPY --from=node-builder /app/node_modules ./node_modules
 COPY --chown=www:www . .
 
 
