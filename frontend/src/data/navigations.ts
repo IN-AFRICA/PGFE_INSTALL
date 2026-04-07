@@ -156,24 +156,31 @@ export const comptaModuleItemsNav = [
 export const adminModuleItemsNav = [
   {
     id: 1,
-    text: 'Tableau de bord',
-    icon: 'hugeicons--dashboard-square-02',
-    link: '/admin',
+    text: 'Utilisateurs',
+    icon: 'hugeicons--user-group',
+    link: '/admin/users',
     permission: 'users.view',
   },
   {
     id: 2,
-    text: 'Type',
-    icon: 'hugeicons--tick-double-02 ',
-    link: '/admin/type',
-    permission: 'academic-levels.full', // Assumption
+    text: 'Ecoles',
+    icon: 'hugeicons--school',
+    link: '/admin/ecoles',
+    permission: 'schools.view',
   },
   {
     id: 3,
-    text: 'Ecoles',
-    icon: 'hugeicons--school ',
-    link: '/admin/ecoles',
-    permission: 'schools.view',
+    text: 'Années Scolaires',
+    icon: 'hugeicons--calendar-03',
+    link: '/admin/schoolyears',
+    permission: 'schoolyears.view',
+  },
+  {
+    id: 4,
+    text: 'Type',
+    icon: 'hugeicons--tick-double-02',
+    link: '/admin/type',
+    permission: 'academic-levels.full',
   },
 ]
 export const infraModuleItemNav = [

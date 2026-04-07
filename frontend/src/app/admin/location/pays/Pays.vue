@@ -9,6 +9,7 @@ import { useDeleteApi } from '@/composables/useDeleteApi.ts'
 import { usePutApi } from '@/composables/usePutApi.ts'
 import { API_ROUTES } from '@/utils/constants/api_route.ts'
 import { eventBus } from '@/utils/eventBus.ts'
+import { useAuthStore } from '@/stores/auth.ts'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -64,6 +65,9 @@ const query = ref('')
 const { data, loading, error, fetchData } = useGetApi<Item[]>(API_ROUTES.GET_COUNTRIES)
 const { deleteItem, deleting, errorDelete: delError } = useDeleteApi()
 const { putData, loading: updating, error: updError, response: updResponse } = usePutApi()
+
+const auth = useAuthStore()
+const canWrite = computed(() => auth.can('location.full'))
 
 const editOpen = ref(false)
 const editId = ref<number | null>(null)
@@ -153,7 +157,7 @@ const filtered = computed(() => {
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <NewCountry />
+            <NewCountry v-if="canWrite" />
           </div>
         </div>
 
@@ -184,7 +188,7 @@ const filtered = computed(() => {
                     <span class="font-medium">{{ c.name }}</span>
                   </div>
                   <div class="w-24 flex justify-end">
-                    <TableRowActions>
+                    <TableRowActions v-if="canWrite">
                       <template #actions>
                         <Button size="sm" variant="outline" class="h-8" @click="openEditModal(c)">
                           <span class="iconify hugeicons--edit-01"></span>

@@ -21,7 +21,7 @@
 /vendor
 Homestead.json
 Homestead.yaml
-pnpm-debug.log
+npm-debug.log
 Thumbs.db
 yarn-error.log
 /config

@@ -203,10 +203,19 @@ final class AcademicPersonalController extends Controller
         $personnel->user_id = $user->id;
         $personnel->save();
         $user->notify(new NewUserCredentialsNotification($personnel, $password));
+
+        if (app()->environment('local')) {
+            error_log("=== DEV CREDENTIALS GENERATED ===");
+            error_log("Email: {$personnel->email}");
+            error_log("Password: {$password}");
+            error_log("=================================");
+        }
+
         return response()->json([
             'message' => 'Compte utilisateur créé et rôle attribué avec succès.',
             'user' => $user,
             'personnel' => $personnel,
+            'dev_password' => app()->environment('local') ? $password : null,
         ]);
     }
 

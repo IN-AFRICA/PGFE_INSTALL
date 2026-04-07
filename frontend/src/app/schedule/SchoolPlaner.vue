@@ -191,15 +191,12 @@ watch(calendarWeeksRaw, (val) => {
   const currentWeek = val?.current_week; // ex: "13"
   const weekValues = rawWeeks.map((w: any) => String(w.value));
 
-  // Si la semaine sélectionnée existe toujours dans le nouveau mois, on la garde
-  if (filterParams.week && weekValues.includes(String(filterParams.week))) {
-    return;
-  }
-
-  // Sinon : priorité à la semaine courante, puis première semaine
+  // Toujours prioriser la sélection de la semaine COURANTE si elle est dans la liste.
+  // Cela permet de sauter automatiquement au présent quand on change de mois.
   if (currentWeek && weekValues.includes(String(currentWeek))) {
     filterParams.week = String(currentWeek);
-  } else {
+  } else if (!filterParams.week || !weekValues.includes(String(filterParams.week))) {
+    // Si pas de semaine courante ou si la sélection n'est plus valide pour ce mois : première semaine
     filterParams.week = String(rawWeeks[0].value);
   }
 }, { immediate: true });

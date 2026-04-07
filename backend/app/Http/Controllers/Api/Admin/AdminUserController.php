@@ -23,7 +23,16 @@ final class AdminUserController extends Controller
             return response()->json(['message' => 'Non autorisé'], 403);
         }
 
-        return response()->json(User::with('roles')->paginate());
+        $query = User::with('roles');
+
+        // On filtre systématiquement les utilisateurs par rapport à l'école de la personne connectée
+        // (à moins que ce soit un super-admin qui n'est rattaché à aucune école, ou qu'il demande explicitement tout).
+        $schoolId = $current->school_id;
+        if ($schoolId) {
+            $query->where('school_id', $schoolId);
+        }
+
+        return response()->json($query->paginate());
     }
 
     public function store(Request $request)

@@ -53,25 +53,32 @@ final class CalendarWeeksController extends Controller
         $currentDate = now()->toDateString();
         $currentWeekValue = null;
         while ($weekStart->lessThanOrEqualTo($lastDay)) {
-            $weekEnd = $weekStart->addDays(4); // Friday
-            $isCurrent = $currentDate >= $weekStart->toDateString() && $currentDate <= $weekEnd->toDateString();
-            $weekData = [
-                'value' => (string) $weekStart->isoWeek(),
-                'week_number' => $weekStart->isoWeek(),
-                'label' => sprintf(
-                    'Semaine %d (%s - %s)',
-                    $weekStart->isoWeek(),
-                    $weekStart->format('d/m'),
-                    $weekEnd->format('d/m')
-                ),
-                'start_date' => $weekStart->toDateString(),
-                'end_date' => $weekEnd->toDateString(),
-                'is_current' => $isCurrent,
-            ];
-            if ($isCurrent) {
-                $currentWeekValue = $weekData['value'];
+            $weekEnd = $weekStart->addDays(4); // Vendredi
+
+            // Une semaine est pertinente si elle commence dans le mois OU se termine dans le mois
+            $overlapsMonth = ($weekStart->month === $month) || ($weekEnd->month === $month);
+
+            if ($overlapsMonth) {
+                $fullWeekEnd = $weekStart->addDays(6); // Dimanche
+                $isCurrent = ($currentDate >= $weekStart->toDateString() && $currentDate <= $fullWeekEnd->toDateString());
+                $weekData = [
+                    'value' => (string) $weekStart->isoWeek(),
+                    'week_number' => $weekStart->isoWeek(),
+                    'label' => sprintf(
+                        'Semaine %d (%s - %s)',
+                        $weekStart->isoWeek(),
+                        $weekStart->format('d/m'),
+                        $weekEnd->format('d/m')
+                    ),
+                    'start_date' => $weekStart->toDateString(),
+                    'end_date' => $weekEnd->toDateString(),
+                    'is_current' => $isCurrent,
+                ];
+                if ($isCurrent) {
+                    $currentWeekValue = $weekData['value'];
+                }
+                $weeks[] = $weekData;
             }
-            $weeks[] = $weekData;
             $weekStart = $weekStart->addWeek();
         }
 

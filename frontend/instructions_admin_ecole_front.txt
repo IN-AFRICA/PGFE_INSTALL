@@ -1,0 +1,192 @@
+# Spécifications du Rôle "Admin Ecole" pour l'Équipe Frontend
+
+Ce document décrit en détail les accès, permissions et restrictions du rôle **Admin Ecole** (`admin-ecole`). Ces instructions doivent être utilisées par l'équipe frontend pour adapter l'interface utilisateur (UI), afficher de manière conditionnelle les menus, les boutons d'action (CRUD) et protéger les routes frontend.
+
+## 1. Description Globale
+Le rôle `admin-ecole` est responsable de la **gestion locale de son établissement**. 
+Il a des droits étendus (création, lecture, modification, suppression) sur presque toutes les opérations liées à l'école, mais possède des **droits très limités ou en lecture seule** sur la configuration globale du système (écoles, années scolaires, rôles globaux).
+
+---
+
+## 2. Accès par Module et Règles d'Interface
+
+### 🔹 Module Utilisateurs (Users & Roles)
+**Permissions :** `users.view`, `users.update`, `users.create.tiers`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - **Voir** : Afficher la liste des utilisateurs de l'école.
+    - **Modifier** : Afficher le bouton/formulaire d'édition pour mettre à jour les informations d'un utilisateur existant.
+    - **Créer** : Le bouton "Créer un utilisateur" ne doit permettre de créer **que des utilisateurs avec le rôle "tiers"** (rôle en lecture seule).
+    - **Interdit (Cacher dans l'UI)** : 
+        - Cacher le bouton "Supprimer l'utilisateur".
+        - Cacher les options permettant d'assigner des rôles globaux critiques (comme `super-admin`, etc.).
+
+### 🔹 Module Écoles (Schools)
+**Permissions :** `schools.view`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - **Voir** : Afficher les informations de l'école (profil de l'école).
+    - **Interdit (Cacher dans l'UI)** : Cacher les boutons "Ajouter une école", "Modifier l'école" et "Supprimer l'école".
+
+### 🔹 Module Années Scolaires (School Years)
+**Permissions :** `schoolyears.view`, `schoolyears.activate`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - **Voir** : Afficher la liste des années scolaires.
+    - **Action** : Afficher le bouton "Activer cette année scolaire" (pour définir l'année courante).
+    - **Interdit (Cacher dans l'UI)** : Cacher les boutons de création, de modification et de suppression d'une année scolaire.
+
+### 🔹 Module Scolarité / Pédagogie (Academics & Students)
+**Permissions :** `students.full`, `courses.manage`, `grades.manage`, `deliberation.manage`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - **Élèves** : Accès complet (CRUD complet). Afficher les boutons Ajouter, Voir, Modifier, Supprimer.
+    - **Cours / Matières** : Accès complet (Gérer). Afficher les boutons pour ajouter, modifier, voir et supprimer des cours.
+    - **Cotation / Notes** : Accès complet. L'admin école peut voir, saisir ou modifier les cotes (notes) des élèves.
+    - **Délibérations** : Accès complet aux réunions de délibération, calcul des moyennes et passages de classe.
+
+### 🔹 Module Emplois du Temps (Schedules)
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - **Gestion** : L’Admin Ecole **peut voir et gérer (créer/modifier/supprimer)** les horaires de tous les enseignants et de toutes les classes de son école.
+
+### 🔹 Module Ressources Humaines (RH & Personnels)
+**Permissions :** `personnels.module`, `personals.full`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - Accès complet. Afficher tout le menu RH.
+    - Afficher les boutons de création, modification, visualisation, et suppression des fiches du personnel de l'école.
+
+### 🔹 Module Finances & Comptabilité
+**Permissions :** `accounts.full`, `fees.full`, `payments.full`, `expenses.full`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - Accès complet au module de facturation et comptabilité locale.
+    - **Comptes** : CRUD complet.
+    - **Frais scolaires** (Fees) : CRUD complet.
+    - **Paiements** : CRUD complet (enregistrer un paiement pour un élève, etc.).
+    - **Dépenses** : CRUD complet (enregistrer des dépenses de fonctionnement).
+
+### 🔹 Module Infrastructures & Stocks
+**Permissions :** `infrastructure.full`, `stock.full`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - **Infrastructures** : CRUD complet sur les bâtiments, salles de classe, laboratoires, etc.
+    - **Stocks** : CRUD complet sur l'inventaire, les entrées, sorties de matériels scolaires.
+
+### 🔹 Module Discipline
+**Permissions :** `discipline.full`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - Accès complet. Afficher les boutons pour ajouter, voir, modifier et supprimer des sanctions, avertissements et listes d'absences pour les élèves.
+
+### 🔹 Module Inspections / Visites de classe
+**Permissions :** `visits.manage`
+* **Ce qu'il faut afficher / vérifier dans le front :**
+    - Gestion de la planification et du suivi des visites de l'inspecteur.
+
+---
+
+## 3. Directives Techniques pour l'Équipe Frontend
+
+1. **Protégez les Routes (Vue Router, React Router, etc.) :**
+    Assurez-vous que l'inspecteur de route (ou les Guards) vérifie les permissions (`rolesAndPermissions`) stockées dans le state utilisateur ou le token. Si l'admin école tente d'atteindre une route `schools.create`, affichez une page `403 Forbidden` ou redirigez-le vers le tableau de bord.
+
+2. **Affichage Conditionnel (directives type `v-if` / `*ngIf` / conditionnal rendering React) :**
+    Utilisez des vérifications telles que `hasPermission('users.delete')` ou `auth.role === 'admin-ecole'`.
+    Exemple de logique: 
+    ```js
+    // Affichera le bouton de création d'un Admin global qu'aux rôles autorisés
+    if (!hasPermission('users.create.any')) {
+       // Cacher le formulaire complet de création d'utilisateur, et proposer seulement création de rôles 'tiers'
+    }
+    ```
+
+3. **Interblocage Serveur en cas de forçage :**
+    N'oubliez pas que même si vous masquez des éléments (ex: le bouton de suppression d'un utilisateur), l'API est protégée par le package `spatie/laravel-permission`. En cas de requête HTTP directe non autorisée (ex : `DELETE /api/users/1`), l'API renverra un code d'erreur `403`. Prévoyez de gérer ces retours `403` proprement avec des notifications (Toasts) d'erreur dans le front.
+
+---
+
+## 4. Requêtes API (Endpoints & Payloads)
+
+Voici les informations exactes tirées du backend pour l'intégration de la gestion des utilisateurs / rôles par un `admin-ecole`. 
+**L'URL de base est de type `https://votre-domaine/api/v1`**.
+
+### 🔹 Création d'un utilisateur
+**`POST /api/v1/admin/users`**
+
+Lorsqu'un **Admin Ecole** crée un utilisateur, il ne peut créer **que** des rôles de type `tiers` (lecture seule ou accès limités au portail tiers). Le système backend assignera **automatiquement** l'utilisateur à la même école (`school_id`) que l'admin école connecté. Toute tentative de forcer un autre rôle (`super-admin`, `admin-ecole`, etc.) sera rejetée par l'API avec une erreur `HTTP 403`.
+
+**Payload JSON attendu par le Front :**
+```json
+{
+  "name": "Nom complet de l'utilisateur",
+  "email": "email.unique@example.com",
+  "password": "mot_de_passe_secret", // Au moins 6 caractères
+  "role": "tiers" // Paramètre facultatif, mais si envoyé, il doit être strictement égal à "tiers"
+}
+```
+
+### 🔹 Modification d'un utilisateur
+**`PUT` ou `PATCH /api/v1/admin/users/{id}`**
+
+Un `admin-ecole` peut modifier les utilisateurs de son école, mais ne peut **jamais** modifier un administrateur global ou donner un rôle de niveau supérieur à un autre utilisateur.
+
+**Payload JSON attendu par le Front :**
+```json
+{
+  "name": "Nouveau Nom", // Optionnel
+  "email": "nouveau.email@example.com", // Optionnel, doit rester unique
+  "password": "nouveau_mot_de_passe", // Optionnel
+  "role": "tiers" // Optionnel, mais si c'est pour un changement de rôle, ça ne peut être que vers "tiers"
+}
+```
+
+### 🔹 Liste des utilisateurs
+**`GET /api/v1/admin/users`**
+Récupère la liste paginée des utilisateurs. La réponse contiendra les objets utilisateurs accompagnés de leurs rôles respectifs.
+ 
+### 🔹 Suppression d'un utilisateur
+**`DELETE /api/v1/admin/users/{id}`**
+Permet de supprimer un utilisateur. S'appliquera la même restriction : impossible de supprimer un administrateur supérieur.
+
+### 🔹 Changement d'école - Interdit pour `admin-ecole`
+La route `PATCH /api/v1/admin/users/{id}/school` est **strictement réservée aux super-administrateurs globaux**. L'UI de l'admin école ne doit afficher aucune option pour transférer un utilisateur vers une autre école.
+
+---
+
+## 5. Synthèse des URL CRUD Accessibles par l'Admin Ecole
+
+En plus du module Utilisateurs (`/api/v1/admin/users`), l'Admin Ecole détient les accès CRUD sur les endpoints suivants liés directement à son école. Toutes ces requêtes nécessitent le Bearer token Sanctum de l'utilisateur. Ces routes retournent toutes une erreur HTTP 403 (Interdit) ou 404 (Non Trouvé) si l'utilisateur tente d'accéder à des données en dehors de son `school_id`.
+
+### 🔹 Module Scolarité / Élèves (Permissions: `students.full`)
+* **Élèves** : `GET | POST | PUT/PATCH | DELETE /api/v1/students`
+* **Inscriptions** : `GET | POST | PUT/PATCH | DELETE /api/v1/students/registrations`
+* **Documents d'élèves** : `GET | POST | DELETE /api/v1/documents`
+
+### 🔹 Module Pédagogique (Permissions: `courses.manage`, `grades.manage`, `deliberation.manage`)
+* **Cours** : `GET | POST | PUT/PATCH | DELETE /api/v1/school/courses`
+* **Classes** : `GET | POST | PUT/PATCH | DELETE /api/v1/school/classrooms`
+* **Niveaux académiques** : `GET | POST | PUT/PATCH | DELETE /api/v1/academic/levels`
+* **Cotes / Notes (Fiche Cotations)** : `GET | POST | PUT/PATCH | DELETE /api/v1/academic/fiche-cotations`
+* **Délibérations** : `GET | POST | PUT/PATCH | DELETE /api/v1/academic/deliberations`
+* **Emplois du temps (Schedules)**: `GET | POST | PUT/PATCH | DELETE /api/v1/schedules`
+
+### 🔹 Module RH & Personnel (Permissions: `personnels.module`, `personals.full`)
+* **Fiches du personnel (RH)** : `GET | POST | PUT/PATCH | DELETE /api/v1/hr/personals`
+* **Personnel académique** : `GET | POST | PUT/PATCH | DELETE /api/v1/hr/academic-personals`
+* **Congés** : `GET | POST | PUT/PATCH | DELETE /api/v1/hr/person-conges`
+* **Salaires / Affectations** : `GET | POST | PUT/PATCH | DELETE /api/v1/hr/person_salaires`
+
+### 🔹 Module Finances & Comptabilité (Permissions: `accounts.full`, `fees.full`, `payments.full`, `expenses.full`)
+* **Frais scolaires (Fees)** : `GET | POST | PUT/PATCH | DELETE /api/v1/accounting/fees`
+* **Comptes (Accounts)** : `GET | POST | PUT/PATCH | DELETE /api/v1/accounting/accounts`
+* **Transactions & Paiements** : `GET | POST | PUT/PATCH | DELETE /api/v1/accounting/payments/transactions`
+* **Dépenses (Budget/Journal)** : `GET | POST | PUT/PATCH | DELETE /api/v1/accounting/journals`
+
+### 🔹 Module Discipline & Présences (Permissions: `discipline.full`)
+* **Conduite & Notes de conduite** : `GET | POST | PUT/PATCH | DELETE /api/v1/conduite` et `/api/v1/conduite/notes`
+* **Présences (Étudiants/Personnel)** : `GET | POST | PUT/PATCH | DELETE /api/v1/presence/presences` et `/api/v1/presence/person-presences`
+* **Cas d'indiscipline** : `GET | POST | PUT/PATCH | DELETE /api/v1/presence/indiscipline-cases`
+
+### 🔹 Module Infrastructures & Stocks (Permissions: `infrastructure.full`, `stock.full`)
+* **Infrastructures (Bâtiments, Salles)** : `GET | POST | PUT/PATCH | DELETE /api/v1/infrastructures/infrastructures`
+* **Stocks / Inventaires** : `GET | POST | PUT/PATCH | DELETE /api/v1/infrastructures/inventories` et `/api/v1/infrastructures/infrastructure-inventaires`
+
+### 🔹 Lecture Seule (Read-Only) / Gestion Restreinte
+L'admin école n'a qu'un droit de **lecture (`GET`)** pour la configuration globale ou des actions ciblées spécifiques :
+* **Informations de l'école** : `GET /api/v1/school/schools/{id}` (Ne peut pas la supprimer ou la créer)
+* **Années scolaires** : `GET /api/v1/school/years`
+* **Activation Année** : `POST /api/v1/school/years/{id}/activate` (Peut seulement activer l'année en cours)
+* **Visites d'inspection** : `GET | POST | PUT/PATCH | DELETE /api/v1/presence/visits` (Restreint à l'organisation de visites vers ses propres classes)

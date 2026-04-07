@@ -1,8 +1,11 @@
 
 const getApiConfig = () => {
   return {
-    API_BASE: 'http://localhost:8000/api/v1/',
-    SANCTUM_BASE: 'http://localhost:8000/',
+  //  API_BASE: 'http://localhost:8000/api/v1/',
+//    SANCTUM_BASE: 'http://localhost:8000/',
+
+    API_BASE: 'https://pgfe-back.inafrica.tech/api/v1/',
+    SANCTUM_BASE: 'https://pgfe-back.inafrica.tech/',
   }
 }
 
@@ -17,6 +20,14 @@ export const API_ROUTES = {
   USER_INFOS: 'auth/me',
   SYNC: 'sync',
   SYNC_STATUS: 'sync/status',
+
+  // Routes Admin Utilisateurs (admin-ecole)
+  GET_ADMIN_USERS: 'admin/users',
+  CREATE_ADMIN_USER: 'admin/users',
+  UPDATE_ADMIN_USER: (id: number | string) => `admin/users/${id}`,
+  DELETE_ADMIN_USER: (id: number | string) => `admin/users/${id}`,
+  GET_ROLES: 'admin/roles',
+  ASSIGN_ROLE_TO_PERSONAL: 'hr/academic-personals/assign-role-to-user',
 
   // Routes for Filiere
   CREATE_FILLIERE: 'school/filiaires/store',
@@ -127,6 +138,7 @@ export const API_ROUTES = {
 
   //school years
   GET_SCHOOL_YEARS: 'school/years',
+  ACTIVATE_SCHOOL_YEAR: (id: number | string) => `school/years/${id}/activate`,
 
   //Semester
   GET_SEMESTERS: 'school/semesters',
@@ -551,7 +563,7 @@ export const API_ROUTES = {
   UPDATE_SCHEDULE: (id: number | string) => `schedules/${id}`,
   DELETE_SCHEDULE: (id: number | string) => `schedules/${id}`,
 
-      // Calendar weeks (semaines d'un mois pour une année scolaire)
+  // Calendar weeks (semaines d'un mois pour une année scolaire)
   GET_CALENDAR_WEEKS: 'calendar/weeks',
 
   // === MODULE INSERTION ===

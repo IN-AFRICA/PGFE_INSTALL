@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')
         // que "stats-by-month" soit interprété comme un {academic_personal}
         Route::get('academic-personals/stats-by-month', [AcademicPersonalController::class, 'statsByMonth'])
             ->name('academic-personals.stats-by-month');
+        Route::post('academic-personals/assign-role-to-user', [AcademicPersonalController::class, 'assignRoleAndCreateUser'])
+            ->name('academic-personals.assign-role-to-user');
         Route::apiResource('academic-personals', AcademicPersonalController::class);
         Route::apiResource('person_salaires', PersonSalaireController::class);
         Route::get('person-salaires/stats-by-gender', [PersonSalaireController::class, 'statsByGender'])

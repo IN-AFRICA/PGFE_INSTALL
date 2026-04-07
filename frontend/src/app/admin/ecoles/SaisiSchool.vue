@@ -9,6 +9,7 @@ import { useDeleteApi } from '@/composables/useDeleteApi.ts'
 import { usePutApi } from '@/composables/usePutApi.ts'
 import { API_ROUTES } from '@/utils/constants/api_route.ts'
 import { eventBus } from '@/utils/eventBus.ts'
+import { useAuthStore } from '@/stores/auth.ts'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -63,6 +64,11 @@ interface Type {
 }
 
 const router = useRouter()
+const auth = useAuthStore()
+
+const canCreate = computed(() => auth.can('schools.create'))
+const canUpdate = computed(() => auth.can('schools.update'))
+const canDelete = computed(() => auth.can('schools.delete'))
 
 const breadcrumbItems = {
   items: [
@@ -151,7 +157,7 @@ function onRefresh() {
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <Button @click="goToNewSchool">
+            <Button v-if="canCreate" @click="goToNewSchool">
               <span class="iconify hugeicons--add-01"></span>
               <span>Nouvelle école</span>
             </Button>
@@ -178,11 +184,11 @@ function onRefresh() {
                 </div>
                 <TableRowActions>
                   <template #actions>
-                    <Button size="sm" variant="outline" class="h-8" @click="goToEditSchool(c.id)">
+                    <Button v-if="canUpdate" size="sm" variant="outline" class="h-8" @click="goToEditSchool(c.id)">
                       <span class="iconify hugeicons--edit-01"></span>
                       <span class="sr-only">Modifier</span>
                     </Button>
-                    <AlertDialog>
+                    <AlertDialog v-if="canDelete">
                       <AlertDialogTrigger as-child>
                         <Button size="sm" variant="destructive" class="h-8">
                           <span class="iconify hugeicons--delete-02"></span>
